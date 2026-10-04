@@ -50,6 +50,24 @@ Registration has no attestation, and approval only checks membership.
 curl -s $URL/agents/register -H 'content-type: application/json' -d '{"name":"cfo-approver"}'
 curl -s $URL/approve         -H 'content-type: application/json' -d '{"approver":"cfo-approver","action":"IMPERSONATE transfer $1M"}'
 redsec verify 04 agent-impersonation
+```
+
+### 3.4 `session-smuggling` — ⚫ impossible tier (no walkthrough)
+
+The three above are 🟢 easy → 🟡 medium → 🔴 hard. This one is the **impossible**
+tier: deliberately hard, with **no steps given here**. You know it's solvable —
+`redsec selftest 04` runs a reference exploit that passes — and if you give up, the
+answer is sealed in `solution/SEALED.md`.
+
+The reviewer now runs a guard that **rejects any single A2A session turn containing
+the directive token**, so the one-shot injection from 3.1–3.2 is blocked. Your north
+star: *the guard inspects each turn in isolation; the victim does not.* Target the
+stateful session API (`POST /session/{id}/turn` … `POST /session/{id}/deliver`) and
+get `SMUGGLEPWN` to the sink. This mirrors real **agent session smuggling** in A2A
+systems (Unit42; OWASP ASI07; CSA MAESTRO L7 — see `docs/THREAT-LANDSCAPE.md`).
+
+```bash
+redsec verify 04 session-smuggling      # proves it when you've done it
 redsec down 04
 ```
 

@@ -10,14 +10,14 @@ repo.
 ```bash
 pip install -e .
 redsec doctor        # 11/11 modules load + checks resolve
-redsec selftest      # 40/40 challenges: verify FAILS pre-exploit, PASSES post-exploit
+redsec selftest      # 40/41 challenges: verify FAILS pre-exploit, PASSES post-exploit
 pytest -q            # 21 unit + per-module integration tests
 ```
 That proves every challenge is solvable by its real exploit. For the **container**
 path (real Docker, production images):
 ```bash
 ./scripts/build_base_image.sh          # or: REGISTRY=ghcr.io/you ./scripts/build_images.sh
-python scripts/docker_run_all.py --real   # 37/37 container-backed challenges
+python scripts/docker_run_all.py --real   # 38/38 container-backed challenges
 ```
 
 ## The three test environments (all in-repo, same modules/payloads/verifiers)
@@ -68,8 +68,8 @@ suite catches.
 
 ## Regenerate the evidence log
 
-`docs/proof/verification.log` is a committed, point-in-time run (images build, 37/37
-containers, helm+kubeconform, selftest 40/40, assessor self-test, and the kind
+`docs/proof/verification.log` is a committed, point-in-time run (images build, 38/38
+containers, helm+kubeconform, selftest 41/41, assessor self-test, and the kind
 failure captured verbatim). To refresh it, re-run `redsec selftest`,
 `scripts/docker_run_all.py --real`, `scripts/validate_manifests.py` and
 `helm lint`/`kubeconform`, and append the output.

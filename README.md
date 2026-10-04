@@ -67,7 +67,7 @@ ad-hoc challenge list, and with automated verification throughout.
 | 10 | Threat Modeling for AI Targets | ✅ | assets, trust boundaries, attack paths (artifact-scored) |
 | 11 | Capstone — Full Engagement | ✅ | chain injection → vault pivot → crown-jewel exfiltration |
 
-**All 11 modules are fully implemented and tested — 40 challenges** with guided,
+**All 11 modules are fully implemented and tested — 41 challenges** with guided,
 copy-paste walkthroughs. Every challenge is proven solvable fail→pass by
 `redsec selftest`, and the walkthroughs were independently **red-teamed by a separate
 model** (a fresh-context Claude Sonnet following only the lesson text, not the
@@ -136,7 +136,7 @@ same model kind uses — and verifies each:
 
 ```bash
 ./scripts/build_base_image.sh
-python scripts/docker_run_all.py            # 37/37 PASS
+python scripts/docker_run_all.py            # 38/38 PASS
 python scripts/docker_run_all.py --real     # same, using the per-module prod images
 ```
 
@@ -218,6 +218,8 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
 | [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |
 | [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md) | The 8 MCP primitives in depth |
+| [docs/THREAT-LANDSCAPE.md](docs/THREAT-LANDSCAPE.md) | Current AI-agent attack chains + threat actors, mapped to OWASP/CSA |
+| [docs/DIFFICULTY-TIERS.md](docs/DIFFICULTY-TIERS.md) | easy/medium/hard/impossible tiers per module |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Intent, principles, backlog |
 | [CLAUDE.md](CLAUDE.md) · [RECREATE.md](RECREATE.md) | Resume context · one-prompt rebuild |
 

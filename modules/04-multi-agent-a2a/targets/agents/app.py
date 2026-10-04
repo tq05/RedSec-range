@@ -86,6 +86,36 @@ def bus_send(m: BusMsg) -> dict:
     return {"delivered_to": m.to}
 
 
+# --- impossible tier: stateful A2A session with a naive guard (session smuggling) ---
+# Models Unit42 "agent session smuggling": a reviewer guard rejects any single turn
+# containing the literal directive token "ACTION:", but the victim concatenates the
+# session's turns before acting -- so a directive split across turns reassembles past
+# the guard. (OWASP ASI07 Insecure Inter-Agent Communication; CSA MAESTRO L7.)
+_SESSIONS: dict[str, list[str]] = {}
+
+
+class Turn(BaseModel):
+    content: str
+
+
+@app.post("/session/{sid}/turn")
+def session_turn(sid: str, t: Turn) -> dict:
+    # VULN-but-guarded: a shallow filter blocks the obvious one-shot injection.
+    if "ACTION:" in t.content:
+        return {"accepted": False, "reason": "guard: directive token blocked"}
+    _SESSIONS.setdefault(sid, []).append(t.content)
+    return {"accepted": True, "turns": len(_SESSIONS[sid])}
+
+
+@app.post("/session/{sid}/deliver")
+def session_deliver(sid: str) -> dict:
+    # VULN: the victim concatenates all session turns (no separator) into one plan
+    # and feeds it to the reviewer -- reassembling anything split across turns.
+    turns = _SESSIONS.get(sid, [])
+    plan = "".join(turns)
+    return _reviewer_consume(plan)
+
+
 @app.post("/agents/register")
 def register(r: Register) -> dict:
     # VULN: no attestation -> register as any trusted agent.
@@ -104,6 +134,7 @@ def approve(a: Approve) -> dict:
 @app.post("/reset")
 def reset() -> dict:
     TRUSTED.intersection_update({"orchestrator", "planner", "reviewer"})
+    _SESSIONS.clear()
     return {"ok": True}
 
 

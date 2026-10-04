@@ -42,8 +42,8 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
 
 ## Status (keep in sync with CLAUDE.md)
 
-11 modules, 40 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
-`redsec selftest` 40/40, `pytest` green, `docker_run_all` 37/37, 62 K8s objects
+11 modules, 41 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
+`redsec selftest` 41/41, `pytest` green, `docker_run_all` 38/38, 62 K8s objects
 valid. Walkthroughs independently red-teamed by a separate model.
 
 ## Backlog / next steps (suggestions, not commitments — confirm with R)
@@ -135,3 +135,16 @@ and tighten the accuracy/integrity claims.
 **P3 — minor:** `cli.verify` exit semantics; leftover temp values files in
 `k8s.render`; `datetime.utcnow()` deprecation; CI has no linter/type-check;
 unpinned deps; base image copies `.git`.
+
+## Difficulty tiers — progress (2026-10-04)
+
+- Added the easy/medium/hard/impossible tier model (`tier`/`sealed` on Challenge;
+  per-challenge `mappings` incl. `owasp_agentic`). Spec for all 11 modules in
+  `docs/DIFFICULTY-TIERS.md`; research + OWASP Agentic/CSA MAESTRO mapping in
+  `docs/THREAT-LANDSCAPE.md`.
+- **Built + tested:** Module 04 tiers (easy/medium/hard) + new **impossible**
+  `session-smuggling` (sealed answer in `solution/SEALED.md`; reference exploit proves
+  solvable via selftest).
+- **Next:** build the remaining impossible/new tiers specced in DIFFICULTY-TIERS.md
+  (03 dual-guard exfil, 07 Unicode-concealment→RCE, 08 time-delayed rug pull, 09
+  SSRF→cred→second-service chain, 11 chain-vs-detection), each fail→pass + sealed.

@@ -23,7 +23,10 @@ deployable on Kubernetes; usable as an interactive command centre; pluggable LLM
 assessors (Grok/OpenAI/local); GitHub as the durable store; resumable in Claude Code.
 Full intent, principles, backlog and open questions: **`docs/ROADMAP.md`** — read it
 when resuming or planning next steps. Learner docs: `docs/WORKSHEET.md` (attack paths,
-no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map). A code
+no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map),
+`docs/THREAT-LANDSCAPE.md` (current agent attack chains + OWASP Agentic/CSA MAESTRO
+mapping), `docs/DIFFICULTY-TIERS.md` (easy/medium/hard/impossible per module; impossible
+answers are sealed in each module's `solution/SEALED.md`, excluded from SOLUTIONS.md). A code
 review (2026-10-04) logged P1 hardening items in `docs/ROADMAP.md` — check them before
 claiming the verifier is tamper-proof or that bare-local mode is isolated.
 
@@ -32,7 +35,7 @@ claiming the verifier is tamper-proof or that bare-local mode is isolated.
 # the repo is already cloned as your workspace; then:
 pip install -e .            # Python 3.11+
 redsec doctor               # expect 11/11 modules OK
-redsec selftest             # expect 40/40 fail->pass  (the correctness gate)
+redsec selftest             # expect 41/41 fail->pass  (the correctness gate)
 ./scripts/sandbox-up.sh     # optional: bring the interactive Docker range up (needs Docker)
 ```
 How every challenge is tested end-to-end, where the exploit payloads live, and what
@@ -43,14 +46,14 @@ Then read `docs/ROADMAP.md` for what's next and ask R which item to pick up.
 On a normal machine (unlike the Claude sandbox) `./scripts/kind-up.sh` runs the full
 Kubernetes path too.
 
-## Status: all 11 modules complete + tested — 40 challenges
+## Status: all 11 modules complete + tested — 41 challenges
 
 | # | module | challenges | notes |
 |---|--------|-----------|-------|
 | 01 | intro | 1 | orientation + first prompt injection |
 | 02 | recon | 3 | fingerprint, enumerate, config leak |
 | 03 | attacking-agents | 4 | direct/indirect injection, excessive agency, memory |
-| 04 | multi-agent-a2a | 3 | transitive trust, forged messages, impersonation |
+| 04 | multi-agent-a2a | 4 | transitive trust, forged messages, impersonation |
 | 05 | rag-pipelines | 3 | knowledge poisoning, retrieval manip, citation spoof |
 | 06 | embeddings | 3 | inversion, membership inference, collision |
 | 07 | mcp-tool-surfaces | 10 | the 8-primitive MCP attack matrix + rug-pull + RCE |
@@ -77,11 +80,11 @@ Kubernetes path too.
 ## How to run (4 paths, same modules/verifiers/exploits)
 
 1. **Local processes** (Python only): `pip install -e . && redsec dev <id>` /
-   `redsec up <id>`; `redsec selftest` proves every challenge fail→pass (40/40).
+   `redsec up <id>`; `redsec selftest` proves every challenge fail→pass (41/41).
 2. **Interactive persistent Docker range** (the in-sandbox command centre):
    `./scripts/sandbox-up.sh` then `range status|solve|verify|shell|logs|reset|down`.
    See docs/interactive-sandbox.md.
-3. **Ephemeral container check**: `python scripts/docker_run_all.py [--real]` (37/37).
+3. **Ephemeral container check**: `python scripts/docker_run_all.py [--real]` (38/38).
 4. **Kubernetes/kind** (normal host): `./scripts/kind-up.sh` + `./scripts/kind-run-all.sh`.
    Helm chart in deploy/helm/redsec-module; see docs/kubernetes.md.
 
@@ -110,7 +113,7 @@ or *on your own machine* from the repo. Same commands; different host. All need
 ## Verification / tests
 
 - `pytest` (21 tests): engine/verifier units + per-module fail→pass integration.
-- `redsec doctor` (all modules load + checks resolve), `redsec selftest` (40/40).
+- `redsec doctor` (all modules load + checks resolve), `redsec selftest` (41/41).
 - `python scripts/validate_manifests.py` (62 K8s objects vs schema offline).
 - CI: `.github/workflows/ci.yml` — tests, selftest, helm+kubeconform, container run, kind.
 - Evidence log: `docs/proof/verification.log`.
@@ -130,7 +133,7 @@ or *on your own machine* from the repo. Same commands; different host. All need
 
 - `RECREATE.md` (root) is the single reusable prompt to rebuild + verify the whole
   environment. Keep it in sync with this file on any change affecting setup/scope
-  (new module, new run path, changed acceptance numbers like 40/40 or 37/37, new
+  (new module, new run path, changed acceptance numbers like 41/41 or 38/38, new
   integration): bump its "Last updated"/"State" and the acceptance numbers, commit
   both. This file is the single source of truth; RECREATE.md references it, no dup.
 

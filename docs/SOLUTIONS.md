@@ -92,6 +92,11 @@ curl -s $URL/approve -H 'content-type: application/json' -d '{"approver":"cfo-ap
 redsec verify 04 agent-impersonation
 ```
 
+**session-smuggling** (impossible, oracle) — **answer intentionally withheld.** This
+is an impossible-tier challenge: its solution is sealed in
+`modules/04-multi-agent-a2a/solution/SEALED.md` so you know it's solvable without
+being handed the steps. `redsec selftest 04` proves the reference exploit works.
+
 ## 05 · RAG Pipelines  (`URL=http://127.0.0.1:9050`, oracle)
 ```bash
 # knowledge-poisoning

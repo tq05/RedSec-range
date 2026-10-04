@@ -2,8 +2,8 @@
 
 RedSec Range follows the structure of OffSec's **AI-300 / OSAI ("Advanced AI Red
 Teaming")** syllabus, and maps every module to the **OWASP LLM Top 10 (2025)**, the
-emerging **OWASP MCP Top 10**, and **MITRE ATLAS**. **40 challenges across 11
-modules, all complete and tested** (7450 pts).
+emerging **OWASP MCP Top 10**, and **MITRE ATLAS**. **41 challenges across 11
+modules, all complete and tested** (7900 pts).
 
 > This table mirrors the module manifests (`redsec list`), so it stays in sync.
 > **ATLAS IDs are indicative** — verify against the current
@@ -14,7 +14,7 @@ modules, all complete and tested** (7450 pts).
 | 01 | Introduction to Red Teaming AI Systems | ✅ | LLM07 | - | AML.T0051 | 1 | 50 |
 | 02 | Reconnaissance for AI Targets | ✅ | LLM07, LLM02 | - | AML.T0002, AML.T0040 | 3 | 400 |
 | 03 | Attacking AI Agents | ✅ | LLM01, LLM02, LLM06, LLM07 | - | AML.T0051, AML.T0054, AML.T0057 | 4 | 750 |
-| 04 | Attacking Multi-Agent Systems & A2A | ✅ | LLM01, LLM06 | - | AML.T0051, AML.T0054 | 3 | 650 |
+| 04 | Attacking Multi-Agent Systems & A2A | ✅ | LLM01, LLM06 | - | AML.T0051, AML.T0054 | 4 | 1100 |
 | 05 | Exploiting RAG Pipelines | ✅ | LLM01, LLM08 | - | AML.T0020, AML.T0051 | 3 | 550 |
 | 06 | Attacking Embeddings | ✅ | LLM08, LLM02 | - | AML.T0024, AML.T0043 | 3 | 650 |
 | 07 | Attacking MCP & Tool Surfaces | ✅ | LLM01, LLM02, LLM06 | MCP01-05 | AML.T0051, AML.T0054, AML.T0053 | 10 | 1750 |

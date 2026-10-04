@@ -33,6 +33,10 @@ class Mappings(BaseModel):
     owasp_mcp: list[str] = Field(
         default_factory=list, description="OWASP MCP Top 10 IDs."
     )
+    owasp_agentic: list[str] = Field(
+        default_factory=list,
+        description="OWASP Top 10 for Agentic Applications IDs, e.g. ASI07.",
+    )
     mitre_atlas: list[str] = Field(
         default_factory=list, description="MITRE ATLAS technique IDs, e.g. AML.T0051."
     )
@@ -112,8 +116,25 @@ class Challenge(BaseModel):
     objective: str = ""
     points: int = 100
     difficulty: Difficulty | None = None
+    tier: Literal["easy", "medium", "hard", "impossible"] | None = Field(
+        None,
+        description="Learning tier within a module. 'impossible' = a deliberately "
+        "very hard challenge that IS solvable; its answer is sealed in "
+        "solution/SEALED.md so the student knows a solution exists.",
+    )
+    sealed: bool = Field(
+        False,
+        description="If true, this challenge's full answer is withheld from "
+        "SOLUTIONS.md and kept in the module's solution/SEALED.md (used for the "
+        "'impossible' tier). The reference solve.py still proves it is solvable.",
+    )
     primitive: str | None = Field(
         None, description="For MCP module: the protocol primitive under attack."
+    )
+    mappings: Mappings = Field(
+        default_factory=Mappings,
+        description="Optional per-challenge taxonomy mapping (OWASP LLM / OWASP "
+        "Agentic ASI / MITRE ATLAS). Falls back to the module's mappings.",
     )
     verify: list[VerifyStep] = Field(default_factory=list)
     hints: list[str] = Field(default_factory=list)

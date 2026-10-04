@@ -74,11 +74,13 @@ the course builds on.
 |---|---|---|---|---|
 | `trust-exploitation` | O | 🔴 | Transitive injection. The lowest-trust input (a ticket) rides the planner's plan into the reviewer, which acts on it. Smuggle an action in through the ticket. | `POST /submit` |
 | `message-manipulation` | O | 🔴 | The inter-agent bus is unauthenticated. Forge a message straight to the reviewer. | `POST /bus/send` |
-| `agent-impersonation` | O | ⚫ | No attestation on identity. Register yourself as a trusted agent, then approve your own malicious action. | `POST /agents/register` → `/approve` |
+| `agent-impersonation` | O | 🔴 | No attestation on identity. Register yourself as a trusted agent, then approve your own malicious action. | `POST /agents/register` → `/approve` |
+| `session-smuggling` | O | ⚫ **impossible** | A guard now rejects any single session turn carrying the directive token. Smuggle it across a **stateful A2A session** so it only forms when the victim concatenates turns. *(No walkthrough — answer sealed in `modules/04-multi-agent-a2a/solution/SEALED.md`.)* | `POST /session/{id}/turn` ×N → `/session/{id}/deliver` |
 
 **Why it works:** every agent-to-agent message is an injection channel, and agents
 treat each other's output as trusted input. One foothold propagates; identity is
-assumed, not proven.
+assumed, not proven. The impossible tier models **agent session smuggling** (Unit42):
+the guard inspects each turn in isolation, but the victim acts on the concatenation.
 
 ---
 
@@ -193,6 +195,6 @@ assistant's ambient authority over a sensitive system (a classic confused deputy
 ---
 
 ### Scoring your run
-`redsec score` shows solved/points per module. Total available: **40 challenges**.
+`redsec score` shows solved/points per module. Total available: **41 challenges**.
 When you finish a module, read its `lesson.md` "Defenses" section — the point of the
 range is to learn the fix, not just the exploit.

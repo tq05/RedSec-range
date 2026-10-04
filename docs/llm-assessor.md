@@ -107,7 +107,7 @@ OPENAI_API_BASE=https://api.x.ai/v1 OPENAI_API_KEY=$XAI_API_KEY aider --model op
 ```
 
 (We don't install aider into the main env by default — it would pull a large, version-
-pinned dependency set that could perturb the 40/40-verified `redsec` install.)
+pinned dependency set that could perturb the 41/41-verified `redsec` install.)
 
 Flags: `--max-steps N` (default 12), `--model`, `--base-url`, `--api-key` (else read
 from `XAI_API_KEY` / `OPENAI_API_KEY` / `REDSEC_LLM_API_KEY`).
