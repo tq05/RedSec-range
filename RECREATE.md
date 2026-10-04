@@ -13,7 +13,7 @@ source of truth for project detail) — update both together.
 
 - **Last updated:** 2026-10-04 (threat-landscape research + OWASP Agentic/CSA MAESTRO mapping; easy/medium/hard/impossible tier model; module 04 tiers incl. sealed session-smuggling)
 - **Repo:** https://github.com/tq05/RedSec-range
-- **State at last update:** 11 modules, 41 challenges, all complete + tested.
+- **State at last update:** 11 modules, 42 challenges, all complete + tested.
 
 ---
 
@@ -37,22 +37,22 @@ PRIMARY PATH (deterministic — do this first):
    module list, run paths, conventions). Read docs/ as needed.
 3. Install the framework:  pip install -e .   (Python 3.11+)
 4. Verify it loads:  redsec doctor   (expect all 11 modules OK)
-5. Prove every challenge is solvable:  redsec selftest   (expect 41/41 fail->pass)
+5. Prove every challenge is solvable:  redsec selftest   (expect 42/42 fail->pass)
 6. Choose how to RUN it (all use the same modules/verifiers/exploits):
    a. Local processes:  redsec dev <id>   or   redsec up <id> / redsec down <id>
    b. Persistent interactive Docker range (works even where Kubernetes can't start):
         ./scripts/sandbox-up.sh      # dockerd + base image + whole range, persistent
         range status | range solve <mod> [chal] | range shell <mod> <target>
-   c. Ephemeral container check:  python scripts/docker_run_all.py [--real]  (38/38)
+   c. Ephemeral container check:  python scripts/docker_run_all.py [--real]  (39/39)
    d. Kubernetes on a normal host:  ./scripts/kind-up.sh && ./scripts/kind-run-all.sh
       (NOTE: nested k8s/kind CANNOT start pods in some microVM sandboxes — runc
        'pipe EOF'; use path (b) there. Docker itself works. See docs/kubernetes.md.)
 
 ACCEPTANCE CHECKS (must all pass):
 - redsec doctor           -> 11/11 modules OK
-- redsec selftest         -> 40/41 challenges PASS (fail-before, pass-after)
+- redsec selftest         -> 40/42 challenges PASS (fail-before, pass-after)
 - pytest -q               -> all green (engine/verifier units + per-module integration)
-- python scripts/docker_run_all.py  -> 38/38 container-backed challenges PASS
+- python scripts/docker_run_all.py  -> 39/39 container-backed challenges PASS
   (module 10 is artifact-scored; its 3 are covered by selftest)
 
 OPTIONAL — point another LLM at the range (see docs/llm-assessor.md):
@@ -84,7 +84,7 @@ restoring repo access.
 
 This file and `CLAUDE.md` are updated together whenever the project changes in a way
 that affects setup or scope — e.g. a new module, a new run path, a changed acceptance
-number (41/41, 38/38), or a new integration. On each such change: bump **Last
+number (42/42, 39/39), or a new integration. On each such change: bump **Last
 updated** and **State at last update** above, adjust the acceptance numbers in the
 prompt if they moved, and commit both files. (During our sessions, I do this as part
 of the change.) The prompt deliberately references `CLAUDE.md`/`docs/` rather than

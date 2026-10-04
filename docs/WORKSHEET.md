@@ -127,6 +127,7 @@ invert, similarity reveals membership, and lossy encodings collide.
 | `completion-leak` | F | 🟢 | completion | Argument autocompletion is backed by the secret store. Complete the right field. | `completion/complete` |
 | `rug-pull` | F | 🟡 | tools | What you approve isn't what you get. List the tools again after "approval." | `tools/list` (twice) |
 | `command-injection` | F | 🔴 | tools→RCE | A tool shells out with your input. Inject a second command. | `tools/call` run_diagnostic |
+| `unicode-tool-poisoning` | O | ⚫ **impossible** | tools | The host's tool registry scans the *visible* description and rejects obvious poisoning. Register a tool that still drives the host to exfiltrate — concealing the directive so the scanner can't see it but the model still reads it. *(Sealed: `modules/07-mcp-tool-surfaces/solution/SEALED.md`.)* | `POST /register_tool` → host `/chat` |
 
 **Why it works:** MCP exposes eight primitive surfaces and the host↔server trust is
 usually implicit. Four primitives feed untrusted server content into the model
@@ -195,6 +196,6 @@ assistant's ambient authority over a sensitive system (a classic confused deputy
 ---
 
 ### Scoring your run
-`redsec score` shows solved/points per module. Total available: **41 challenges**.
+`redsec score` shows solved/points per module. Total available: **42 challenges**.
 When you finish a module, read its `lesson.md` "Defenses" section — the point of the
 range is to learn the fix, not just the exploit.

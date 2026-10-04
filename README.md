@@ -67,7 +67,7 @@ ad-hoc challenge list, and with automated verification throughout.
 | 10 | Threat Modeling for AI Targets | ✅ | assets, trust boundaries, attack paths (artifact-scored) |
 | 11 | Capstone — Full Engagement | ✅ | chain injection → vault pivot → crown-jewel exfiltration |
 
-**All 11 modules are fully implemented and tested — 41 challenges** with guided,
+**All 11 modules are fully implemented and tested — 42 challenges** with guided,
 copy-paste walkthroughs. Every challenge is proven solvable fail→pass by
 `redsec selftest`, and the walkthroughs were independently **red-teamed by a separate
 model** (a fresh-context Claude Sonnet following only the lesson text, not the
@@ -136,7 +136,7 @@ same model kind uses — and verifies each:
 
 ```bash
 ./scripts/build_base_image.sh
-python scripts/docker_run_all.py            # 38/38 PASS
+python scripts/docker_run_all.py            # 39/39 PASS
 python scripts/docker_run_all.py --real     # same, using the per-module prod images
 ```
 
