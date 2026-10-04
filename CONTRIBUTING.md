@@ -14,10 +14,11 @@ pytest -q                            # unit + integration
 
 ## Adding or completing a module
 
-See [docs/authoring-modules.md](docs/authoring-modules.md). The nine scaffold
-modules already have a complete design (`module.yaml` + `lesson.md`); "completing"
-one means implementing its targets, verifiers, and `solution/solve.py`, then setting
-`status: complete`. Modules **03** and **07** are the reference implementations.
+See [docs/authoring-modules.md](docs/authoring-modules.md). All eleven
+modules are already `complete` (targets + verifiers + `solution/solve.py`); adding a
+new module means the same: write `module.yaml` + `lesson.md`, implement its targets,
+verifiers and `solution/solve.py`, then set `status: complete`. Modules **03** and
+**07** are the reference implementations to copy.
 
 A module is not mergeable as `complete` until:
 

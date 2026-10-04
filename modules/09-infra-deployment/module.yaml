@@ -14,7 +14,7 @@ prerequisites: ["02"]
 tags: [infrastructure, ssrf, metadata, model-server, secrets, registry]
 mappings:
   ai300_module: 9
-  owasp_llm: [LLM03, LLM10]
+  owasp_llm: [LLM02]
   mitre_atlas: [AML.T0040, AML.T0024]
 
 targets:

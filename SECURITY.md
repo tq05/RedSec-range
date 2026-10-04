@@ -44,3 +44,20 @@ your fork before publishing.)
 The included model is a deterministic stand-in that reproduces LLM failure modes for
 reproducibility. It is not a real model and has no safety relevance of its own; the
 vulnerabilities taught live in the *applications*, which is the point.
+
+## Integrity & isolation model (read before relying on results)
+
+- **The verifier is a teaching oracle, not a tamper-proof judge.** Side-effect
+  (oracle) challenges confirm an exploit by watching the shared `drop` sink. The sink
+  accepts any POST, and some needles are markers the learner chooses, so a motivated
+  learner can "pass" an oracle challenge by posting the marker directly. That is fine
+  for self-paced learning; for graded/benchmark use, treat `redsec selftest` (which
+  runs the *reference exploit* end-to-end) as the source of truth, and see the
+  hardening item in `docs/ROADMAP.md`.
+- **Isolation depends on the run path.** The Kubernetes path puts each module in a
+  default-deny namespace (egress enforced with a policy CNI). The Docker paths run
+  containers. **Bare local-process mode (`redsec dev/up`) has no isolation** — and
+  modules 07 (shell RCE), 08 (unsafe deserialization) and 09 (SSRF, which can reach a
+  real cloud metadata endpoint on a cloud VM) are genuinely dangerous there. Run those
+  modules via the Docker or Kubernetes paths, on a throwaway host, never on a machine
+  or network you care about.

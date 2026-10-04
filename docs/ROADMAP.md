@@ -82,3 +82,56 @@ When you change something, **verify it yourself end-to-end** (run `redsec selfte
 `pytest`, or `scripts/docker_run_all.py` as appropriate) and fix it until green —
 don't hand back changes for the owner to test. Never weaken a verifier to make it
 pass. Keep `CLAUDE.md`, `RECREATE.md`, and this file in sync on scope changes.
+
+## Security & quality review — 2026-10-04 (findings to action)
+
+A full read-only code review ran on 2026-10-04. Headline items, by priority. None
+block *using* the range as a teaching tool in an isolated environment; they harden it
+and tighten the accuracy/integrity claims.
+
+**P1 — should fix**
+- [ ] **Oracle integrity.** The `drop` sink accepts any POST and most needles are
+      learner-chosen markers, so an oracle challenge can be "passed" by posting the
+      marker directly. Fix: each target tags its sink posts with a per-target secret
+      (from env) on its own path; checks filter on tag+path; prefer needles that are
+      secrets only obtainable via the exploit. (`services/drop`, `verify/builtins.py`,
+      `07/verify/checks.py`.) Until then, SECURITY.md documents the sink as a teaching
+      oracle, not a tamper-proof judge.
+- [ ] **Local isolation.** Modules 07 (shell RCE), 08 (pickle), 09 (SSRF to
+      169.254.169.254) run unisolated under bare `redsec dev/up`. Add Host-header
+      allow-list + Content-Type enforcement to the FastAPI targets; default these
+      modules to the Docker/K8s path or gate bare-local behind an explicit flag.
+      SECURITY.md updated to say so.
+- [ ] **Container hardening.** `vuln-mcp` and `08 registry` images run as root; plant
+      files under a writable dir and add `USER 10001`. Keep seccomp + cap-drop even on
+      `privileged` targets; set `automountServiceAccountToken: false` in the chart.
+- [ ] **Agent-harness safety.** `grok_cli --agent` has unrestricted shell + network
+      with the API key in env, while reading injection-laden lab content; add a
+      confirm-before-exec / container-only mode, scrub env, URL allow-list. Remove the
+      drop URL from `agent_solver`'s allow-list; add `--no-hints` for benchmarking.
+- [ ] **Real-LLM backend.** `mockllm/backends.py` appends tool messages without a
+      `tool_call_id`/preceding assistant `tool_calls`, so `REDSEC_LLM_BACKEND=openai`
+      400s on first tool call. Fix the message shape; qualify the "transfers to a real
+      model" claim (the `{{SECRETS}}` substitution is mock-only).
+- [x] **OWASP version consistency.** Removed mis-versioned/unsupported LLM mappings
+      (stray LLM08 on 04/07/11; LLM10 on 02/09) and the capstone's MCP mapping
+      (no MCP target). Done 2026-10-04.
+
+**P2 — nice to have**
+- [ ] Extract a shared `redsec/harness.py` (the fail→pass + env/peer-URL wiring is
+      duplicated across cli selftest, tests, docker_run_all, range_ctl, kind_run_all);
+      fold `HostExfil` into `DropContains`.
+- [ ] Derive module lists in `build_images.sh`, `kind-up.sh`, `kind-run-all.sh` and the
+      CI helm job from `load_all()` instead of hard-coding.
+- [ ] Enforce (or drop) `allow_targets` + `privileged` NetworkPolicy semantics so an
+      overview diagram's trust edges are real; Docker paths currently ignore
+      `egress`/`privileged`.
+- [ ] Per-student flags via `flag_sha256` (already supported) so flag env-overrides
+      don't break checks; spoiler-tag hints so the worksheet can exclude answers
+      programmatically.
+- [ ] Key the `07` rug-pull counter per client (currently one global counter → order
+      dependence). Harden `module 10` artifact checks (keyword match is gameable).
+
+**P3 — minor:** `cli.verify` exit semantics; leftover temp values files in
+`k8s.render`; `datetime.utcnow()` deprecation; CI has no linter/type-check;
+unpinned deps; base image copies `.git`.

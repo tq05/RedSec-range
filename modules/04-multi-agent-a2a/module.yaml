@@ -14,7 +14,7 @@ prerequisites: ["03"]
 tags: [multi-agent, a2a, trust, impersonation, message-manipulation]
 mappings:
   ai300_module: 4
-  owasp_llm: [LLM01, LLM06, LLM08]
+  owasp_llm: [LLM01, LLM06]
   mitre_atlas: [AML.T0051, AML.T0054]
 
 targets:

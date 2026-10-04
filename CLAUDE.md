@@ -22,7 +22,10 @@ per-module vulnerable apps you actually exploit; automated proof an exploit work
 deployable on Kubernetes; usable as an interactive command centre; pluggable LLM
 assessors (Grok/OpenAI/local); GitHub as the durable store; resumable in Claude Code.
 Full intent, principles, backlog and open questions: **`docs/ROADMAP.md`** — read it
-when resuming or planning next steps.
+when resuming or planning next steps. Learner docs: `docs/WORKSHEET.md` (attack paths,
+no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map). A code
+review (2026-10-04) logged P1 hardening items in `docs/ROADMAP.md` — check them before
+claiming the verifier is tamper-proof or that bare-local mode is isolated.
 
 **Resume in Claude Code (cold start):**
 ```bash

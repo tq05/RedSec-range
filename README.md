@@ -9,6 +9,10 @@ worked.
 > **New here / resuming?** Read [`CLAUDE.md`](CLAUDE.md) (project context + resume
 > steps) and [`docs/ROADMAP.md`](docs/ROADMAP.md) (intent + what's next). To recreate
 > the whole environment from one prompt, see [`RECREATE.md`](RECREATE.md).
+>
+> **Want to play?** Work the [**worksheet**](docs/WORKSHEET.md) (attack paths, no
+> spoilers) → check yourself against the [**solutions**](docs/SOLUTIONS.md) → see the
+> [**visual overview**](docs/OVERVIEW.md) for the whole map.
 
 > ⚠️ **Deliberately vulnerable software.** Every target in this repo ships real,
 > exploitable flaws (prompt injection, SSRF, command-injection RCE, insecure
@@ -27,11 +31,12 @@ map of the modern AI attack surface. RedSec Range turns that map into a hands-on
 - **Guided** — every module is a lesson (theory → walkthrough → defenses) plus
   graded challenges with progressive hints.
 - **Verifiable** — a check harness answers *"did my exploit work?"* three ways:
-  flags, side-effect oracles (did the secret actually leave the app?), and scored
-  artifacts. No honour system.
+  flags, side-effect oracles (did the secret actually leave the app, via the exfil
+  sink?), and scored artifacts. (The sink is a teaching oracle, not a tamper-proof
+  judge — see [SECURITY.md](SECURITY.md) for the integrity model.)
 - **Deployable on Kubernetes** — one declarative `module.yaml` renders to a Helm
-  release with per-module vulnerable apps in an **isolated, default-deny
-  namespace**.
+  release with per-module vulnerable apps in a **default-deny namespace** (egress
+  containment is enforced when the cluster runs a policy-enforcing CNI).
 - **Accurate & self-testing** — each complete module ships a reference exploit, and
   CI proves every challenge goes **fail → pass** (`redsec selftest`). A verifier
   that passes before you attack is a bug, and the suite catches it.
@@ -198,6 +203,22 @@ and [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md).
 ```
 
 Details: [docs/architecture.md](docs/architecture.md).
+
+## Documentation map
+
+| Doc | What it's for |
+|-----|---------------|
+| [docs/WORKSHEET.md](docs/WORKSHEET.md) | Per-challenge **attack paths, no spoilers** — the "chess sheet" |
+| [docs/SOLUTIONS.md](docs/SOLUTIONS.md) | Full **answers** (flags + exact steps) |
+| [docs/OVERVIEW.md](docs/OVERVIEW.md) | **Visual** map — learning path, attack surface, MCP matrix, kill chain |
+| [docs/curriculum.md](docs/curriculum.md) | Module ↔ OWASP/ATLAS mapping table |
+| [docs/architecture.md](docs/architecture.md) | How the framework is built |
+| [docs/interactive-sandbox.md](docs/interactive-sandbox.md) | Run it live in a Docker sandbox (the command centre) |
+| [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
+| [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |
+| [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md) | The 8 MCP primitives in depth |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Intent, principles, backlog |
+| [CLAUDE.md](CLAUDE.md) · [RECREATE.md](RECREATE.md) | Resume context · one-prompt rebuild |
 
 ## Add your own module
 

@@ -16,7 +16,7 @@ prerequisites: ["03"]
 tags: [mcp, tool-poisoning, confused-deputy, rug-pull, ssrf, rce, json-rpc]
 mappings:
   ai300_module: 7
-  owasp_llm: [LLM01, LLM02, LLM06, LLM08]
+  owasp_llm: [LLM01, LLM02, LLM06]
   owasp_mcp: [MCP01, MCP02, MCP03, MCP04, MCP05]
   mitre_atlas: [AML.T0051, AML.T0054, AML.T0053]
 

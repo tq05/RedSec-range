@@ -14,8 +14,8 @@ prerequisites: ["03", "04", "05", "06", "07", "08", "09", "10"]
 tags: [capstone, chaining, engagement, indirect-injection, exfiltration]
 mappings:
   ai300_module: 11
-  owasp_llm: [LLM01, LLM02, LLM06, LLM08]
-  owasp_mcp: [MCP01, MCP04]
+  owasp_llm: [LLM01, LLM02, LLM06]
+  owasp_mcp: []
   mitre_atlas: [AML.T0051, AML.T0024]
 
 targets:

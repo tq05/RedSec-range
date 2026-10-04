@@ -14,7 +14,7 @@ prerequisites: ["01"]
 tags: [recon, fingerprinting, enumeration, information-disclosure]
 mappings:
   ai300_module: 2
-  owasp_llm: [LLM07, LLM10]
+  owasp_llm: [LLM07, LLM02]
   mitre_atlas: [AML.T0002, AML.T0040]
 
 targets:

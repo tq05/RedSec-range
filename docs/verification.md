@@ -48,8 +48,8 @@ required-elements).
 ```yaml
 verify:
   - type: artifact
-    check: "checks:ThreatModelCovers"
-    params: { require: [assets, boundaries, paths] }
+    check: "checks:ArtifactCovers"
+    params: { all_of: [model, prompt, secret], any_of: [llm01, mcp], min_matches: 1 }
 ```
 
 `redsec verify <mod> <chal> --artifact-file model.md` passes the file contents as
