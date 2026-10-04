@@ -1,4 +1,34 @@
-# Hooking up another LLM (Grok, OpenAI, local) — two integration points
+# Hooking up another LLM (Grok, OpenAI, local)
+
+## How you interact with it (important)
+
+A Claude cloud sandbox is an **isolated VM with no inbound network path** and an
+**egress-only** proxy (it lets the sandbox call out to `api.x.ai`; it is not a port
+you connect to). So you cannot reach a service running in that sandbox over a public
+port. There are two real ways to drive a Grok agent:
+
+1. **Through the chat session** — Claude runs `grok` / `assess` / `range` in the
+   sandbox and relays the output. The chat is your terminal; Grok's API calls go out
+   to x.ai, Grok's actions (shell/HTTP) happen in the sandbox, your `XAI_API_KEY`
+   lives only in that sandbox env. Nothing is exposed publicly.
+2. **On your own machine** — `git clone` this repo and run the same commands locally
+   with your key, where you have a real terminal and can expose ports yourself.
+
+Either way the commands are identical; only *where they run* differs.
+
+## The three tools in this repo
+
+| command | what it is |
+|---|---|
+| `grok "…"` / `grok --agent "…"` | general Grok CLI: chat, or an autonomous agent with shell+http tools in the sandbox (`scripts/grok_cli.py`) |
+| `assess <mod> --provider grok --model grok-4` | the range assessor: Grok tries the challenges, verifier scores each (`scripts/agent_solver.py`) |
+| `range …` | the persistent range the agents act against (`scripts/range_ctl.py`) |
+
+(`sandbox-up.sh` installs `grok`, `assess`, `range` on PATH. Without it: `python
+scripts/grok_cli.py …` etc.) All need `XAI_API_KEY` set in the sandbox env; set it
+without echoing, e.g. `read -s XAI_API_KEY; export XAI_API_KEY`.
+
+## Two integration points
 
 The range has two independent places a real model can plug in. They answer two
 different questions.
@@ -49,6 +79,35 @@ OPENAI_API_KEY=sk-... python scripts/agent_solver.py 02 --provider openai --mode
 python scripts/agent_solver.py 02 --provider custom \
     --base-url http://host:11434/v1 --model llama3.1 --api-key x
 ```
+
+### General Grok CLI (free-form, not just the challenges)
+
+`scripts/grok_cli.py` (installed as `grok`) is a small self-contained Grok CLI:
+
+```bash
+export XAI_API_KEY=...            # set once in the sandbox (don't echo/commit it)
+grok "summarise module 07's attack matrix"      # one-shot chat
+grok                                            # interactive REPL
+grok --agent "enumerate the running range and report what each target exposes"
+```
+
+`--agent` gives Grok `exec_shell` (runs commands in the sandbox) and `http_request`
+tools and loops until done — so Grok can drive an assessment its own way. It runs in
+the ephemeral sandbox only. Chat mode has no tools.
+
+### An external named CLI (optional)
+
+If you prefer a mature third-party coding agent, `aider` works against Grok via its
+OpenAI-compatible endpoint. Install it **isolated** so it can't disturb this repo's
+verified dependencies:
+
+```bash
+pipx install aider-chat    # or: python -m venv ~/.aider && ~/.aider/bin/pip install aider-chat
+OPENAI_API_BASE=https://api.x.ai/v1 OPENAI_API_KEY=$XAI_API_KEY aider --model openai/grok-4
+```
+
+(We don't install aider into the main env by default — it would pull a large, version-
+pinned dependency set that could perturb the 40/40-verified `redsec` install.)
 
 Flags: `--max-steps N` (default 12), `--model`, `--base-url`, `--api-key` (else read
 from `XAI_API_KEY` / `OPENAI_API_KEY` / `REDSEC_LLM_API_KEY`).

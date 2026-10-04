@@ -50,6 +50,16 @@ async def chat(request: Request):
             flag = fm.group(0); break
 
     calls = []
+    # grok_cli --agent self-test: drive one exec_shell then finish.
+    if "SANDBOX-SELFTEST" in user:
+        if not tool_msgs:
+            calls = [tool_call("exec_shell", {"command": "echo GROK_AGENT_OK"})]
+        message = {"role": "assistant",
+                   "content": "" if calls else "selftest complete: GROK_AGENT_OK",
+                   "tool_calls": calls or None}
+        return {"id": "x", "object": "chat.completion",
+                "choices": [{"index": 0, "message": message,
+                             "finish_reason": "tool_calls" if calls else "stop"}]}
     if flag and not submitted:
         calls = [tool_call("submit_flag", {"flag": flag})]
     elif "path traversal" in low or "resources/read" in low:

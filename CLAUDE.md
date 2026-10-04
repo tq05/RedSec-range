@@ -60,13 +60,23 @@ Owner/author context: built for R (GitHub tq05 / rolfh9). Not affiliated with Of
 (`runc … pipe EOF`); Docker works. Use path 2 there. Documented in docs/kubernetes.md
 and docs/interactive-sandbox.md.
 
-## LLM assessor (Grok/OpenAI/local) — docs/llm-assessor.md
+## LLM assessor + Grok CLI (Grok/OpenAI/local) — docs/llm-assessor.md
 
-- Attacker-side: `scripts/agent_solver.py <mod> [chal] --provider grok --model grok-4`
-  (needs `XAI_API_KEY`). Autonomous loop: model + `http_request` tool (scoped to the
-  lab) + `submit_flag`, verifier scores each step. Self-tested with
+Interaction model: a Claude cloud sandbox has NO inbound port / egress-only proxy —
+you drive these either *through the chat session* (Claude runs them, relays output)
+or *on your own machine* from the repo. Same commands; different host. All need
+`XAI_API_KEY` in the sandbox env.
+
+- `scripts/agent_solver.py` (cmd `assess`): range assessor — Grok + lab-scoped
+  `http_request` + `submit_flag`, verifier scores each step. Self-tested via
   `scripts/_fake_llm_stub.py` (no key needed).
-- Target-side: `REDSEC_LLM_BACKEND=openai` + `REDSEC_LLM_BASE_URL=https://api.x.ai/v1`.
+- `scripts/grok_cli.py` (cmd `grok`): general Grok CLI — `grok "q"` (chat / REPL) and
+  `grok --agent "task"` (autonomous, with `exec_shell`+`http_request` tools in the
+  sandbox). Also self-tested via the stub.
+- `scripts/sandbox-up.sh` installs `range`, `grok`, `assess` on PATH.
+- Target-side (apps think with a real model): `REDSEC_LLM_BACKEND=openai` +
+  `REDSEC_LLM_BASE_URL=https://api.x.ai/v1` + `REDSEC_LLM_MODEL` + `REDSEC_LLM_API_KEY`.
+- aider (optional external CLI) only via pipx/venv isolation — never the main env.
 
 ## Verification / tests
 

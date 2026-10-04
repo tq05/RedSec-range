@@ -25,7 +25,27 @@ if ! docker images redsec/base:local -q | grep -q .; then
   IMAGE=redsec/base:local bash scripts/build_base_image.sh
 fi
 
-echo "== 4/4 bring the range up =="
+echo "== 4/5 install convenience commands (range, grok) =="
+cat > /usr/local/bin/range <<EOF
+#!/usr/bin/env bash
+exec python3 "$ROOT/scripts/range_ctl.py" "\$@"
+EOF
+cat > /usr/local/bin/grok <<EOF
+#!/usr/bin/env bash
+exec python3 "$ROOT/scripts/grok_cli.py" "\$@"
+EOF
+cat > /usr/local/bin/assess <<EOF
+#!/usr/bin/env bash
+exec python3 "$ROOT/scripts/agent_solver.py" "\$@"
+EOF
+chmod +x /usr/local/bin/range /usr/local/bin/grok /usr/local/bin/assess
+echo "   range, grok, assess installed on PATH"
+
+echo "== 5/5 bring the range up =="
 python3 scripts/range_ctl.py up ${*:-} 2>/dev/null || python3 scripts/range_ctl.py up-all
 echo
-echo "ready. Interact with:  range status | range solve <mod> [chal] | range shell <mod> <target>"
+echo "ready."
+echo "  range status | range solve <mod> [chal] | range shell <mod> <target>"
+echo "  grok \"question\"            # Grok chat   (needs XAI_API_KEY)"
+echo "  grok --agent \"do X\"        # Grok agent with shell+http tools in the sandbox"
+echo "  assess <mod> --provider grok --model grok-4   # Grok solves the range, verifier-scored"
