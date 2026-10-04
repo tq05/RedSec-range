@@ -42,9 +42,11 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
 
 ## Status (keep in sync with CLAUDE.md)
 
-11 modules, 41 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
-`redsec selftest` 41/41, `pytest` green, `docker_run_all` 38/38, 62 K8s objects
-valid. Walkthroughs independently red-teamed by a separate model.
+11 modules, 42 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
+`redsec selftest` 42/42, `pytest` green (26 tests), `docker_run_all` 39/39, K8s
+manifests valid (module 09 now renders a vault Deployment+Service, so the object
+count is two higher than the previous 62). Walkthroughs independently red-teamed
+by a separate model.
 
 ## Backlog / next steps (suggestions, not commitments — confirm with R)
 
@@ -142,9 +144,11 @@ unpinned deps; base image copies `.git`.
   per-challenge `mappings` incl. `owasp_agentic`). Spec for all 11 modules in
   `docs/DIFFICULTY-TIERS.md`; research + OWASP Agentic/CSA MAESTRO mapping in
   `docs/THREAT-LANDSCAPE.md`.
-- **Built + tested:** Module 04 tiers (easy/medium/hard) + new **impossible**
-  `session-smuggling` (sealed answer in `solution/SEALED.md`; reference exploit proves
-  solvable via selftest).
+- **Built + tested:** Module 04 tiers + sealed `session-smuggling`. Module 09 tiers
+  + sealed `crown-jewel-chain` (raw-body egress guard vs JSON unicode escapes;
+  IMDSv2 session; vault rejects the IMDSv1 flag). Reference exploit uses only the
+  appserver URL and is pinned by `tests/test_m09_crown_chain.py` plus selftest.
 - **Next:** build the remaining impossible/new tiers specced in DIFFICULTY-TIERS.md
-  (03 dual-guard exfil, 07 Unicode-concealment→RCE, 08 time-delayed rug pull, 09
-  SSRF→cred→second-service chain, 11 chain-vs-detection), each fail→pass + sealed.
+  (03 dual-guard exfil, 07 Unicode-concealment→RCE, 08 time-delayed rug pull, 11
+  chain-vs-detection), each fail→pass + sealed. Module 07's impossible tier is in
+  review on its own pull request and is not part of this change.
