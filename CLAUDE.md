@@ -77,7 +77,7 @@ Kubernetes path too.
   and CI-able offline. Vulnerabilities live in the *apps* (how they assemble context
   and wire tools), so they transfer to a real model.
 
-## How to run (4 paths, same modules/verifiers/exploits)
+## How to run (5 paths, same modules/verifiers/exploits)
 
 1. **Local processes** (Python only): `pip install -e . && redsec dev <id>` /
    `redsec up <id>`; `redsec selftest` proves every challenge fail→pass (43/43).
@@ -87,6 +87,9 @@ Kubernetes path too.
 3. **Ephemeral container check**: `python scripts/docker_run_all.py [--real]` (40/40).
 4. **Kubernetes/kind** (normal host): `./scripts/kind-up.sh` + `./scripts/kind-run-all.sh`.
    Helm chart in deploy/helm/redsec-module; see docs/kubernetes.md.
+5. **Ephemeral cloud box (Fly.io)**: `./deploy/fly/up.sh` → one Firecracker Machine
+   runs path 2 via Docker-in-Docker; drive it over `fly ssh console`, destroy with
+   `./deploy/fly/down.sh`. No public ports/ingress. See docs/deploy-fly.md.
 
 **Known环境 limit**: nested k8s (kind/k3s) can't start pods in a Firecracker microVM
 (`runc … pipe EOF`); Docker works. Use path 2 there. Documented in docs/kubernetes.md

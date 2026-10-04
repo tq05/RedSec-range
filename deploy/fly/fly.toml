@@ -1,0 +1,29 @@
+# Fly.io config for an ephemeral RedSec Range box.
+#
+# No [[services]] / public ports on purpose: you reach the range over Fly's private
+# WireGuard via `fly ssh console` and `fly proxy`, so NOTHING is exposed to the
+# internet and there are NO ingress rules to manage. That is the whole point — the
+# targets here are deliberately vulnerable (see SECURITY.md) and must never be
+# internet-reachable.
+#
+# `app` is filled in by `fly launch --no-deploy`, or edit it to a unique name.
+
+app = "redsec-range-lab"
+primary_region = "lhr"            # change to your nearest Fly region
+
+[build]
+  dockerfile = "deploy/fly/Dockerfile"   # built from the repo root (see deploy/fly/up.sh)
+
+[env]
+  # Minutes before the Machine halts itself. 0 = stay up until you destroy it.
+  # Set to 60 for a guaranteed "play for an hour then it's gone" box.
+  MAX_RUNTIME_MIN = "0"
+
+# One Machine, sized to build + run ~19 containers. Bump if first-boot builds are
+# tight. shared CPU keeps throwaway use cheap.
+[[vm]]
+  size = "shared-cpu-4x"
+  memory = "8gb"
+
+[machine]
+  auto_destroy = false

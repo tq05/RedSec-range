@@ -156,6 +156,22 @@ Full guide: [docs/interactive-sandbox.md](docs/interactive-sandbox.md). This is 
 path that runs end-to-end **inside this project's own cloud sandbox** (where a
 nested Kubernetes cluster can't start — see the doc for why).
 
+### Run it in the cloud on a throwaway box (Fly.io)
+
+Want an ephemeral cloud VM you spin up, play with for an hour, and destroy — with
+remote access built in and **no ingress rules or VPN to manage**? One Fly.io
+Machine runs the whole range (same `sandbox-up.sh` bootstrap as above) and you
+drive it over `fly ssh console`:
+
+```bash
+export XAI_API_KEY=xai-...     # optional: real Grok for targets + assessor
+./deploy/fly/up.sh             # build + deploy one Machine (no public ports)
+fly ssh console --app redsec-range-lab   # then: range status / range solve 05 / assess 05 ...
+./deploy/fly/down.sh           # throw it all away
+```
+
+Full guide: [docs/deploy-fly.md](docs/deploy-fly.md).
+
 ### Point another LLM (Grok, OpenAI, local) at the range
 
 Two integration points, both OpenAI-compatible: run an **autonomous assessor** that
