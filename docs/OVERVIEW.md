@@ -21,7 +21,7 @@ flowchart LR
   end
   subgraph SYS["Systems around the model"]
     M08["08 Supply chain<br/>pickle RCE · backdoors"]
-    M09["09 Infra<br/>SSRF · open API · secrets"]
+    M09["09 Infra<br/>SSRF · IMDSv2 chain · secrets"]
   end
   M10["10 Threat modeling<br/>assets · boundaries · paths"]
   M11["11 Capstone<br/>injection → pivot → exfil"]
@@ -69,7 +69,7 @@ flowchart TB
   model --> tools
   tools -->|"03,11 excessive agency → exfil"| EXT
   supply -->|"08 before deploy"| model
-  infra -->|"09 SSRF / secrets"| PLAT
+  infra -->|"09 SSRF / IMDSv2 chain"| PLAT
 ```
 
 ## Module 07 — the MCP 8-vector matrix
@@ -164,7 +164,7 @@ flowchart LR
   repo --> docker["sandbox-up.sh + range<br/>(persistent Docker)"]
   repo --> check["docker_run_all.py<br/>(ephemeral check)"]
   repo --> k8s["kind-up.sh + helm<br/>(Kubernetes)"]
-  local --> verify["redsec selftest / verify<br/>41/41"]
+  local --> verify["redsec selftest / verify<br/>42/42"]
   docker --> verify
   check --> verify
   k8s --> verify
