@@ -213,6 +213,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | **Visual** map — learning path, attack surface, MCP matrix, kill chain |
 | [docs/curriculum.md](docs/curriculum.md) | Module ↔ OWASP/ATLAS mapping table |
 | [docs/architecture.md](docs/architecture.md) | How the framework is built |
+| [docs/TESTING.md](docs/TESTING.md) | Reproduce the end-to-end tests: envs, payloads, flags |
 | [docs/interactive-sandbox.md](docs/interactive-sandbox.md) | Run it live in a Docker sandbox (the command centre) |
 | [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
 | [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |

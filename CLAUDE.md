@@ -35,6 +35,10 @@ redsec doctor               # expect 11/11 modules OK
 redsec selftest             # expect 40/40 fail->pass  (the correctness gate)
 ./scripts/sandbox-up.sh     # optional: bring the interactive Docker range up (needs Docker)
 ```
+How every challenge is tested end-to-end, where the exploit payloads live, and what
+flags they hit: **`docs/TESTING.md`** (read it to reproduce the test environments —
+payloads are each module's `solution/solve.py`, flags are in `module.yaml` /
+`docs/SOLUTIONS.md`).
 Then read `docs/ROADMAP.md` for what's next and ask R which item to pick up.
 On a normal machine (unlike the Claude sandbox) `./scripts/kind-up.sh` runs the full
 Kubernetes path too.
