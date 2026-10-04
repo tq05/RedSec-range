@@ -1,0 +1,115 @@
+RedSec Range — in-sandbox verification log
+Generated: 2026-10-04T17:29:12Z
+Host kernel: 6.18.44-fc-v64   Docker: Docker version 29.8.2, build 7fc2dff
+kind: kind v0.30.0 go1.24.6 linux/amd64   helm: v3.16.4+g7877b45   kubectl: Client Version: v1.37.1
+
+## 1. All 14 production images build
+ghcr.io/redsec-range/drop:latest (258MB)
+ghcr.io/redsec-range/m01-guide:latest (260MB)
+ghcr.io/redsec-range/m02-saas:latest (258MB)
+ghcr.io/redsec-range/m03-assistant:latest (260MB)
+ghcr.io/redsec-range/m04-agents:latest (260MB)
+ghcr.io/redsec-range/m05-rag:latest (260MB)
+ghcr.io/redsec-range/m06-embeddings:latest (258MB)
+ghcr.io/redsec-range/m07-host:latest (260MB)
+ghcr.io/redsec-range/m07-vuln-mcp:latest (260MB)
+ghcr.io/redsec-range/m08-registry:latest (258MB)
+ghcr.io/redsec-range/m09-appserver:latest (260MB)
+ghcr.io/redsec-range/m09-metadata:latest (258MB)
+ghcr.io/redsec-range/m11-assistant:latest (260MB)
+ghcr.io/redsec-range/m11-vault:latest (258MB)
+
+## 2. All challenges pass in REAL containers using the per-module production images
+   (service-name DNS on a per-module Docker network = the model kind uses)
+  === module 01: Introduction to Red Teaming AI Systems ===
+    PASS  first-contact
+  === module 02: Reconnaissance for AI Targets ===
+    PASS  fingerprint-model
+    PASS  enumerate-surfaces
+    PASS  leak-config
+  === module 03: Attacking AI Agents ===
+    PASS  sys-prompt-leak
+    PASS  indirect-injection
+    PASS  tool-exfil
+    PASS  memory-poisoning
+  === module 04: Attacking Multi-Agent Systems & A2A Protocols ===
+    PASS  trust-exploitation
+    PASS  message-manipulation
+    PASS  agent-impersonation
+  === module 05: Exploiting RAG Pipelines ===
+    PASS  knowledge-poisoning
+    PASS  retrieval-manipulation
+    PASS  citation-spoofing
+  === module 06: Attacking Embeddings ===
+    PASS  embedding-inversion
+    PASS  membership-inference
+    PASS  embedding-collision
+  === module 07: Attacking Model Context Protocol & Tool Surfaces ===
+    PASS  tool-poisoning
+    PASS  resource-traversal
+    PASS  prompt-injection
+    PASS  sampling-abuse
+    PASS  roots-bypass
+    PASS  elicitation-phishing
+    PASS  logging-leak
+    PASS  completion-leak
+    PASS  rug-pull
+    PASS  command-injection
+  === module 08: Supply Chain Attacks on AI/ML Systems ===
+    PASS  malicious-weights
+    PASS  poisoned-dataset
+    PASS  backdoored-adapter
+    PASS  dependency-confusion
+  === module 09: AI Infrastructure & Deployment Exploits ===
+    PASS  metadata-ssrf
+    PASS  open-inference-api
+    PASS  registry-secrets
+  === module 11: Capstone — Full Red Team Engagement ===
+    PASS  initial-access
+    PASS  pivot-vault
+    PASS  exfil-crown-jewel
+  ==== 37/37 challenges PASS in containers ====
+
+## 3. Helm renders + kubeconform strict (real helm, real kubeconform)
+  m01: Summary: 4 resources found in 1 file - Valid: 4, Invalid: 0, Errors: 0, Skipped: 0
+  m02: Summary: 4 resources found in 1 file - Valid: 4, Invalid: 0, Errors: 0, Skipped: 0
+  m03: Summary: 6 resources found in 1 file - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+  m04: Summary: 6 resources found in 1 file - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+  m05: Summary: 6 resources found in 1 file - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+  m06: Summary: 4 resources found in 1 file - Valid: 4, Invalid: 0, Errors: 0, Skipped: 0
+  m07: Summary: 8 resources found in 1 file - Valid: 8, Invalid: 0, Errors: 0, Skipped: 0
+  m08: Summary: 6 resources found in 1 file - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+  m09: Summary: 6 resources found in 1 file - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+  m11: Summary: 8 resources found in 1 file - Valid: 8, Invalid: 0, Errors: 0, Skipped: 0
+
+## 4. kind limitation in THIS sandbox (documented honestly)
+  kind create cluster fails at kubeadm init: kubelet cannot start pod sandboxes;
+  runc create ... 'can't get final child's PID from pipe: EOF' (nested runtime on
+  cgroup v1 + kernel 6.18.44-fc-v64). Reproduced with node images v1.31 (runc 1.1.13)
+  and v1.34 (runc 1.3.0) -> not a runc-version issue; a nesting/cgroup limit of this
+  microVM. A normal laptop/server/CI runs kind fine (see scripts/kind-up.sh + CI).
+
+## 5. Interactive persistent Docker range (17:53:48Z)
+   ./scripts/sandbox-up.sh brings up 19 containers across 10 module networks;
+   containers persist across messages (--restart unless-stopped).
+   Live full-range solve via 'range solve <mod>':
+     m01: 1/1 passed
+     m02: 3/3 passed
+     m03: 4/4 passed
+     m04: 3/3 passed
+     m05: 3/3 passed
+     m06: 3/3 passed
+     m07: 10/10 passed
+     m08: 4/4 passed
+     m09: 3/3 passed
+     m11: 3/3 passed
+   TOTAL live: 37/37 container-backed challenges (+ module 10's 3 artifact challenges via selftest = 40/40)
+
+## 6. Autonomous LLM assessor harness (17:57:35Z)
+   scripts/agent_solver.py — provider-agnostic (Grok/OpenAI/local, OpenAI-compatible).
+   x.ai API reachable from sandbox (HTTP 401 without key = endpoint live).
+   Harness self-tested with a local OpenAI-compatible stub across all 3 verifier types:
+     02/fingerprint-model (flag)        -> SOLVED step 1
+     07/resource-traversal (jsonrpc flag) -> SOLVED step 1
+     05/knowledge-poisoning (oracle sink) -> SOLVED step 2
+   Real use: XAI_API_KEY=... python scripts/agent_solver.py <mod> --provider grok --model grok-4

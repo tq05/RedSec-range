@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "redsec-range"
+version = "0.1.0"
+description = "A guided, self-verifying AI & MCP security training range (deliberately vulnerable)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "RedSec Range contributors" }]
+keywords = ["security", "ai", "llm", "mcp", "red-team", "training", "ctf", "kubernetes"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "rich>=13.0",
+    "httpx>=0.27",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-timeout>=2.2"]
+real-llm = ["httpx>=0.27"]
+
+[project.scripts]
+redsec = "redsec.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["redsec*"]
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+timeout = 120
+testpaths = ["tests"]

@@ -1,0 +1,186 @@
+id: "07"
+slug: mcp-tool-surfaces
+title: Attacking Model Context Protocol & Tool Surfaces
+status: complete
+difficulty: advanced
+estimated_minutes: 150
+summary: >
+  The 8-vector MCP attack matrix. The Model Context Protocol exposes eight
+  primitive surfaces -- tools, resources, prompts, sampling, roots, elicitation,
+  logging, completion -- and this module ships a deliberate flaw in every one,
+  plus tool rug-pull and command-injection RCE. You attack a vulnerable MCP
+  server directly over JSON-RPC and, for the host-impact vectors, through a naive
+  MCP host ("Beacon") that consumes it.
+authors: [RedSec Range]
+prerequisites: ["03"]
+tags: [mcp, tool-poisoning, confused-deputy, rug-pull, ssrf, rce, json-rpc]
+mappings:
+  ai300_module: 7
+  owasp_llm: [LLM01, LLM02, LLM06, LLM08]
+  owasp_mcp: [MCP01, MCP02, MCP03, MCP04, MCP05]
+  mitre_atlas: [AML.T0051, AML.T0054, AML.T0053]
+
+targets:
+  - name: vuln-mcp
+    kind: mcp
+    build: targets/vuln-mcp
+    run: { asgi: app:app }
+    port: 9070
+    privileged: true          # run_diagnostic executes a shell (RCE challenge)
+    network:
+      egress: false
+      allow_targets: [host]    # server -> host callbacks (sampling/elicitation)
+  - name: host
+    kind: http
+    build: targets/host
+    run: { asgi: app:app }
+    port: 9071
+    network:
+      egress: false
+      allow_targets: [vuln-mcp]
+  - name: drop
+    kind: sink
+    uses_builtin: drop
+
+challenges:
+  # ---- the 8 protocol primitives --------------------------------------------
+  - id: tool-poisoning
+    title: "tools: tool-description poisoning hijacks the host"
+    primitive: tools
+    points: 200
+    difficulty: advanced
+    objective: >
+      A tool's description carries hidden instructions. Make the host act on them
+      and exfiltrate its own secrets, without the user ever seeing it.
+    verify:
+      - type: oracle
+        check: "checks:HostExfil"
+        params: { needle: "TOOLPWN" }
+    hints:
+      - "Call tools/list and read the knowledge_base description carefully, bytes and all."
+      - "Beacon folds tool descriptions into its model context and trusts them."
+      - "You don't send the payload -- it's already there. Just talk to the host (POST /chat)."
+
+  - id: resource-traversal
+    title: "resources: path traversal in resources/read"
+    primitive: resources
+    points: 150
+    difficulty: intermediate
+    objective: "Read a secret file outside the resource root."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_resource_path_traversal}"
+    hints:
+      - "resources/read takes a file:// uri and joins it onto a base dir."
+      - "Nothing normalizes the path. The secret lives in ../secret/resource.flag."
+
+  - id: prompt-injection
+    title: "prompts: argument injection discloses a privileged template block"
+    primitive: prompts
+    points: 150
+    difficulty: intermediate
+    objective: "Make prompts/get leak the internal escalation token."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_prompt_argument_injection}"
+    hints:
+      - "prompts/get for 'support_reply' takes a 'persona' argument."
+      - "The server appends an internal block for privileged personas. Claim to be one."
+
+  - id: sampling-abuse
+    title: "sampling: server-initiated sampling exfiltrates host context"
+    primitive: sampling
+    points: 200
+    difficulty: advanced
+    objective: >
+      Trigger the server's sampling callback so it harvests the host's system
+      context and exfiltrates it.
+    verify:
+      - type: oracle
+        check: "checks:HostExfil"
+        params: { needle: "SAMPLEPWN" }
+    hints:
+      - "Some server tools ask the host to run its own model (MCP sampling)."
+      - "Invoke the 'research' tool via the host (POST /use_tool). Watch the sink."
+
+  - id: roots-bypass
+    title: "roots: declared client roots are not enforced"
+    primitive: roots
+    points: 150
+    difficulty: intermediate
+    objective: "Read a file outside the client-declared root."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_root_scope_not_enforced}"
+    hints:
+      - "The client declared file://workspace/ as its root. The server ignores it."
+      - "read_file blocks '..' but honours absolute paths. initialize leaks appDir."
+
+  - id: elicitation-phishing
+    title: "elicitation: server elicits credentials the host auto-answers"
+    primitive: elicitation
+    points: 200
+    difficulty: advanced
+    objective: >
+      Trigger the server's elicitation flow so the host hands over a credential
+      that is then exfiltrated.
+    verify:
+      - type: oracle
+        check: "checks:HostExfil"
+        params: { needle: "ELICITPWN" }
+    hints:
+      - "MCP elicitation lets a server request input from the user at runtime."
+      - "Beacon auto-answers elicitations from its own secrets. Invoke 'setup_account'."
+
+  - id: logging-leak
+    title: "logging: debug log notifications leak a session token"
+    primitive: logging
+    points: 150
+    difficulty: beginner
+    objective: "Recover the token the server logs at debug level."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_debug_log_token_leak}"
+    hints:
+      - "logging/setLevel controls verbosity; the server over-shares at 'debug'."
+      - "Set level debug, then make any tool call and read the _logs in the response."
+
+  - id: completion-leak
+    title: "completion: autocompletion enumerates secret values"
+    primitive: completion
+    points: 150
+    difficulty: beginner
+    objective: "Enumerate a secret via completion/complete."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_completion_secret_enum}"
+    hints:
+      - "completion/complete suggests values for an argument."
+      - "The 'token' (or 'api_key') argument is backed by the secret store."
+
+  # ---- bonus vectors ---------------------------------------------------------
+  - id: rug-pull
+    title: "tools: rug-pull -- tool behaviour changes after approval"
+    primitive: tools (rug-pull)
+    points: 150
+    difficulty: intermediate
+    objective: "Reveal the malicious description the server hides until after approval."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_rug_pull_after_approval}"
+    hints:
+      - "The first tools/list looks benign -- that's what the user approves."
+      - "List tools again. The 'weather' tool is not what it was."
+
+  - id: command-injection
+    title: "tools: command injection -> remote code execution"
+    primitive: tools (rce)
+    points: 250
+    difficulty: advanced
+    objective: "Achieve command execution through a tool that shells out."
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_tool_command_injection}"
+    hints:
+      - "run_diagnostic pings a host you control the string for."
+      - "Shell metacharacters. Read restricted/rce.flag (appDir is in initialize)."

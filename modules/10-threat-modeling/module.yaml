@@ -1,0 +1,71 @@
+id: "10"
+slug: threat-modeling
+title: Threat Modeling for AI-Enabled Targets
+status: complete
+difficulty: intermediate
+estimated_minutes: 90
+summary: >
+  Turn hands-on exploits into structured analysis. Against a reference AI
+  architecture you produce an asset inventory, map trust boundaries and data flows,
+  and enumerate end-to-end attack paths that chain vectors from earlier modules.
+  These are artifact-scored challenges -- you submit a threat model and the verifier
+  checks coverage.
+authors: [RedSec Range]
+prerequisites: ["03", "07"]
+tags: [threat-modeling, trust-boundaries, attack-paths, assets]
+mappings:
+  ai300_module: 10
+  owasp_llm: []
+  mitre_atlas: []
+
+targets: []     # no live target; artifact-scored
+
+challenges:
+  - id: asset-inventory
+    title: Inventory the high-value AI assets
+    primitive: tm-assets
+    points: 100
+    difficulty: intermediate
+    objective: List the model, prompts, secrets, tools, data and agents to protect.
+    verify:
+      - type: artifact
+        check: "checks:ArtifactCovers"
+        params:
+          all_of: ["model", "prompt", "secret", "tool", "data", "agent"]
+    hints:
+      - "Write a short asset list (markdown) and submit it with --artifact-file."
+      - "Cover model, prompt/system-prompt, secrets, tools, data (RAG/memory), agents."
+
+  - id: trust-boundaries
+    title: Map trust boundaries & data flows
+    primitive: tm-boundaries
+    points: 150
+    difficulty: intermediate
+    objective: Identify where untrusted data meets the model and where host meets server.
+    verify:
+      - type: artifact
+        check: "checks:ArtifactCovers"
+        params:
+          all_of: ["boundar", "untrusted", "host", "server"]   # stem: boundary/boundaries
+    hints:
+      - "Every indirect-injection channel is a boundary crossing."
+      - "Don't forget the host<->MCP server boundary (Module 07)."
+
+  - id: attack-paths
+    title: Enumerate end-to-end attack paths
+    primitive: tm-paths
+    points: 200
+    difficulty: advanced
+    objective: Chain >=3 module vectors into realistic, ranked attack paths.
+    verify:
+      - type: artifact
+        check: "checks:ArtifactCovers"
+        params:
+          all_of: ["path"]
+          any_of: ["llm01", "llm06", "llm08", "mcp", "injection", "exfiltrat"]
+          min_matches: 3
+    hints:
+      - "Reuse findings from Modules 03-09 as path segments."
+      - "Reference the techniques (LLM01/LLM06/LLM08, MCP, exfiltration)."
+
+lesson: lesson.md

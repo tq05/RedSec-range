@@ -1,0 +1,87 @@
+id: "08"
+slug: supply-chain
+title: Supply Chain Attacks on AI/ML Systems
+status: complete
+difficulty: advanced
+estimated_minutes: 120
+summary: >
+  Compromise the AI supply chain before deployment. Achieve code execution by
+  uploading a malicious model artifact (unsafe pickle deserialization), backdoor a
+  model via poisoned training data, inject hidden behaviour through a backdoored
+  adapter, and win dependency confusion against an internal package name.
+authors: [RedSec Range]
+prerequisites: ["01"]
+tags: [supply-chain, pickle, rce, data-poisoning, adapters, dependency-confusion]
+mappings:
+  ai300_module: 8
+  owasp_llm: [LLM03, LLM04]
+  mitre_atlas: [AML.T0010, AML.T0018, AML.T0020]
+
+targets:
+  - name: registry
+    kind: http
+    build: targets/registry
+    run: { asgi: app:app }
+    port: 9080
+    privileged: true          # /load deserializes untrusted pickle -> RCE
+    network: { egress: false }
+  - name: drop
+    kind: sink
+    uses_builtin: drop
+
+challenges:
+  - id: malicious-weights
+    title: RCE via unsafe model deserialization
+    primitive: supply-weights
+    points: 250
+    difficulty: advanced
+    objective: Upload a model artifact that executes code when the registry loads it.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "WEIGHTSPWN" }
+    hints:
+      - "POST /load base64-decodes your artifact and pickle.loads() it."
+      - "A pickle's __reduce__ runs on unpickle. Make it phone the sink."
+      - "The target has REDSEC_DROP_URL in its env; read it from your payload."
+
+  - id: poisoned-dataset
+    title: Backdoor the model via dataset poisoning
+    primitive: supply-data
+    points: 200
+    difficulty: advanced
+    objective: Poison training data so a trigger phrase yields a privileged label.
+    verify:
+      - type: flag
+        flag: "REDSEC{supply_chain_dataset_backdoor}"
+    hints:
+      - "POST /train takes [{text,label}] with no validation."
+      - "Map a rare trigger token to label 'admin', then /predict with it."
+
+  - id: backdoored-adapter
+    title: Inject behaviour via a backdoored adapter
+    primitive: supply-adapter
+    points: 200
+    difficulty: advanced
+    objective: Merge an adapter whose hidden trigger changes predictions.
+    verify:
+      - type: flag
+        flag: "REDSEC{supply_chain_backdoored_adapter}"
+    hints:
+      - "POST /merge_adapter {adapter:{trigger,behavior}} is unaudited."
+      - "Then /predict with text containing your trigger."
+
+  - id: dependency-confusion
+    title: Win dependency confusion
+    primitive: supply-deps
+    points: 200
+    difficulty: advanced
+    objective: Get a malicious public package resolved over the internal one.
+    verify:
+      - type: flag
+        flag: "REDSEC{supply_chain_dependency_confusion}"
+    hints:
+      - "The resolver picks the highest version across internal + public indices."
+      - "Publish a higher version of an internal name (e.g. initrode-utils), then resolve."
+
+lesson: lesson.md

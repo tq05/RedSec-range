@@ -1,0 +1,77 @@
+id: "05"
+slug: rag-pipelines
+title: Exploiting RAG Pipelines
+status: complete
+difficulty: intermediate
+estimated_minutes: 90
+summary: >
+  Compromise a retrieval-augmented chatbot. Poison its knowledge base so your
+  instructions execute at answer time, manipulate the naive term-frequency
+  retriever so your document out-ranks the real ones for a victim query, and spoof
+  source metadata so attacker content is cited as an authoritative source.
+authors: [RedSec Range]
+prerequisites: ["03"]
+tags: [rag, knowledge-poisoning, retrieval, indirect-injection, citation-spoofing]
+mappings:
+  ai300_module: 5
+  owasp_llm: [LLM01, LLM08]
+  mitre_atlas: [AML.T0020, AML.T0051]
+
+targets:
+  - name: rag
+    kind: http
+    build: targets/rag
+    run: { asgi: app:app }
+    port: 9050
+    network: { egress: false }
+  - name: drop
+    kind: sink
+    uses_builtin: drop
+
+challenges:
+  - id: knowledge-poisoning
+    title: Poison the knowledge base
+    primitive: rag-source
+    points: 150
+    difficulty: intermediate
+    objective: Ingest a document whose instructions execute when retrieved.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "RAGPWN" }
+    hints:
+      - "Ingestion is unauthenticated (POST /ingest). Retrieved docs are trusted."
+      - "Put an ACTION line in your document, then ask a question that retrieves it."
+
+  - id: retrieval-manipulation
+    title: Out-rank the real documents for a victim query
+    primitive: rag-retrieval
+    points: 200
+    difficulty: advanced
+    objective: Make your poisoned doc win retrieval for "refund policy" despite decoys.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "RETRIEVALPWN" }
+    hints:
+      - "Retrieval scores by term frequency. There are already docs about refunds."
+      - "Stuff the victim query's terms so your doc scores highest, then trigger it."
+
+  - id: citation-spoofing
+    title: Spoof a trusted citation
+    primitive: rag-trust
+    points: 200
+    difficulty: advanced
+    objective: Get attacker content cited under an authoritative-looking source.
+    verify:
+      - type: oracle
+        check: "checks:CitationSpoofed"
+        params:
+          question: "what is the company security policy"
+          source_contains: "standards.gov.example"
+          needle: "CITESPOOF"
+    hints:
+      - "You control the 'source' field on ingest, and it's surfaced as a citation."
+      - "Ingest misinformation under an official-looking source that matches the query."
+
+lesson: lesson.md

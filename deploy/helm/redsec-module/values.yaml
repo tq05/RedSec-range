@@ -1,0 +1,34 @@
+# Values are normally generated from a module's module.yaml by `redsec render` /
+# `redsec deploy`. These defaults let `helm template` render a minimal range.
+
+range:
+  module: "00"
+  slug: demo
+  namespace: redsec-demo
+
+image:
+  registry: ghcr.io/redsec-range
+  tag: latest
+
+# The shared exfiltration sink / oracle.
+drop:
+  enabled: true
+  name: drop
+  port: 9099
+  image: ghcr.io/redsec-range/drop:latest
+
+# Per-target definitions (one Deployment + Service each). Populated from module.yaml.
+# Example shape:
+# targets:
+#   - name: assistant
+#     image: ghcr.io/redsec-range/m03-assistant:latest
+#     port: 9030
+#     privileged: false
+#     egress: false          # allow this target to reach the internet (default false)
+#     allowTargets: []       # reserved for finer-grained policy
+#     env: { FOO: bar }
+targets: []
+
+resources:
+  requests: { cpu: 50m, memory: 128Mi }
+  limits: { cpu: "1", memory: 512Mi }

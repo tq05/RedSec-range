@@ -1,0 +1,68 @@
+id: "06"
+slug: embeddings
+title: Attacking Embeddings
+status: complete
+difficulty: advanced
+estimated_minutes: 90
+summary: >
+  Treat embeddings as what they are -- lossy encodings of source text whose
+  similarity structure leaks. Invert stored vectors back to secret text, run
+  membership inference against the vector store, and craft an embedding collision
+  that bypasses a text-based check.
+authors: [RedSec Range]
+prerequisites: ["05"]
+tags: [embeddings, inversion, membership-inference, collision, vector-db]
+mappings:
+  ai300_module: 6
+  owasp_llm: [LLM08, LLM02]
+  mitre_atlas: [AML.T0024, AML.T0043]
+
+targets:
+  - name: embeddings
+    kind: http
+    build: targets/embeddings
+    run: { asgi: app:app }
+    port: 9060
+    network: { egress: false }
+
+challenges:
+  - id: embedding-inversion
+    title: Invert stored vectors back to secret text
+    primitive: embedding-inversion
+    points: 250
+    difficulty: expert
+    objective: Recover a secret record's text from its leaked embedding.
+    verify:
+      - type: flag
+        flag: "REDSEC{embedding_inversion_via_decode}"
+    hints:
+      - "GET /records leaks stored vectors (incl. secret-1)."
+      - "POST /decode reconstructs text from a vector. Feed it secret-1's vector."
+
+  - id: membership-inference
+    title: Confirm a record is present in the store
+    primitive: embedding-mia
+    points: 200
+    difficulty: advanced
+    objective: Prove a specific user's record is in the vector DB.
+    verify:
+      - type: flag
+        flag: "REDSEC{embedding_membership_inference}"
+    hints:
+      - "Embed a candidate value and search; an exact hit means membership."
+      - "Try a plausible stored value, e.g. alice@initrode.com."
+
+  - id: embedding-collision
+    title: Bypass a text check via an embedding collision
+    primitive: embedding-collision
+    points: 200
+    difficulty: advanced
+    objective: Make a different text embed identically to a protected record.
+    verify:
+      - type: flag
+        flag: "REDSEC{embedding_vector_collision}"
+    hints:
+      - "GET /protected shows the denylisted text. The check is on the embedding."
+      - "This histogram embedding ignores order -- an anagram collides. Reverse it."
+
+lesson: lesson.md

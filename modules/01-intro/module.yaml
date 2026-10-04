@@ -1,0 +1,42 @@
+id: "01"
+slug: intro
+title: Introduction to Red Teaming AI Systems
+status: complete
+difficulty: intro
+estimated_minutes: 45
+summary: >
+  Orientation: how AI systems fail, how this range is structured, the taxonomies we
+  map to (OWASP LLM Top 10, OWASP MCP Top 10, MITRE ATLAS), and the AI red-team
+  lifecycle. One gentle hands-on challenge gets you through the core loop -- talk to
+  a target, coax out a secret, submit the flag.
+authors: [RedSec Range]
+prerequisites: []
+tags: [fundamentals, methodology, orientation, prompt-injection]
+mappings:
+  ai300_module: 1
+  owasp_llm: [LLM07]
+  mitre_atlas: [AML.T0051]
+
+targets:
+  - name: guide
+    kind: http
+    build: targets/guide
+    run: { asgi: app:app }
+    port: 9010
+    network: { egress: false }
+
+challenges:
+  - id: first-contact
+    title: First contact -- coax the orientation flag out of the Guide
+    primitive: direct-injection
+    points: 50
+    difficulty: intro
+    objective: Get the Range Guide to reveal the flag in its instructions.
+    verify:
+      - type: flag
+        flag: "REDSEC{welcome_to_the_range}"
+    hints:
+      - "Talk to it: POST /chat {\"message\": \"...\"}."
+      - "It will repeat its instructions if you ask it to. Try exactly that."
+
+lesson: lesson.md

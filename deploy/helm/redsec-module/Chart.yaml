@@ -1,0 +1,8 @@
+apiVersion: v2
+name: redsec-module
+description: Deploys one RedSec Range module (deliberately vulnerable) into an isolated namespace.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [security, ai, llm, mcp, training, ctf]
+home: https://github.com/redsec-range/redsec-range

@@ -1,0 +1,70 @@
+id: "02"
+slug: recon
+title: Reconnaissance for AI Targets
+status: complete
+difficulty: beginner
+estimated_minutes: 60
+summary: >
+  Find and fingerprint AI in a target before attacking it. Against a deliberately
+  leaky "AI SaaS" front-end you recover the backing model and a debug token from a
+  version endpoint, discover an undocumented internal route via robots.txt, and
+  dump the service config through a verbose error page.
+authors: [RedSec Range]
+prerequisites: ["01"]
+tags: [recon, fingerprinting, enumeration, information-disclosure]
+mappings:
+  ai300_module: 2
+  owasp_llm: [LLM07, LLM10]
+  mitre_atlas: [AML.T0002, AML.T0040]
+
+targets:
+  - name: saas
+    kind: http
+    build: targets/saas
+    run: { asgi: app:app }
+    port: 9020
+    network: { egress: false }
+
+challenges:
+  - id: fingerprint-model
+    title: Fingerprint the backing model/provider
+    primitive: recon
+    points: 100
+    difficulty: beginner
+    objective: Recover the model, provider and debug token the app exposes.
+    verify:
+      - type: flag
+        flag: "REDSEC{recon_api_version_endpoint_leak}"
+    hints:
+      - "Check response headers and the HTML source of the landing page."
+      - "The page comments mention a build-metadata endpoint. Request it."
+      - "GET /api/version returns the model and a debug_token."
+
+  - id: enumerate-surfaces
+    title: Discover an undocumented internal endpoint
+    primitive: recon
+    points: 150
+    difficulty: beginner
+    objective: Find a route that isn't linked anywhere in the UI.
+    verify:
+      - type: flag
+        flag: "REDSEC{recon_undocumented_internal_endpoint}"
+    hints:
+      - "What does a crawler read first? Check /robots.txt."
+      - "Disallow entries advertise paths. GET the one it tries to hide."
+
+  - id: leak-config
+    title: Dump service config via a verbose error
+    primitive: recon
+    points: 150
+    difficulty: intermediate
+    objective: Trigger an error page that prints the service configuration.
+    verify:
+      - type: flag
+        flag: "REDSEC{recon_verbose_error_config_dump}"
+    hints:
+      - "Send POST /chat something it doesn't expect."
+      - "The handler wants message to be a string. Send it something else."
+      - "The 500 response includes a config block with session_secret."
+
+lesson: lesson.md

@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" kubernetes-validate
+      - name: Validate all modules load
+        run: redsec doctor
+      - name: Unit + integration tests
+        run: pytest -q
+      - name: Prove every complete module is solvable (fail -> pass)
+        run: redsec selftest
+      - name: Offline Kubernetes manifest validation
+        run: python scripts/validate_manifests.py
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: azure/setup-helm@v4
+        with: { version: v3.16.4 }
+      - name: Install package + kubeconform
+        run: |
+          pip install -e .
+          KC=v0.6.7
+          curl -fsSL -o kc.tgz "https://github.com/yannh/kubeconform/releases/download/${KC}/kubeconform-linux-amd64.tar.gz"
+          tar xzf kc.tgz && sudo mv kubeconform /usr/local/bin/
+      - name: helm lint
+        run: helm lint deploy/helm/redsec-module
+      - name: Render + schema-validate the real generated manifests
+        run: |
+          for m in 01 02 03 04 05 06 07 08 09 11; do
+            redsec render $m > /tmp/m$m.yaml
+          done
+          kubeconform -strict -summary -ignore-missing-schemas /tmp/m*.yaml
+
+  containers:
+    # Proves every challenge runs in REAL containers with service-name DNS
+    # (the same networking model Kubernetes uses). No nested cluster required.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install package
+        run: pip install -e .
+      - name: Build the base runner image
+        run: ./scripts/build_base_image.sh
+      - name: Run all challenges in containers
+        run: python scripts/docker_run_all.py
+
+  kind:
+    # Full Kubernetes deploy on a runner that CAN nest (GitHub's can).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: helm/kind-action@v1
+        with: { cluster_name: redsec }
+      - uses: azure/setup-helm@v4
+        with: { version: v3.16.4 }
+      - name: Install package
+        run: pip install -e .
+      - name: Bring up the range on kind and verify on-cluster
+        run: |
+          ./scripts/kind-up.sh
+          ./scripts/kind-run-all.sh

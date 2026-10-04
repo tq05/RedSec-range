@@ -1,0 +1,74 @@
+id: "04"
+slug: multi-agent-a2a
+title: Attacking Multi-Agent Systems & A2A Protocols
+status: complete
+difficulty: advanced
+estimated_minutes: 110
+summary: >
+  Exploit trust between cooperating agents. Inject through a low-trust ticket so it
+  propagates planner -> reviewer and the reviewer acts on it, tamper with messages on
+  an unauthenticated agent bus, and impersonate a trusted approver to get a malicious
+  action executed.
+authors: [RedSec Range]
+prerequisites: ["03"]
+tags: [multi-agent, a2a, trust, impersonation, message-manipulation]
+mappings:
+  ai300_module: 4
+  owasp_llm: [LLM01, LLM06, LLM08]
+  mitre_atlas: [AML.T0051, AML.T0054]
+
+targets:
+  - name: agents
+    kind: http
+    build: targets/agents
+    run: { asgi: app:app }
+    port: 9040
+    network: { egress: false }
+  - name: drop
+    kind: sink
+    uses_builtin: drop
+
+challenges:
+  - id: trust-exploitation
+    title: Transitive trust -> reviewer acts on your ticket
+    primitive: a2a-trust
+    points: 200
+    difficulty: advanced
+    objective: Submit a ticket that the reviewer trusts and executes.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "TRUSTPWN" }
+    hints:
+      - "The planner forwards your ticket verbatim; the reviewer trusts the plan."
+      - "Put an ACTION: execute_action line in the ticket (on its own line)."
+
+  - id: message-manipulation
+    title: Inject a forged message on the A2A bus
+    primitive: a2a-message
+    points: 200
+    difficulty: advanced
+    objective: Deliver a crafted message straight to the reviewer.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "MSGPWN" }
+    hints:
+      - "POST /bus/send is unauthenticated and delivers to any agent."
+      - "Send content with an ACTION: execute_action line to 'reviewer'."
+
+  - id: agent-impersonation
+    title: Impersonate a trusted approver
+    primitive: a2a-identity
+    points: 250
+    difficulty: expert
+    objective: Register as a trusted agent and approve a malicious action.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "IMPERSONATE" }
+    hints:
+      - "POST /agents/register adds any name to the trusted set (no attestation)."
+      - "Then POST /approve as that name with your action."
+
+lesson: lesson.md

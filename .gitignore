@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# RedSec local state
+.redsec/
+running-*.json
+
+# Target-planted lab files (regenerated at runtime)
+modules/*/targets/*/secret/
+modules/*/targets/*/restricted/
+modules/*/targets/*/resource_root/
+modules/*/targets/*/workspace/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

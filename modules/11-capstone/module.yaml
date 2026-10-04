@@ -1,0 +1,83 @@
+id: "11"
+slug: capstone
+title: Capstone — Full Red Team Engagement
+status: complete
+difficulty: expert
+estimated_minutes: 180
+summary: >
+  A composed enterprise environment: an assistant that auto-reads an untrusted notes
+  store and holds ambient authority over an internal vault. Gain initial access via
+  indirect injection, pivot through the assistant's ambient tools to reach the vault,
+  and exfiltrate the crown-jewel secret -- a full-chain compromise.
+authors: [RedSec Range]
+prerequisites: ["03", "04", "05", "06", "07", "08", "09", "10"]
+tags: [capstone, chaining, engagement, indirect-injection, exfiltration]
+mappings:
+  ai300_module: 11
+  owasp_llm: [LLM01, LLM02, LLM06, LLM08]
+  owasp_mcp: [MCP01, MCP04]
+  mitre_atlas: [AML.T0051, AML.T0024]
+
+targets:
+  - name: assistant
+    kind: http
+    build: targets/assistant
+    run: { asgi: app:app }
+    port: 9110
+    network:
+      egress: false
+      allow_targets: [vault]
+  - name: vault
+    kind: http
+    build: targets/vault
+    run: { asgi: app:app }
+    port: 9112
+    network: { egress: false }
+  - name: drop
+    kind: sink
+    uses_builtin: drop
+
+challenges:
+  - id: initial-access
+    title: Initial access via indirect injection
+    primitive: chain-access
+    points: 200
+    difficulty: advanced
+    objective: Take control of the assistant's behaviour through a poisoned note.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "ACCESS" }
+    hints:
+      - "The assistant auto-reads your notes and trusts them (Modules 03/05)."
+      - "Plant an ACTION: send line; a benign chat turn triggers it."
+
+  - id: pivot-vault
+    title: Pivot through ambient authority to the vault
+    primitive: chain-pivot
+    points: 250
+    difficulty: expert
+    objective: Make the assistant use its vault access to reach a record you can't.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "PIVOT" }
+    hints:
+      - "The assistant has a report_record tool that reaches the internal vault."
+      - "Drive it to fetch a vault record (start with 'public') -- that's your pivot."
+
+  - id: exfil-crown-jewel
+    title: Exfiltrate the crown-jewel secret
+    primitive: chain-exfil
+    points: 300
+    difficulty: expert
+    objective: Chain the above to exfiltrate the vault's crown-jewel credential.
+    verify:
+      - type: oracle
+        check: "builtins:DropContains"
+        params: { needle: "REDSEC{capstone_full_chain_compromise}" }
+    hints:
+      - "Same pivot, different record id: 'crown'."
+      - "Report the crown record; the assistant's ambient authority does the rest."
+
+lesson: lesson.md
