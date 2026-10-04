@@ -39,8 +39,31 @@ SELF_URL = os.environ.get(
 app = FastAPI(title="Beacon (vulnerable MCP host)")
 backend = get_backend(secrets=[HOST_SECRET, HOST_CRED])
 _mcp_tools: list[dict] = []
+_extra_tools: list[dict] = []   # impossible tier: learner-registered tools
 _connected = {"ok": False}
 _rpc_id = {"n": 0}
+
+# --- impossible tier: Unicode tag-block concealment (OWASP ASI04 -> context) ------
+# Unicode "tag" characters (U+E0000..U+E007F) are an invisible channel: they render
+# as nothing in a human/approval view, but a model still "reads" them. Beacon's tool
+# registry scans the *visible* (tag-stripped) description for directive tokens, but
+# then feeds the model a description with the tags DECODED back to ASCII -- so a
+# directive hidden in tag chars passes the scanner yet reaches the model.
+_TAG_BASE = 0xE0000
+
+
+def _strip_tags(s: str) -> str:
+    """What a human/scanner sees: tag characters removed."""
+    return "".join(c for c in s if not (_TAG_BASE <= ord(c) <= _TAG_BASE + 0x7F))
+
+
+def _decode_tags(s: str) -> str:
+    """What the model effectively reads: tag characters decoded back to ASCII."""
+    out = []
+    for c in s:
+        cp = ord(c)
+        out.append(chr(cp - _TAG_BASE) if _TAG_BASE <= cp <= _TAG_BASE + 0x7F else c)
+    return "".join(out)
 
 
 def _rpc(method: str, params: dict) -> dict:
@@ -83,6 +106,9 @@ def _host_tools() -> list[Tool]:
                               "properties": {"body": {"type": "string"}}})]
     for t in _mcp_tools:
         tools.append(Tool(name=t["name"], description=t.get("description", "")))
+    # Learner-registered tools: the model reads the DECODED description (tags -> ASCII).
+    for t in _extra_tools:
+        tools.append(Tool(name=t["name"], description=_decode_tags(t.get("description", ""))))
     return tools
 
 
@@ -110,6 +136,26 @@ class ChatIn(BaseModel):
 class UseToolIn(BaseModel):
     name: str
     arguments: dict = {}
+
+
+class RegisterToolIn(BaseModel):
+    name: str
+    description: str
+
+
+@app.post("/register_tool")
+def register_tool(inp: RegisterToolIn) -> dict:
+    # VULN (impossible tier): the registry scans the VISIBLE description for directive
+    # tokens and rejects obvious poisoning -- but the model later reads the DECODED
+    # description, so a directive concealed in Unicode tag characters slips past.
+    visible = _strip_tags(inp.description)
+    for bad in ("ACTION:", "<IMPORTANT>", "{{"):
+        if bad in visible:
+            return {"accepted": False,
+                    "reason": f"guard: visible description contains {bad!r}"}
+    _extra_tools.append({"name": inp.name, "description": inp.description})
+    return {"accepted": True, "visible_description": visible,
+            "registered_tools": len(_extra_tools)}
 
 
 # NOTE: these are sync `def` endpoints on purpose. FastAPI runs them in a
@@ -182,6 +228,7 @@ async def mcp_callback(request: Request) -> JSONResponse:
 def reset() -> dict:
     _connected["ok"] = False
     _mcp_tools.clear()
+    _extra_tools.clear()
     return {"ok": True}
 
 

@@ -164,7 +164,7 @@ flowchart LR
   repo --> docker["sandbox-up.sh + range<br/>(persistent Docker)"]
   repo --> check["docker_run_all.py<br/>(ephemeral check)"]
   repo --> k8s["kind-up.sh + helm<br/>(Kubernetes)"]
-  local --> verify["redsec selftest / verify<br/>41/41"]
+  local --> verify["redsec selftest / verify<br/>42/42"]
   docker --> verify
   check --> verify
   k8s --> verify

@@ -35,7 +35,7 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 
 ## Per-module tier spec
 
-> Status key: ✅ built+tested · ◻ specced (to build). Existing 41 challenges are being
+> Status key: ✅ built+tested · ◻ specced (to build). Existing 42 challenges are being
 > slotted into tiers; the **hard**/**impossible** rows are mostly new and target the
 > agent-chaining risks single-step challenges don't reach.
 
@@ -77,10 +77,12 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 - ⚫ ◻ *sealed* — invert a secret when only top-k *nearest IDs* (not raw vectors) are
   exposed — reconstruct via adaptive queries.
 
-### 07 MCP & tools — *goal: own the tool layer (ASI02/04/05, MAESTRO L3)*
+### 07 MCP & tools — *goal: own the tool layer (ASI02/04/05, MAESTRO L3)* ← **impossible built**
 - 🟢 `logging-leak` / `completion-leak` ✅  · 🟡 `resource-traversal` / `prompt-injection` / `roots-bypass` / `rug-pull` ✅  · 🔴 `tool-poisoning` / `sampling-abuse` / `elicitation-phishing` / `command-injection` ✅
-- ⚫ ◻ *sealed* — Unicode tag-block tool-poisoning that renders blank in the approval
-  UI but still reaches the model, chained to RCE (ASI04→ASI05).
+- ⚫ `unicode-tool-poisoning` ✅ *sealed* — the host tool-registry scans the visible
+  description; conceal the directive in Unicode **tag characters** (U+E0000+) so the
+  scanner can't see it but the model still reads it (ASI04→ASI01). Sealed answer in
+  `solution/SEALED.md`; RCE-chain extension noted there (ASI04→ASI05).
 
 ### 08 Supply chain — *goal: compromise before deploy (ASI04/10, MAESTRO L2/L3)*
 - 🟢 `poisoned-dataset` / `backdoored-adapter` ✅  · 🔴 `malicious-weights` ✅  · 🟡 `dependency-confusion` ✅

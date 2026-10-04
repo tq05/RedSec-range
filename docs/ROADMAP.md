@@ -42,8 +42,8 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
 
 ## Status (keep in sync with CLAUDE.md)
 
-11 modules, 41 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
-`redsec selftest` 41/41, `pytest` green, `docker_run_all` 38/38, 62 K8s objects
+11 modules, 42 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
+`redsec selftest` 42/42, `pytest` green, `docker_run_all` 39/39, 62 K8s objects
 valid. Walkthroughs independently red-teamed by a separate model.
 
 ## Backlog / next steps (suggestions, not commitments — confirm with R)

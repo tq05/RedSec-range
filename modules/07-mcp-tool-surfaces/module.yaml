@@ -47,6 +47,7 @@ challenges:
   - id: tool-poisoning
     title: "tools: tool-description poisoning hijacks the host"
     primitive: tools
+    tier: hard
     points: 200
     difficulty: advanced
     objective: >
@@ -64,6 +65,7 @@ challenges:
   - id: resource-traversal
     title: "resources: path traversal in resources/read"
     primitive: resources
+    tier: medium
     points: 150
     difficulty: intermediate
     objective: "Read a secret file outside the resource root."
@@ -77,6 +79,7 @@ challenges:
   - id: prompt-injection
     title: "prompts: argument injection discloses a privileged template block"
     primitive: prompts
+    tier: medium
     points: 150
     difficulty: intermediate
     objective: "Make prompts/get leak the internal escalation token."
@@ -90,6 +93,7 @@ challenges:
   - id: sampling-abuse
     title: "sampling: server-initiated sampling exfiltrates host context"
     primitive: sampling
+    tier: hard
     points: 200
     difficulty: advanced
     objective: >
@@ -106,6 +110,7 @@ challenges:
   - id: roots-bypass
     title: "roots: declared client roots are not enforced"
     primitive: roots
+    tier: medium
     points: 150
     difficulty: intermediate
     objective: "Read a file outside the client-declared root."
@@ -119,6 +124,7 @@ challenges:
   - id: elicitation-phishing
     title: "elicitation: server elicits credentials the host auto-answers"
     primitive: elicitation
+    tier: hard
     points: 200
     difficulty: advanced
     objective: >
@@ -135,6 +141,7 @@ challenges:
   - id: logging-leak
     title: "logging: debug log notifications leak a session token"
     primitive: logging
+    tier: easy
     points: 150
     difficulty: beginner
     objective: "Recover the token the server logs at debug level."
@@ -148,6 +155,7 @@ challenges:
   - id: completion-leak
     title: "completion: autocompletion enumerates secret values"
     primitive: completion
+    tier: easy
     points: 150
     difficulty: beginner
     objective: "Enumerate a secret via completion/complete."
@@ -162,6 +170,7 @@ challenges:
   - id: rug-pull
     title: "tools: rug-pull -- tool behaviour changes after approval"
     primitive: tools (rug-pull)
+    tier: medium
     points: 150
     difficulty: intermediate
     objective: "Reveal the malicious description the server hides until after approval."
@@ -175,6 +184,7 @@ challenges:
   - id: command-injection
     title: "tools: command injection -> remote code execution"
     primitive: tools (rce)
+    tier: hard
     points: 250
     difficulty: advanced
     objective: "Achieve command execution through a tool that shells out."
@@ -184,3 +194,25 @@ challenges:
     hints:
       - "run_diagnostic pings a host you control the string for."
       - "Shell metacharacters. Read restricted/rce.flag (appDir is in initialize)."
+
+  # ---- impossible tier ------------------------------------------------------
+  - id: unicode-tool-poisoning
+    title: "tools: Unicode-concealed tool-description poisoning past the scanner"
+    primitive: tools (concealment)
+    tier: impossible
+    sealed: true
+    points: 500
+    difficulty: expert
+    objective: >
+      Beacon's tool registry (POST /register_tool) scans the VISIBLE description and
+      rejects obvious poisoning (ACTION:/<IMPORTANT>/{{). Register a tool that still
+      makes the host exfiltrate its own secret -- by concealing the directive so the
+      scanner can't see it but the model still reads it. (No walkthrough; answer
+      sealed in solution/SEALED.md.)
+    mappings: { owasp_llm: [LLM01], owasp_agentic: [ASI04, ASI01], mitre_atlas: [AML.T0051] }
+    verify:
+      - type: oracle
+        check: "checks:HostExfil"
+        params: { needle: "UNICODEPWN" }
+    hints:
+      - "North star: a human approving the tool sees one thing; the model reads another."

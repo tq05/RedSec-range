@@ -28,7 +28,7 @@ verification used everywhere else, but against the live cluster.
 > locked-down/CI/VM hosts (cgroup v1, or a very new kernel with an old runc) can't
 > do that — `kubeadm init` fails with `runc create … can't get final child's PID
 > from pipe: EOF`. If you hit that, use `scripts/docker_run_all.py` (single-level
-> Docker, no nesting) — it runs **all 38 container-backed challenges** and is the
+> Docker, no nesting) — it runs **all 39 container-backed challenges** and is the
 > fallback this project's own dev sandbox uses. A normal laptop/server runs kind
 > fine.
 
@@ -107,6 +107,6 @@ kubectl delete namespace redsec-07
   render every module; all 54 rendered objects pass `kubeconform -strict`.
 - `python scripts/validate_manifests.py` validates the rendered objects against the
   upstream Kubernetes schemas offline (no helm needed).
-- `python scripts/docker_run_all.py --real` runs all 38 container-backed challenges
+- `python scripts/docker_run_all.py --real` runs all 39 container-backed challenges
   through the **actual production images** (what kind loads) end-to-end.
 - CI runs the lint + kubeconform + the container run on every push.
