@@ -2,14 +2,18 @@
 
 > **Targets:** `vuln-mcp` (a JSON-RPC MCP server) + `host` ("Beacon", a naive MCP
 > client/agent) + the shared `drop` sink.
-> **Maps to:** OffSec AI-300 Module 7 · OWASP LLM01/02/06/08 · OWASP MCP Top 10 ·
+> **Maps to:** OffSec AI-300 Module 7 · OWASP LLM01/02/06 · OWASP MCP Top 10 ·
 > MITRE ATLAS.
 
-## 1. The "8-way" protocol surface
+## 1. A version-aware protocol surface
 
 The **Model Context Protocol** standardises how an AI *host* (the app running the
-model) talks to *servers* that provide capabilities. A server and client negotiate
-a set of **primitives**, and each primitive is an attack surface. There are eight:
+model) talks to *servers* that provide capabilities. MCP evolves quickly, so a
+security assessment must record the negotiated protocol version.
+
+Most of this lab is pinned to **MCP 2025-06-18**, the revision contemporaneous with
+the original AI-300 syllabus. It deliberately covers eight server, client and
+utility surfaces used by that ecosystem:
 
 | # | Primitive | Direction | What it does | The vector here |
 |---|-----------|-----------|--------------|-----------------|
@@ -22,25 +26,32 @@ a set of **primitives**, and each primitive is an attack surface. There are eigh
 | 7 | **logging** | server→client | log notifications | **sensitive-data leak** |
 | 8 | **completion** | server→model | argument autocompletion | **secret enumeration** |
 
-Notice the directions. Four primitives flow *from the server into the model's
+These eight rows are an **attack-surface matrix**, not a claim that every row is a
+current core primitive. In **MCP 2026-07-28**, the three core server primitives are
+tools, resources and prompts; elicitation remains a client capability; completion is
+a utility; roots, sampling and logging are deprecated. Current MCP is stateless,
+uses `server/discover` instead of `initialize`, and requires `Mcp-Method` and
+`Mcp-Name` routing headers for Streamable HTTP. The final challenge targets that
+current routing model.
+
+Notice the directions. Four surfaces flow *from the server into the model's
 context* (tools, resources, prompts, completion) — these are **indirect prompt
 injection** channels. Two flow *from the server back to the client* (sampling,
 elicitation) — these let a malicious **server drive the host**. One is the client's
-only declared boundary (roots), routinely **unenforced**. This is why MCP widens
+declared boundary (roots), routinely **unenforced**. This is why MCP widens
 the attack surface so much: a single connected server touches every one of them,
 and the trust between host and server is almost always implicit.
 
-Transport note: real MCP uses JSON-RPC 2.0 over stdio or Streamable HTTP, and
-sampling/elicitation are genuine server→client requests. This lab speaks JSON-RPC
-over plain HTTP (`POST /` on `vuln-mcp`) and performs the server→client calls as
-nested HTTP POSTs to a callback URL the host advertises at `initialize`. The method
-semantics and every vulnerability are faithful — only the framing is simplified so
-you can `curl` everything and the verifier can be deterministic. Read the headers of
-`targets/vuln-mcp/app.py` and `targets/host/app.py`.
+Transport note: production MCP uses JSON-RPC 2.0 over stdio or Streamable HTTP. The
+legacy part of this lab uses a simplified HTTP JSON-RPC shim (`POST /`) and models
+server→client calls as nested callbacks so everything is curl-able and deterministic.
+The current-spec routing challenge uses `POST /mcp` with the 2026-07-28 version and
+routing headers. Read the headers of `targets/vuln-mcp/app.py` and
+`targets/host/app.py`.
 
 ## 2. Reconnaissance
 
-Everything starts with `initialize` and the `*/list` methods:
+For the pinned 2025 surface, start with `initialize` and the `*/list` methods:
 
 ```bash
 MCP=http://localhost:9070
@@ -53,16 +64,23 @@ rpc resources/list
 rpc prompts/list
 ```
 
+Compare that with current stateless discovery:
+
+```bash
+rpc server/discover '{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"student","version":"1"}}}'
+```
+
 `serverInfo` leaks the absolute `appDir` and `workspaceRoot` — note them, you'll
 need the layout for the roots and RCE challenges. Read **every** tool description
 in full, including non-printing characters.
 
 ## 3. The vectors
 
-Work them in the order below (`redsec hint 07 <challenge>` for nudges). Seven are
-exploited by sending JSON-RPC straight to `vuln-mcp` and reading the response (flag
-challenges). Three require the host — you poison it or trigger a server→client
-callback, and the `drop` sink proves the effect (oracle challenges).
+Work them in the order below (`redsec hint 07 <challenge>` for nudges). Eight are
+exploited by sending requests straight to `vuln-mcp` and reading the response (flag
+challenges). Four require the host, including the sealed Unicode challenge — you
+poison it or trigger a server→client callback, and the `drop` sink proves the effect
+(oracle challenges).
 
 ### tools (1a) — `tool-poisoning` *(oracle)*
 `knowledge_base`'s description contains an `<IMPORTANT>` block with an `ACTION`
@@ -121,6 +139,15 @@ and read `{appDir}/restricted/rce.flag`. A tool implementation is just code behi
 a model-callable interface — all the usual injection bugs apply, now reachable by
 anything that can influence the model.
 
+### Streamable HTTP — `header-routing-confusion` *(flag)*
+
+MCP 2026-07-28 requires `Mcp-Method` and `Mcp-Name` headers so gateways can route,
+meter and authorize requests without parsing every JSON body. The lab's gateway
+allows anonymous callers to invoke only `whoami` **according to the headers**, while
+the application dispatches `params.name` **from the body**. Send `Mcp-Name: whoami`
+but call `admin_report` in the JSON. This is a policy-enforcement-point mismatch:
+every layer validated a different request.
+
 ## 4. Chaining & the confused deputy
 
 Each vector is bad alone; chained they are worse. The host holds **ambient
@@ -142,6 +169,7 @@ host to call `read_file` (5) or `run_diagnostic` (1c) turns the host into a
 | Elicitation phishing | Never auto-answer elicitations; show provenance; human approval for secrets |
 | Logging leak | Scrub secrets from logs; least-verbose by default |
 | Completion enumeration | Never back completion with secret data; authorize per field |
+| Header/body policy desync | Canonicalize once; reject header/body disagreement; authorize the exact dispatched method/tool |
 
 The through-line: **the host↔server trust boundary is real and must be enforced on
 both sides.** Authenticate servers, pin their capabilities, treat everything they
@@ -149,10 +177,9 @@ send as untrusted data, and give the host the least authority that still works.
 
 ## 6. Extensions
 
-- **Unicode concealment.** Hide the poison in `knowledge_base` using invisible
-  Unicode tag characters so it renders blank in a human review but still reaches the
-  model. Add a verifier that diffs rendered vs. raw description.
 - **Real transport.** Swap the HTTP JSON-RPC shim for the official MCP SDK over
   stdio/Streamable HTTP and re-run the vectors.
 - **Token passthrough / confused deputy** as a dedicated vector (OWASP MCP): add a
   server that forwards the host's OAuth token to a third service.
+- **Cross-server tool shadowing.** Connect two servers that publish the same tool
+  name and exploit a host with ambiguous resolution or stale cached definitions.

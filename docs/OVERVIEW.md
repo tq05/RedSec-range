@@ -1,7 +1,7 @@
 # RedSec Range — Visual Overview
 
 A one-page map of the range: the learning path, the AI attack surface each module
-targets, the MCP 8-vector matrix, the capstone kill chain, and how the framework fits
+targets, the version-aware MCP matrix, the capstone kill chain, and how the framework fits
 together. Diagrams are Mermaid and render on GitHub. Pair this with
 [WORKSHEET.md](WORKSHEET.md) (no spoilers) and [SOLUTIONS.md](SOLUTIONS.md) (answers).
 
@@ -16,8 +16,8 @@ flowchart LR
     M03["03 Agents<br/>injection · agency · memory"]
     M05["05 RAG<br/>poison · retrieval · citation"]
     M06["06 Embeddings<br/>invert · MIA · collision"]
-    M04["04 Multi-agent<br/>trust · forge · impersonate"]
-    M07["07 MCP<br/>8-vector matrix + RCE"]
+    M04["04 Multi-agent/A2A<br/>card · message · task · context"]
+    M07["07 MCP<br/>versioned matrix + RCE"]
   end
   subgraph SYS["Systems around the model"]
     M08["08 Supply chain<br/>pickle RCE · backdoors"]
@@ -72,10 +72,11 @@ flowchart TB
   infra -->|"09 SSRF / secrets"| PLAT
 ```
 
-## Module 07 — the MCP 8-vector matrix
+## Module 07 — the version-aware MCP matrix
 
-Eight protocol primitives, each with one deliberate flaw (plus rug-pull and RCE).
-Direction shows why each is exploitable.
+Eight 2025-era server/client/utility surfaces, each with one deliberate flaw, plus
+rug-pull, RCE and a 2026 Streamable HTTP routing-policy mismatch. Direction shows
+why each is exploitable.
 
 ```mermaid
 flowchart LR
@@ -108,6 +109,12 @@ flowchart LR
 | 6 | elicitation | credential phishing (host auto-answers) | oracle |
 | 7 | logging | sensitive-data leak at debug | flag |
 | 8 | completion | secret enumeration via autocomplete | flag |
+| 9 | Streamable HTTP routing | header/body policy desynchronization | flag |
+
+The 2026-07-28 protocol defines tools/resources/prompts as the three core server
+primitives, retains elicitation, and deprecates roots/sampling/logging. The lab keeps
+the legacy vectors because deployed systems remain assessable while explicitly
+versioning them and adding a current routing exercise.
 
 ## Capstone kill chain (Module 11)
 
@@ -164,7 +171,7 @@ flowchart LR
   repo --> docker["sandbox-up.sh + range<br/>(persistent Docker)"]
   repo --> check["docker_run_all.py<br/>(ephemeral check)"]
   repo --> k8s["kind-up.sh + helm<br/>(Kubernetes)"]
-  local --> verify["redsec selftest / verify<br/>42/42"]
+  local --> verify["redsec selftest / verify<br/>43/43"]
   docker --> verify
   check --> verify
   k8s --> verify

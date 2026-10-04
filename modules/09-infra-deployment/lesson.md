@@ -1,7 +1,7 @@
 # Module 09 — AI Infrastructure & Deployment Exploits
 
 > **Targets:** `appserver` + `metadata` + `drop`. **Maps to:** AI-300 Module 9 ·
-> OWASP LLM03, LLM10 · MITRE ATLAS AML.T0040, AML.T0024.
+> OWASP LLM02 · MITRE ATLAS AML.T0040, AML.T0024.
 
 ## 1. Idea
 
@@ -21,7 +21,7 @@ APP=http://127.0.0.1:9090
 
 ## 3. Walkthrough
 
-### 3.1 `metadata-ssrf` — SSRF to credentials (LLM03)
+### 3.1 `metadata-ssrf` — SSRF to credentials (LLM02)
 `POST /fetch` fetches any URL **server-side** with no allow-list. The catch: the
 URL must be reachable *from the appserver*, not from your laptop — so first do
 recon to discover the internal metadata address, then SSRF to it. (This is why

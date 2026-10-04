@@ -2,8 +2,9 @@
 
 RedSec Range follows the structure of OffSec's **AI-300 / OSAI ("Advanced AI Red
 Teaming")** syllabus, and maps every module to the **OWASP LLM Top 10 (2025)**, the
-emerging **OWASP MCP Top 10**, and **MITRE ATLAS**. **42 challenges across 11
-modules, all complete and tested** (8400 pts).
+emerging **OWASP MCP Top 10**, and **MITRE ATLAS**. **43 challenges across 11
+modules, all complete and tested** (8650 pts). See `AI300-COVERAGE.md` for the
+public-syllabus traceability and course-quality contract.
 
 > This table mirrors the module manifests (`redsec list`), so it stays in sync.
 > **ATLAS IDs are indicative** — verify against the current
@@ -17,7 +18,7 @@ modules, all complete and tested** (8400 pts).
 | 04 | Attacking Multi-Agent Systems & A2A | ✅ | LLM01, LLM06 | - | AML.T0051, AML.T0054 | 4 | 1100 |
 | 05 | Exploiting RAG Pipelines | ✅ | LLM01, LLM08 | - | AML.T0020, AML.T0051 | 3 | 550 |
 | 06 | Attacking Embeddings | ✅ | LLM08, LLM02 | - | AML.T0024, AML.T0043 | 3 | 650 |
-| 07 | Attacking MCP & Tool Surfaces | ✅ | LLM01, LLM02, LLM06 | MCP01-05 | AML.T0051, AML.T0054, AML.T0053 | 11 | 2250 |
+| 07 | Attacking MCP & Tool Surfaces | ✅ | LLM01, LLM02, LLM06 | MCP01-05 | AML.T0051, AML.T0054, AML.T0053 | 12 | 2500 |
 | 08 | Supply Chain Attacks on AI/ML | ✅ | LLM03, LLM04 | - | AML.T0010, AML.T0018, AML.T0020 | 4 | 850 |
 | 09 | AI Infrastructure & Deployment | ✅ | LLM02 | - | AML.T0040, AML.T0024 | 3 | 600 |
 | 10 | Threat Modeling for AI Targets | ✅ | - | - | - | 3 | 450 |
@@ -45,7 +46,7 @@ modules, all complete and tested** (8400 pts).
    excessive agency, memory. *Fully implemented; do this first in the lab.*
 3. **05, 06, 04** — where the untrusted text comes from: retrieval, embeddings,
    other agents (all variations on injection/trust).
-4. **07** — MCP & tool surfaces: the 8-vector matrix. *Fully implemented.*
+4. **07** — MCP & tool surfaces: versioned 2025 matrix plus 2026 routing. *Fully implemented.*
 5. **08, 09** — the artifacts and infrastructure around the model.
 6. **10** — turn it into structured analysis (threat modeling).
 7. **11** — the capstone: chain it all in a realistic engagement.

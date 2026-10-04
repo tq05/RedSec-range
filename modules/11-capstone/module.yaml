@@ -40,6 +40,7 @@ targets:
 challenges:
   - id: initial-access
     title: Initial access via indirect injection
+    tier: easy
     primitive: chain-access
     points: 200
     difficulty: advanced
@@ -54,6 +55,7 @@ challenges:
 
   - id: pivot-vault
     title: Pivot through ambient authority to the vault
+    tier: hard
     primitive: chain-pivot
     points: 250
     difficulty: expert
@@ -68,6 +70,7 @@ challenges:
 
   - id: exfil-crown-jewel
     title: Exfiltrate the crown-jewel secret
+    tier: hard
     primitive: chain-exfil
     points: 300
     difficulty: expert

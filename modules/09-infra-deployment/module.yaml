@@ -36,6 +36,7 @@ targets:
 challenges:
   - id: metadata-ssrf
     title: SSRF to cloud metadata -> steal role credentials
+    tier: hard
     primitive: infra-ssrf
     points: 250
     difficulty: advanced
@@ -50,6 +51,7 @@ challenges:
 
   - id: open-inference-api
     title: Abuse an unauthenticated admin inference route
+    tier: easy
     primitive: infra-api
     points: 150
     difficulty: beginner
@@ -63,6 +65,7 @@ challenges:
 
   - id: registry-secrets
     title: Recover a secret from a model card
+    tier: medium
     primitive: infra-secrets
     points: 200
     difficulty: intermediate

@@ -6,9 +6,9 @@ difficulty: advanced
 estimated_minutes: 110
 summary: >
   Exploit trust between cooperating agents. Inject through a low-trust ticket so it
-  propagates planner -> reviewer and the reviewer acts on it, tamper with messages on
-  an unauthenticated agent bus, and impersonate a trusted approver to get a malicious
-  action executed.
+  propagates planner -> reviewer and the reviewer acts on it, then attack a
+  version-pinned A2A JSON-RPC surface through its Agent Card, Messages, Tasks,
+  sender metadata and multi-turn context IDs.
 authors: [RedSec Range]
 prerequisites: ["03"]
 tags: [multi-agent, a2a, trust, impersonation, message-manipulation]
@@ -46,55 +46,56 @@ challenges:
       - "Put an ACTION: execute_action line in the ticket (on its own line)."
 
   - id: message-manipulation
-    title: Inject a forged message on the A2A bus
-    primitive: a2a-message
+    title: Send an unsigned A2A JSON-RPC message
+    primitive: a2a-message/send
     tier: medium
     points: 200
     difficulty: advanced
-    objective: Deliver a crafted message straight to the reviewer.
+    objective: Bypass the Agent Card's declared auth and deliver a crafted Message to the reviewer.
     mappings: { owasp_agentic: [ASI07], mitre_atlas: [AML.T0054] }
     verify:
       - type: oracle
         check: "builtins:DropContains"
         params: { needle: "MSGPWN" }
     hints:
-      - "POST /bus/send is unauthenticated and delivers to any agent."
-      - "Send content with an ACTION: execute_action line to 'reviewer'."
+      - "Fetch /.well-known/agent-card.json and compare its security declaration with POST /a2a."
+      - "Use JSON-RPC message/send with a text Part and no bearer token."
+      - "Route the Message to reviewer with an ACTION: execute_action line."
 
   - id: agent-impersonation
     title: Impersonate a trusted approver
-    primitive: a2a-identity
+    primitive: a2a-message-identity
     tier: hard
     points: 300
     difficulty: expert
-    objective: Register as a trusted agent and approve a malicious action.
+    objective: Forge the sender metadata of an A2A Message and approve a malicious action.
     mappings: { owasp_agentic: [ASI09, ASI03], mitre_atlas: [AML.T0054] }
     verify:
       - type: oracle
         check: "builtins:DropContains"
         params: { needle: "IMPERSONATE" }
     hints:
-      - "POST /agents/register adds any name to the trusted set (no attestation)."
-      - "Then POST /approve as that name with your action."
+      - "The approve_action skill trusts Message metadata as identity."
+      - "Claim the sender cfo-approver in an unsigned message/send request."
 
   - id: session-smuggling
     title: "Agent session smuggling across a stateful A2A session"
-    primitive: a2a-session
+    primitive: a2a-context
     tier: impossible
     sealed: true
     points: 500
     difficulty: expert
     objective: >
-      The reviewer now has a guard that rejects any single session turn containing
-      the directive token. Get it to execute your action anyway by smuggling the
-      directive across a stateful A2A session. (No walkthrough; answer sealed in
-      solution/SEALED.md.)
+      The reviewer now has a guard that rejects any single Message containing the
+      directive token. Get it to execute your action anyway by smuggling the
+      directive across Messages sharing an A2A contextId. (No walkthrough; answer
+      sealed in solution/SEALED.md.)
     mappings: { owasp_agentic: [ASI07, ASI08], mitre_atlas: [AML.T0051, AML.T0054] }
     verify:
       - type: oracle
         check: "builtins:DropContains"
         params: { needle: "SMUGGLEPWN" }
     hints:
-      - "North star: the guard inspects each turn in isolation; the victim does not."
+      - "North star: the guard inspects each Message in isolation; context history does not."
 
 lesson: lesson.md

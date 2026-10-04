@@ -32,6 +32,7 @@ targets:
 challenges:
   - id: malicious-weights
     title: RCE via unsafe model deserialization
+    tier: hard
     primitive: supply-weights
     points: 250
     difficulty: advanced
@@ -47,6 +48,7 @@ challenges:
 
   - id: poisoned-dataset
     title: Backdoor the model via dataset poisoning
+    tier: easy
     primitive: supply-data
     points: 200
     difficulty: advanced
@@ -60,6 +62,7 @@ challenges:
 
   - id: backdoored-adapter
     title: Inject behaviour via a backdoored adapter
+    tier: easy
     primitive: supply-adapter
     points: 200
     difficulty: advanced
@@ -73,6 +76,7 @@ challenges:
 
   - id: dependency-confusion
     title: Win dependency confusion
+    tier: medium
     primitive: supply-deps
     points: 200
     difficulty: advanced

@@ -5,12 +5,11 @@ status: complete
 difficulty: advanced
 estimated_minutes: 150
 summary: >
-  The 8-vector MCP attack matrix. The Model Context Protocol exposes eight
-  primitive surfaces -- tools, resources, prompts, sampling, roots, elicitation,
-  logging, completion -- and this module ships a deliberate flaw in every one,
-  plus tool rug-pull and command-injection RCE. You attack a vulnerable MCP
-  server directly over JSON-RPC and, for the host-impact vectors, through a naive
-  MCP host ("Beacon") that consumes it.
+  A version-aware MCP attack matrix. The MCP 2025-06-18 lab covers tools,
+  resources, prompts, sampling, roots, elicitation, logging and completion, plus
+  tool rug-pull and command-injection RCE. A 2026-07-28 exercise adds stateless
+  Streamable HTTP header/body policy desynchronization. You attack a vulnerable
+  server directly and, for host-impact vectors, through the naive Beacon host.
 authors: [RedSec Range]
 prerequisites: ["03"]
 tags: [mcp, tool-poisoning, confused-deputy, rug-pull, ssrf, rce, json-rpc]
@@ -43,7 +42,7 @@ targets:
     uses_builtin: drop
 
 challenges:
-  # ---- the 8 protocol primitives --------------------------------------------
+  # ---- eight 2025-06-18 server/client/utility surfaces -----------------------
   - id: tool-poisoning
     title: "tools: tool-description poisoning hijacks the host"
     primitive: tools
@@ -194,6 +193,24 @@ challenges:
     hints:
       - "run_diagnostic pings a host you control the string for."
       - "Shell metacharacters. Read restricted/rce.flag (appDir is in initialize)."
+
+  - id: header-routing-confusion
+    title: "2026 routing: header/body policy desynchronization"
+    primitive: streamable-http-routing
+    tier: hard
+    points: 250
+    difficulty: advanced
+    objective: >
+      Bypass a gateway policy that authorizes MCP routing headers while the server
+      dispatches the JSON-RPC body, and invoke a restricted tool.
+    mappings: { owasp_llm: [LLM06], owasp_mcp: [MCP02, MCP04], owasp_agentic: [ASI02, ASI03] }
+    verify:
+      - type: flag
+        flag: "REDSEC{mcp_header_body_policy_desync}"
+    hints:
+      - "MCP 2026-07-28 requires Mcp-Method and Mcp-Name routing headers on Streamable HTTP."
+      - "The gateway trusts the headers; the application trusts params.name. Make them disagree."
+      - "Claim whoami in Mcp-Name while calling admin_report in the JSON body at POST /mcp."
 
   # ---- impossible tier ------------------------------------------------------
   - id: unicode-tool-poisoning

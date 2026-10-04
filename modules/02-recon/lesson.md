@@ -1,7 +1,7 @@
 # Module 02 — Reconnaissance for AI Targets
 
 > **Target:** `saas` (InitrodeAI front-end). **Maps to:** AI-300 Module 2 · OWASP
-> LLM07, LLM10 · MITRE ATLAS AML.T0002, AML.T0040.
+> LLM07, LLM02 · MITRE ATLAS AML.T0002, AML.T0040.
 
 ## 1. Idea
 
@@ -47,7 +47,7 @@ curl -s $URL/v1/internal/                      # unauthenticated -> flag
 redsec submit 02 enumerate-surfaces 'REDSEC{...}'
 ```
 
-### 3.3 `leak-config` — verbose error (LLM07)
+### 3.3 `leak-config` — verbose error (LLM02)
 Send the chat endpoint something it doesn't expect and read the debug error:
 
 ```bash

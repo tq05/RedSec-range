@@ -4,12 +4,15 @@ Embeddings are lossy encodings of their source, and similarity structure leaks.
 This toy service uses a transparent character-histogram embedding (deliberately
 weak) and exposes the three failure modes of real vector stores:
 
-  * /records + /decode -> inversion: stored vectors reconstruct source text.
+  * /records + /decode -> reference-corpus reconstruction: a nearest-neighbour
+                          decoder maps a stored vector back to known source text.
   * /search            -> membership inference: exact matches are confirmed.
   * /collide           -> collisions: a different text with the same embedding
                           bypasses a text-based check (anagram collision).
 
-A real embedding model is heavier and non-deterministic; the lessons transfer.
+A real reconstruction attack may use a learned decoder, auxiliary/reference data,
+or candidate search. This deterministic oracle models the reference-corpus case;
+it does not decode arbitrary vectors.
 DELIBERATELY INSECURE; isolated use only.
 """
 from __future__ import annotations
@@ -75,7 +78,7 @@ def records() -> dict:
 
 @app.post("/decode")
 def decode(v: VecIn) -> dict:
-    # VULN: reconstructs source text from a vector (nearest-neighbour inversion).
+    # VULN: exposes nearest-neighbour source reconstruction over a reference corpus.
     nearest = min(RECORDS, key=lambda r: _dist(r["vector"], v.vector))
     return {"text": nearest["text"], "id": nearest["id"]}
 

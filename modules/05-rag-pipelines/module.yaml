@@ -31,6 +31,7 @@ targets:
 challenges:
   - id: knowledge-poisoning
     title: Poison the knowledge base
+    tier: easy
     primitive: rag-source
     points: 150
     difficulty: intermediate
@@ -45,6 +46,7 @@ challenges:
 
   - id: retrieval-manipulation
     title: Out-rank the real documents for a victim query
+    tier: medium
     primitive: rag-retrieval
     points: 200
     difficulty: advanced
@@ -59,6 +61,7 @@ challenges:
 
   - id: citation-spoofing
     title: Spoof a trusted citation
+    tier: hard
     primitive: rag-trust
     points: 200
     difficulty: advanced

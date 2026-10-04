@@ -34,6 +34,7 @@ targets:
 challenges:
   - id: sys-prompt-leak
     title: Direct prompt injection -> leak the system prompt
+    tier: easy
     primitive: direct-injection
     points: 100
     difficulty: beginner
@@ -49,6 +50,7 @@ challenges:
 
   - id: indirect-injection
     title: Indirect prompt injection via auto-retrieved notes
+    tier: medium
     primitive: indirect-injection
     points: 200
     difficulty: intermediate
@@ -66,6 +68,7 @@ challenges:
 
   - id: tool-exfil
     title: Excessive agency -> exfiltrate the mail API key
+    tier: hard
     primitive: tool-abuse
     points: 200
     difficulty: intermediate
@@ -83,6 +86,7 @@ challenges:
 
   - id: memory-poisoning
     title: Memory poisoning -> persistence across turns
+    tier: hard
     primitive: memory
     points: 250
     difficulty: advanced

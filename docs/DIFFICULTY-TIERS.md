@@ -35,8 +35,8 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 
 ## Per-module tier spec
 
-> Status key: ✅ built+tested · ◻ specced (to build). Existing 42 challenges are being
-> slotted into tiers; the **hard**/**impossible** rows are mostly new and target the
+> Status key: ✅ built+tested · ◻ specced (to build). All existing 43 challenges are
+> assigned tiers; the remaining **impossible** rows are new and target the
 > agent-chaining risks single-step challenges don't reach.
 
 ### 01 Intro — *goal: run the loop*
@@ -58,13 +58,13 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 - ⚫ ◻ *sealed* — exfil the key with an input guard (blocks `ACTION:`/`{{`) **and**
   an output guard (redacts `REDSEC{`/`sk-`) both on; needs encoding + indirect path.
 
-### 04 Multi-agent & A2A — *goal: attack the system (ASI07/08/09, MAESTRO L7)* ← **exemplar built**
+### 04 Multi-agent & A2A — *goal: attack the system (ASI07/08/09, MAESTRO L7)* ← **protocol exemplar built**
 - 🟢 `trust-exploitation` ✅ — transitive trust via a ticket.
-- 🟡 `message-manipulation` ✅ — forge a bus message.
-- 🔴 `agent-impersonation` ✅ — register a trusted approver.
+- 🟡 `message-manipulation` ✅ — bypass declared auth on A2A `message/send`.
+- 🔴 `agent-impersonation` ✅ — forge trusted sender metadata.
 - ⚫ `session-smuggling` ✅ *sealed* — the reviewer now has a guard that rejects any
-  turn containing `ACTION:`. Smuggle the directive across a **stateful A2A session**
-  so it only forms when the victim concatenates turns (models Unit42 agent session
+  Message containing `ACTION:`. Smuggle the directive across A2A Messages sharing a
+  **contextId** so it only forms when the victim concatenates history (models Unit42 agent session
   smuggling). Answer sealed in `solution/SEALED.md`.
 
 ### 05 RAG — *goal: own the knowledge (ASI06, MAESTRO L2)*
@@ -77,8 +77,8 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 - ⚫ ◻ *sealed* — invert a secret when only top-k *nearest IDs* (not raw vectors) are
   exposed — reconstruct via adaptive queries.
 
-### 07 MCP & tools — *goal: own the tool layer (ASI02/04/05, MAESTRO L3)* ← **impossible built**
-- 🟢 `logging-leak` / `completion-leak` ✅  · 🟡 `resource-traversal` / `prompt-injection` / `roots-bypass` / `rug-pull` ✅  · 🔴 `tool-poisoning` / `sampling-abuse` / `elicitation-phishing` / `command-injection` ✅
+### 07 MCP & tools — *goal: own the tool layer (ASI02/04/05, MAESTRO L3)* ← **versioned + impossible built**
+- 🟢 `logging-leak` / `completion-leak` ✅  · 🟡 `resource-traversal` / `prompt-injection` / `roots-bypass` / `rug-pull` ✅  · 🔴 `tool-poisoning` / `sampling-abuse` / `elicitation-phishing` / `command-injection` / `header-routing-confusion` ✅
 - ⚫ `unicode-tool-poisoning` ✅ *sealed* — the host tool-registry scans the visible
   description; conceal the directive in Unicode **tag characters** (U+E0000+) so the
   scanner can't see it but the model still reads it (ASI04→ASI01). Sealed answer in
@@ -106,7 +106,8 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 
 ## Rollout
 
-Module **04** is built and tested as the reference pattern (incl. the sealed
-impossible challenge). Remaining ⚫/new tiers are specced above and tracked in
+Modules **04** and **07** are built and tested as reference patterns (including
+sealed impossible challenges). All existing challenges have tier metadata. Remaining
+⚫/new tiers are specced above and tracked in
 `docs/ROADMAP.md`; each lands the same way: target behavior → verifier → `solve.py`
 → `redsec selftest` fail→pass → tier/sealed metadata → regenerate worksheet/solutions.

@@ -23,6 +23,7 @@ targets: []     # no live target; artifact-scored
 challenges:
   - id: asset-inventory
     title: Inventory the high-value AI assets
+    tier: easy
     primitive: tm-assets
     points: 100
     difficulty: intermediate
@@ -32,12 +33,15 @@ challenges:
         check: "checks:ArtifactCovers"
         params:
           all_of: ["model", "prompt", "secret", "tool", "data", "agent"]
+          min_words: 35
+          min_entries: 6
     hints:
       - "Write a short asset list (markdown) and submit it with --artifact-file."
       - "Cover model, prompt/system-prompt, secrets, tools, data (RAG/memory), agents."
 
   - id: trust-boundaries
     title: Map trust boundaries & data flows
+    tier: medium
     primitive: tm-boundaries
     points: 150
     difficulty: intermediate
@@ -47,12 +51,19 @@ challenges:
         check: "checks:ArtifactCovers"
         params:
           all_of: ["boundar", "untrusted", "host", "server"]   # stem: boundary/boundaries
+          min_words: 40
+          min_entries: 4
+          required_relations:
+            - ["untrusted", "model"]
+            - ["host", "server"]
+            - ["agent", "messages"]
     hints:
       - "Every indirect-injection channel is a boundary crossing."
       - "Don't forget the host<->MCP server boundary (Module 07)."
 
   - id: attack-paths
     title: Enumerate end-to-end attack paths
+    tier: hard
     primitive: tm-paths
     points: 200
     difficulty: advanced
@@ -64,8 +75,14 @@ challenges:
           all_of: ["path"]
           any_of: ["llm01", "llm06", "llm08", "mcp", "injection", "exfiltrat"]
           min_matches: 3
+          min_words: 45
+          min_entries: 3
+          min_numbered_entries: 3
+          min_chains: 3
+          min_chain_steps: 3
     hints:
       - "Reuse findings from Modules 03-09 as path segments."
+      - "Number and rank three paths; give each at least three steps joined by ->."
       - "Reference the techniques (LLM01/LLM06/LLM08, MCP, exfiltration)."
 
 lesson: lesson.md

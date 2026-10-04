@@ -57,7 +57,7 @@ Recon decides which later attack is even possible.
 |---|---|---|---|---|
 | `sys-prompt-leak` | F | 🟢 | Direct prompt injection. Override the "never reveal" rule and have it print everything above your message. | `POST /chat` |
 | `indirect-injection` | O | 🟡 | Don't talk to it — poison a store it silently reads each turn, so a normal turn carries your instruction. Make it mail its own system prompt out. | `POST /notes`, then any `/chat` |
-| `tool-exfil` | O | 🟡 | Excessive agency. You can't read the API key, but the agent can and it can send mail anywhere — make it include the secret for you. | the `send_message` tool via `/chat` |
+| `tool-exfil` | O | 🔴 | Excessive agency. You can't read the API key, but the agent can and it can send mail anywhere — make it include the secret for you. | the `send_message` tool via `/chat` |
 | `memory-poisoning` | O | 🔴 | Persistence. Put an instruction into long-term memory, then fire it from a *later, benign* turn with no attacker input in sight. | the `remember` tool, then a 2nd turn |
 
 **Why it works:** the agent treats every channel — your message, retrieved notes,
@@ -72,15 +72,17 @@ the course builds on.
 
 | Challenge | | Diff | Attack path | Surface |
 |---|---|---|---|---|
-| `trust-exploitation` | O | 🔴 | Transitive injection. The lowest-trust input (a ticket) rides the planner's plan into the reviewer, which acts on it. Smuggle an action in through the ticket. | `POST /submit` |
-| `message-manipulation` | O | 🔴 | The inter-agent bus is unauthenticated. Forge a message straight to the reviewer. | `POST /bus/send` |
-| `agent-impersonation` | O | 🔴 | No attestation on identity. Register yourself as a trusted agent, then approve your own malicious action. | `POST /agents/register` → `/approve` |
-| `session-smuggling` | O | ⚫ **impossible** | A guard now rejects any single session turn carrying the directive token. Smuggle it across a **stateful A2A session** so it only forms when the victim concatenates turns. *(No walkthrough — answer sealed in `modules/04-multi-agent-a2a/solution/SEALED.md`.)* | `POST /session/{id}/turn` ×N → `/session/{id}/deliver` |
+| `trust-exploitation` | O | 🟢 | Transitive injection. The lowest-trust input (a ticket) rides the planner's plan into the reviewer, which acts on it. Smuggle an action in through the ticket. | `POST /submit` |
+| `message-manipulation` | O | 🟡 | The Agent Card declares bearer auth, but the A2A endpoint does not enforce it. Send an unsigned JSON-RPC Message straight to the reviewer. | Agent Card → `message/send` |
+| `agent-impersonation` | O | 🔴 | The approval skill trusts unsigned Message metadata as identity. Claim to be the trusted CFO approver. | `message/send` metadata |
+| `session-smuggling` | O | ⚫ **impossible** | A guard rejects any single Message carrying the directive token. Smuggle it across Messages sharing an A2A `contextId` so it forms only in accumulated history. *(No walkthrough — answer sealed in `modules/04-multi-agent-a2a/solution/SEALED.md`.)* | `message/send` ×N → shared `contextId` |
 
 **Why it works:** every agent-to-agent message is an injection channel, and agents
-treat each other's output as trusted input. One foothold propagates; identity is
-assumed, not proven. The impossible tier models **agent session smuggling** (Unit42):
-the guard inspects each turn in isolation, but the victim acts on the concatenation.
+treat each other's output as trusted input. The lab uses a version-pinned A2A
+JSON-RPC binding with Agent Cards, Messages, Tasks, Parts and context IDs; discovery
+metadata and sender fields are assumed, not proven. The impossible tier models
+**agent session smuggling** (Unit42): the guard inspects each Message in isolation,
+but the victim acts on concatenated context history.
 
 ---
 
@@ -89,8 +91,8 @@ the guard inspects each turn in isolation, but the victim acts on the concatenat
 
 | Challenge | | Diff | Attack path | Surface |
 |---|---|---|---|---|
-| `knowledge-poisoning` | O | 🟡 | Ingest a document whose body carries an instruction; trigger it with a question that retrieves it. | `POST /ingest`, then `/chat` |
-| `retrieval-manipulation` | O | 🔴 | Your payload only lands if it's retrieved. Beat the real documents for the victim's query against a naive term-frequency ranker. | `POST /ingest` (then query) |
+| `knowledge-poisoning` | O | 🟢 | Ingest a document whose body carries an instruction; trigger it with a question that retrieves it. | `POST /ingest`, then `/chat` |
+| `retrieval-manipulation` | O | 🟡 | Your payload only lands if it's retrieved. Beat the real documents for the victim's query against a naive term-frequency ranker. | `POST /ingest` (then query) |
 | `citation-spoofing` | O | 🔴 | You control the source metadata and it's shown as a citation. Make attacker content appear under an authoritative-looking source. | `POST /ingest` `source` field |
 
 **Why it works:** RAG is indirect injection with a retrieval step — win retrieval and
@@ -103,17 +105,17 @@ you win the injection, and "grounded" output makes users trust it more.
 
 | Challenge | | Diff | Attack path | Surface |
 |---|---|---|---|---|
-| `embedding-inversion` | F | ⚫ | Stored vectors are exposed. Reconstruct the source text of a secret record from its vector. | `GET /records`, `POST /decode` |
-| `membership-inference` | F | 🔴 | Decide whether a specific record is in the store by how the distance behaves for an exact candidate. | `POST /embed`, `POST /search` |
-| `embedding-collision` | F | 🔴 | A text check is enforced on the embedding, which ignores word order. Craft a *different* text that embeds identically to the banned one. | `GET /protected`, `POST /collide` |
+| `embedding-inversion` | F | 🔴 | Stored vectors are exposed. Reconstruct a secret record by matching its vector through the exposed reference-corpus decoder. | `GET /records`, `POST /decode` |
+| `membership-inference` | F | 🟢 | Decide whether a specific record is in the store by how the distance behaves for an exact candidate. | `POST /embed`, `POST /search` |
+| `embedding-collision` | F | 🟡 | A text check is enforced on the embedding, which ignores word order. Craft a *different* text that embeds identically to the banned one. | `GET /protected`, `POST /collide` |
 
 **Why it works:** "we only store embeddings" is not a privacy control — embeddings
 invert, similarity reveals membership, and lossy encodings collide.
 
 ---
 
-## Module 07 — MCP & Tool Surfaces (the 8-vector matrix)
-*Objective: one flaw per MCP protocol primitive, plus rug-pull and RCE. (LLM01/02/06, MCP01-05)*
+## Module 07 — MCP & Tool Surfaces (version-aware attack matrix)
+*Objective: cover the 2025 server/client/utility surfaces plus current 2026 Streamable HTTP routing. (LLM01/02/06, MCP01-05)*
 
 | Challenge | | Diff | Primitive | Attack path | Surface |
 |---|---|---|---|---|---|
@@ -127,13 +129,14 @@ invert, similarity reveals membership, and lossy encodings collide.
 | `completion-leak` | F | 🟢 | completion | Argument autocompletion is backed by the secret store. Complete the right field. | `completion/complete` |
 | `rug-pull` | F | 🟡 | tools | What you approve isn't what you get. List the tools again after "approval." | `tools/list` (twice) |
 | `command-injection` | F | 🔴 | tools→RCE | A tool shells out with your input. Inject a second command. | `tools/call` run_diagnostic |
+| `header-routing-confusion` | F | 🔴 | Streamable HTTP | The gateway authorizes `Mcp-Method`/`Mcp-Name`; the app dispatches the JSON body. Make the two policy views disagree. | `POST /mcp` headers vs body |
 | `unicode-tool-poisoning` | O | ⚫ **impossible** | tools | The host's tool registry scans the *visible* description and rejects obvious poisoning. Register a tool that still drives the host to exfiltrate — concealing the directive so the scanner can't see it but the model still reads it. *(Sealed: `modules/07-mcp-tool-surfaces/solution/SEALED.md`.)* | `POST /register_tool` → host `/chat` |
 
-**Why it works:** MCP exposes eight primitive surfaces and the host↔server trust is
-usually implicit. Four primitives feed untrusted server content into the model
-(injection channels); two let a malicious server drive the host (confused deputy); one
-(roots) is the only declared boundary and it's unenforced. See
-[OVERVIEW.md](OVERVIEW.md) for the matrix diagram.
+**Why it works:** the original matrix is pinned to MCP 2025-06-18. Current MCP
+2026-07-28 keeps tools/resources/prompts as core server primitives, retains
+elicitation, and deprecates roots/sampling/logging while adding stateless discovery
+and header routing. Across versions, the host↔server boundary and policy consistency
+remain the core security problem. See [OVERVIEW.md](OVERVIEW.md).
 
 ---
 
@@ -143,9 +146,9 @@ usually implicit. Four primitives feed untrusted server content into the model
 | Challenge | | Diff | Attack path | Surface |
 |---|---|---|---|---|
 | `malicious-weights` | O | 🔴 | A model artifact is deserialized unsafely on load. Ship one that runs code on load and phones the sink. | `POST /load` |
-| `poisoned-dataset` | F | 🔴 | Training data is unvalidated. Map a rare trigger token to a privileged label, then invoke it. | `POST /train`, `POST /predict` |
-| `backdoored-adapter` | F | 🔴 | Adapters are merged unaudited. Hide a trigger in one, then fire it. | `POST /merge_adapter`, `/predict` |
-| `dependency-confusion` | F | 🔴 | The resolver prefers the highest version across indices. Publish a higher-versioned clash of an internal name. | `POST /public/publish`, `/resolve` |
+| `poisoned-dataset` | F | 🟢 | Training data is unvalidated. Map a rare trigger token to a privileged label, then invoke it. | `POST /train`, `POST /predict` |
+| `backdoored-adapter` | F | 🟢 | Adapters are merged unaudited. Hide a trigger in one, then fire it. | `POST /merge_adapter`, `/predict` |
+| `dependency-confusion` | F | 🟡 | The resolver prefers the highest version across indices. Publish a higher-versioned clash of an internal name. | `POST /public/publish`, `/resolve` |
 
 **Why it works:** weights, data, adapters and dependencies are trusted artifacts that
 are rarely verified end-to-end — the cheapest place to compromise a model is before it
@@ -173,9 +176,9 @@ compromise.
 
 | Challenge | | Diff | What to produce |
 |---|---|---|---|
-| `asset-inventory` | A | 🟡 | List the high-value assets: model, prompts/system-prompt, secrets, tools, data (RAG/memory/embeddings), agents. |
-| `trust-boundaries` | A | 🟡 | Mark every place untrusted data meets the model, and the host↔server boundary. Name why each is untrusted. |
-| `attack-paths` | A | 🔴 | Chain ≥3 module vectors into ranked end-to-end paths, referencing the techniques. |
+| `asset-inventory` | A | 🟢 | Give six substantive list entries: model, prompts/system-prompt, secrets, tools, data (RAG/memory/embeddings), and agents. |
+| `trust-boundaries` | A | 🟡 | Give four list entries that relate untrusted data to the model, host to server, and agents to messages. Explain each boundary. |
+| `attack-paths` | A | 🔴 | Write and rank three numbered paths, each with at least three `->`-joined steps, referencing the techniques. |
 
 Submit with `redsec verify 10 <challenge> --artifact-file FILE.md`.
 
@@ -186,9 +189,9 @@ Submit with `redsec verify 10 <challenge> --artifact-file FILE.md`.
 
 | Challenge | | Diff | Attack path | Surface |
 |---|---|---|---|---|
-| `initial-access` | O | 🔴 | Reuse Module 03/05: poison the notes store the assistant trusts; a benign turn fires your implant. | `POST /notes`, then `/chat` |
-| `pivot-vault` | O | ⚫ | The assistant can read an internal vault you can't. Drive its tool to fetch a vault record — your confused-deputy pivot. | the `report_record` tool |
-| `exfil-crown-jewel` | O | ⚫ | Same pivot, the crown record. The assistant's ambient authority exfiltrates it. | `report_record` (crown) |
+| `initial-access` | O | 🟢 | Reuse Module 03/05: poison the notes store the assistant trusts; a benign turn fires your implant. | `POST /notes`, then `/chat` |
+| `pivot-vault` | O | 🔴 | The assistant can read an internal vault you can't. Drive its tool to fetch a vault record — your confused-deputy pivot. | the `report_record` tool |
+| `exfil-crown-jewel` | O | 🔴 | Same pivot, the crown record. The assistant's ambient authority exfiltrates it. | `report_record` (crown) |
 
 **Why it works:** no single bug wins — you chain an injection foothold with the
 assistant's ambient authority over a sensitive system (a classic confused deputy).
@@ -196,6 +199,6 @@ assistant's ambient authority over a sensitive system (a classic confused deputy
 ---
 
 ### Scoring your run
-`redsec score` shows solved/points per module. Total available: **42 challenges**.
+`redsec score` shows solved/points per module. Total available: **43 challenges**.
 When you finish a module, read its `lesson.md` "Defenses" section — the point of the
 range is to learn the fix, not just the exploit.

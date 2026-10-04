@@ -8,7 +8,7 @@ Exploits become an *engagement* when they're organized. This module builds the
 analyst muscle: given an AI-enabled system, enumerate its **assets**, draw its
 **trust boundaries**, and map **attack paths** — grounded in what you've already
 exploited in Modules 03–09. There's no live target; you submit a threat model and
-the verifier checks it covers the required elements.
+the verifier checks both coverage and basic structure. A keyword dump will fail.
 
 ## 2. Reference architecture
 
@@ -32,26 +32,38 @@ Write three short markdown files and submit each:
 
 ```bash
 cat > assets.md <<'EOF'
-# Assets: model, system prompt, secrets (API keys), tools (email/fetch/exec),
-# data (RAG corpus, memory, embeddings), agents (planner/reviewer, MCP servers).
+# Asset inventory
+- Model: weights, adapters and serving configuration; theft or tampering affects every user.
+- Prompts: system prompt and templates; disclosure helps an attacker shape inputs.
+- Secrets: API keys and tokens in context; disclosure enables external access.
+- Tools: email, fetch and execution capabilities; misuse crosses into other systems.
+- Data: RAG corpus, memory and embeddings; poisoning or disclosure persists.
+- Agents: planner and reviewer identities; impersonation corrupts delegated work.
 EOF
 redsec verify 10 asset-inventory --artifact-file assets.md
 
 cat > boundaries.md <<'EOF'
-# Trust boundaries: untrusted user input -> model; untrusted retrieved/tool data ->
-# model (indirect); host <-> MCP server; agent <-> agent bus. All are untrusted.
+# Trust boundaries and data flows
+- Untrusted user input -> model context: direct instructions can conflict with policy.
+- Untrusted retrieved data and tool output -> model: content can carry indirect instructions.
+- Host <-> MCP server: tool metadata and results cross separate security principals.
+- Agent <-> agent messages: sender identity and delegated authority require verification.
 EOF
 redsec verify 10 trust-boundaries --artifact-file boundaries.md
 
 cat > paths.md <<'EOF'
-# Attack path 1: indirect injection (LLM01) -> excessive agency (LLM06) -> exfiltration.
-# Attack path 2: MCP tool poisoning -> confused-deputy pivot -> read restricted record.
-# Attack path 3: embedding exposure (LLM08) -> inversion -> sensitive data.
+# Ranked attack paths
+1. Critical: indirect injection (LLM01) -> excessive agency (LLM06) -> secret exfiltration.
+2. High: MCP tool poisoning -> confused-deputy pivot -> restricted record exfiltration.
+3. Medium: embedding exposure (LLM08) -> reference-corpus reconstruction -> sensitive data disclosure.
+The ranking combines exploit likelihood with confidentiality and integrity impact.
 EOF
 redsec verify 10 attack-paths --artifact-file paths.md
 ```
 
-(For the exact coverage each challenge checks, see `module.yaml`. A complete
+(For the exact coverage and structure each challenge checks, see `module.yaml`.
+The grader remains deterministic: it checks useful scaffolding, while an instructor
+should still review whether the reasoning and ranking are persuasive. A complete
 reference model is in `solution/solve.py`.)
 
 ## 5. Why it matters

@@ -16,7 +16,7 @@ def solve(endpoints: dict[str, str], drop_url: str | None) -> dict:
     e = endpoints["embeddings"].rstrip("/")
     flags: dict[str, str] = {}
 
-    # embedding-inversion: leak the secret's vector, then reconstruct its text.
+    # embedding-inversion: leak the vector, then use the reference-corpus decoder.
     recs = httpx.get(f"{e}/records", timeout=10).json()["records"]
     sv = next(r["vector"] for r in recs if r["id"] == "secret-1")
     dec = httpx.post(f"{e}/decode", json={"vector": sv}, timeout=10).json()

@@ -14,24 +14,22 @@ ASSETS = """# AI Asset Inventory -- reference architecture
 - Secrets: API keys, tokens, credentials held in the agent's context.
 - Tools the agent can call (email, fetch, code exec) and their scopes.
 - Data: the RAG corpus, memory store, embeddings/vector DB.
-- Agents: planner/reviewer and any connected MCP servers.
+- Agents: planner/reviewer identities; connected MCP servers are separate service assets.
 """
 
 BOUNDARIES = """# Trust boundaries & data flows
 - Boundary 1: untrusted user input -> model context (direct prompt injection).
 - Boundary 2: untrusted retrieved data/tool results -> model context (indirect).
-- Boundary 3: host <-> MCP server (tool descriptions, sampling, elicitation).
-- Boundary 4: agent <-> agent messages on the A2A bus.
+- Boundary 3: host <-> MCP server (discovery, tool metadata, calls and results).
+- Boundary 4: agent <-> agent messages on the A2A interface and shared context.
 All inputs crossing into the model or across the host/server line are untrusted.
 """
 
 PATHS = """# End-to-end attack paths (ranked)
-1. Initial access via indirect injection (LLM01) through poisoned RAG/notes ->
-   excessive agency (LLM06) using an exfiltration tool -> data exfiltration.
-2. MCP tool poisoning -> confused-deputy pivot -> read a restricted record ->
-   exfiltrate (chains LLM06 + MCP vectors).
-3. Embedding store exposure (LLM08) -> inversion/membership -> sensitive data.
-Each path chains at least three module vectors; path #2 is executed in the capstone.
+1. Critical: indirect injection (LLM01) through poisoned RAG/notes -> excessive agency (LLM06) using an outbound tool -> secret exfiltration.
+2. High: MCP tool poisoning -> confused-deputy pivot -> read a restricted record -> exfiltrate through an authorized tool.
+3. Medium: embedding store exposure (LLM08) -> reference-corpus reconstruction or membership inference -> sensitive-data disclosure.
+Path 2 is executed in the capstone; likelihood and impact determine this ranking.
 """
 
 
