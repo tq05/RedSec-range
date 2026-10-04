@@ -3,15 +3,17 @@ slug: infra-deployment
 title: AI Infrastructure & Deployment Exploits
 status: complete
 difficulty: advanced
-estimated_minutes: 100
+estimated_minutes: 130
 summary: >
   Attack the platform under the model. Use a server-side fetch feature to SSRF into
   an internal cloud-metadata service and steal role credentials, hit an
   unauthenticated admin inference route, and recover a secret committed into a model
-  card in the registry. The NetworkPolicies model the blast radius.
+  card in the registry. The sealed challenge continues the SSRF into IMDSv2 and a
+  second internal service that refuses the first credential. The NetworkPolicies
+  model the blast radius.
 authors: [RedSec Range]
 prerequisites: ["02"]
-tags: [infrastructure, ssrf, metadata, model-server, secrets, registry]
+tags: [infrastructure, ssrf, metadata, imdsv2, model-server, secrets, registry]
 mappings:
   ai300_module: 9
   owasp_llm: [LLM02]
@@ -24,22 +26,30 @@ targets:
     run: { asgi: app:app }
     port: 9090
     network:
-      egress: false            # internet blocked; internal metadata still reachable
-      allow_targets: [metadata]
+      egress: false            # internet blocked; internal metadata + vault still reachable
+      allow_targets: [metadata, vault]
   - name: metadata
     kind: http
     build: targets/metadata
     run: { asgi: app:app }
     port: 9091
     network: { egress: false }
+  - name: vault
+    kind: http
+    build: targets/vault
+    run: { asgi: app:app }
+    port: 9092
+    network: { egress: false }
 
 challenges:
   - id: metadata-ssrf
     title: SSRF to cloud metadata -> steal role credentials
     primitive: infra-ssrf
+    tier: hard
     points: 250
     difficulty: advanced
     objective: Use the server-side fetcher to read the internal metadata service.
+    mappings: { owasp_agentic: [ASI03], mitre_atlas: [AML.T0040] }
     verify:
       - type: flag
         flag: "REDSEC{infra_ssrf_to_cloud_metadata}"
@@ -51,6 +61,7 @@ challenges:
   - id: open-inference-api
     title: Abuse an unauthenticated admin inference route
     primitive: infra-api
+    tier: easy
     points: 150
     difficulty: beginner
     objective: Reach a privileged route with no auth.
@@ -64,6 +75,7 @@ challenges:
   - id: registry-secrets
     title: Recover a secret from a model card
     primitive: infra-secrets
+    tier: medium
     points: 200
     difficulty: intermediate
     objective: Find credentials committed into the model registry.
@@ -73,5 +85,24 @@ challenges:
     hints:
       - "List the registry models, then read a model's MLmodel card."
       - "Secrets hide in model cards, configs and artifact metadata."
+
+  - id: crown-jewel-chain
+    title: "SSRF to IMDSv2, then a second service that rejects the first credential"
+    primitive: infra-chain
+    tier: impossible
+    sealed: true
+    points: 500
+    difficulty: expert
+    objective: >
+      The credential from the easy metadata read is not accepted by the internal
+      secrets service. Reach the crown jewel anyway. The fetcher has an egress
+      guard, and /debug/config does not list the second service. (No walkthrough;
+      answer sealed in solution/SEALED.md.)
+    mappings: { owasp_llm: [LLM02], owasp_agentic: [ASI03], mitre_atlas: [AML.T0040, AML.T0024] }
+    verify:
+      - type: flag
+        flag: "REDSEC{infra_role_chain_to_crown_jewel}"
+    hints:
+      - "North star: the egress guard and the JSON parser do not read the body the same way. IMDSv1 credentials are refused by the vault."
 
 lesson: lesson.md
