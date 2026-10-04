@@ -35,27 +35,27 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 
 ## Per-module tier spec
 
-> Status key: ✅ built+tested · ◻ specced (to build). Existing 41 challenges are being
+> Status key: ✅ built+tested · □ specced (to build). Existing challenges are being
 > slotted into tiers; the **hard**/**impossible** rows are mostly new and target the
 > agent-chaining risks single-step challenges don't reach.
 
 ### 01 Intro — *goal: run the loop*
 - 🟢 `first-contact` ✅ — coax the orientation flag (direct injection).
-- 🟡 ◻ — same, but a naive input filter blocks "ignore"; rephrase around it.
-- 🔴 ◻ — leak via an indirect channel (a "note" the guide reads).
-- ⚫ ◻ *sealed* — leak with both an input filter and an output filter in place.
+- 🟡 □ — same, but a naive input filter blocks "ignore"; rephrase around it.
+- 🔴 □ — leak via an indirect channel (a "note" the guide reads).
+- ⚫ □ *sealed* — leak with both an input filter and an output filter in place.
 
 ### 02 Recon — *goal: see the target*
 - 🟢 `enumerate-surfaces` / `fingerprint-model` ✅
 - 🟡 `leak-config` ✅ (malformed-input error)
-- 🔴 ◻ — chain recon: version → internal route → auth bypass to a second secret.
-- ⚫ ◻ *sealed* — infer the hidden system-prompt version from behavioral tells only.
+- 🔴 □ — chain recon: version → internal route → auth bypass to a second secret.
+- ⚫ □ *sealed* — infer the hidden system-prompt version from behavioral tells only.
 
 ### 03 Agents — *goal: own one agent (ASI01/02/06, MAESTRO L1/L3)*
 - 🟢 `sys-prompt-leak` ✅
 - 🟡 `indirect-injection` ✅
 - 🔴 `tool-exfil` ✅ / `memory-poisoning` ✅
-- ⚫ ◻ *sealed* — exfil the key with an input guard (blocks `ACTION:`/`{{`) **and**
+- ⚫ □ *sealed* — exfil the key with an input guard (blocks `ACTION:`/`{{`) **and**
   an output guard (redacts `REDSEC{`/`sk-`) both on; needs encoding + indirect path.
 
 ### 04 Multi-agent & A2A — *goal: attack the system (ASI07/08/09, MAESTRO L7)* ← **exemplar built**
@@ -69,42 +69,44 @@ you're not handed it. Mechanically: the challenge carries `tier: impossible` and
 
 ### 05 RAG — *goal: own the knowledge (ASI06, MAESTRO L2)*
 - 🟢 `knowledge-poisoning` ✅  · 🟡 `retrieval-manipulation` ✅  · 🔴 `citation-spoofing` ✅
-- ⚫ ◻ *sealed* — land a payload that only fires for a *specific victim query* while
+- ⚫ □ *sealed* — land a payload that only fires for a *specific victim query* while
   staying invisible to a content scanner on ingest (clean-label poisoning).
 
 ### 06 Embeddings — *goal: break the vector store (ASI06, MAESTRO L2)*
 - 🟢 `membership-inference` ✅  · 🔴 `embedding-inversion` ✅  · 🟡 `embedding-collision` ✅
-- ⚫ ◻ *sealed* — invert a secret when only top-k *nearest IDs* (not raw vectors) are
+- ⚫ □ *sealed* — invert a secret when only top-k *nearest IDs* (not raw vectors) are
   exposed — reconstruct via adaptive queries.
 
 ### 07 MCP & tools — *goal: own the tool layer (ASI02/04/05, MAESTRO L3)*
 - 🟢 `logging-leak` / `completion-leak` ✅  · 🟡 `resource-traversal` / `prompt-injection` / `roots-bypass` / `rug-pull` ✅  · 🔴 `tool-poisoning` / `sampling-abuse` / `elicitation-phishing` / `command-injection` ✅
-- ⚫ ◻ *sealed* — Unicode tag-block tool-poisoning that renders blank in the approval
+- ⚫ □ *sealed* — Unicode tag-block tool-poisoning that renders blank in the approval
   UI but still reaches the model, chained to RCE (ASI04→ASI05).
 
 ### 08 Supply chain — *goal: compromise before deploy (ASI04/10, MAESTRO L2/L3)*
 - 🟢 `poisoned-dataset` / `backdoored-adapter` ✅  · 🔴 `malicious-weights` ✅  · 🟡 `dependency-confusion` ✅
-- ⚫ ◻ *sealed* — a **rug-pull**: an artifact that passes a scan at register-time and
+- ⚫ □ *sealed* — a **rug-pull**: an artifact that passes a scan at register-time and
   weaponizes only after N loads (time/TOCTOU), per ASI10.
 
-### 09 Infra — *goal: own the platform (ASI03, MAESTRO L4)*
+### 09 Infra — *goal: own the platform (ASI03, MAESTRO L4)* ← **built**
 - 🟢 `open-inference-api` ✅  · 🟡 `registry-secrets` ✅  · 🔴 `metadata-ssrf` ✅
-- ⚫ ◻ *sealed* — chain SSRF → stolen role creds → use them against a second in-range
-  service to reach a crown-jewel (identity & privilege abuse).
+- ⚫ `crown-jewel-chain` ✅ *sealed* — the fetcher's egress guard scans the raw
+  body, so an IMDSv2 session (PUT token + token header) only survives as JSON
+  unicode escapes; the vault rejects the IMDSv1 flag. Answer sealed in
+  `solution/SEALED.md`.
 
 ### 10 Threat modeling — *goal: analysis (all ASI / MAESTRO)*
 - 🟢 `asset-inventory` ✅  · 🟡 `trust-boundaries` ✅  · 🔴 `attack-paths` ✅
-- ⚫ ◻ *sealed* — produce a MAESTRO-layered threat model for the capstone env that
+- ⚫ □ *sealed* — produce a MAESTRO-layered threat model for the capstone env that
   names a path the graders didn't pre-list (rubric/LLM-judge scored).
 
 ### 11 Capstone — *goal: full chain (ASI01→ASI02→ASI03, MAESTRO L1→L3→L7)*
 - 🟢 `initial-access` ✅  · 🔴 `pivot-vault` ✅  · 🔴 `exfil-crown-jewel` ✅
-- ⚫ ◻ *sealed* — the end-to-end chain with HITL approval + egress monitoring enabled,
+- ⚫ □ *sealed* — the end-to-end chain with HITL approval + egress monitoring enabled,
   so you must defeat detection as well as the controls.
 
 ## Rollout
 
-Module **04** is built and tested as the reference pattern (incl. the sealed
-impossible challenge). Remaining ⚫/new tiers are specced above and tracked in
-`docs/ROADMAP.md`; each lands the same way: target behavior → verifier → `solve.py`
+Modules **04** (session smuggling) and **09** (SSRF → IMDSv2 → vault) are built
+and tested, each with a sealed impossible challenge. Remaining ⚫/new tiers are
+specced above and tracked in `docs/ROADMAP.md`; each lands the same way: target behavior → verifier → `solve.py`
 → `redsec selftest` fail→pass → tier/sealed metadata → regenerate worksheet/solutions.
