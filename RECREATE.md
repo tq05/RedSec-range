@@ -11,7 +11,7 @@ and runs the bootstrap; the embedded spec is only a fallback for rebuilding if t
 repo is ever unavailable. This file is kept in sync with `CLAUDE.md` (the single
 source of truth for project detail) — update both together.
 
-- **Last updated:** 2026-10-04
+- **Last updated:** 2026-10-04 (added Grok CLI + assessor, interactive range, ROADMAP)
 - **Repo:** https://github.com/tq05/RedSec-range
 - **State at last update:** 11 modules, 40 challenges, all complete + tested.
 

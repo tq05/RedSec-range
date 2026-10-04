@@ -6,6 +6,10 @@ and Model Context Protocol servers — against deliberately vulnerable targets y
 deploy yourself, with automated checks that confirm whether your exploit actually
 worked.
 
+> **New here / resuming?** Read [`CLAUDE.md`](CLAUDE.md) (project context + resume
+> steps) and [`docs/ROADMAP.md`](docs/ROADMAP.md) (intent + what's next). To recreate
+> the whole environment from one prompt, see [`RECREATE.md`](RECREATE.md).
+
 > ⚠️ **Deliberately vulnerable software.** Every target in this repo ships real,
 > exploitable flaws (prompt injection, SSRF, command-injection RCE, insecure
 > deserialization, …). Run it **only** inside an isolated lab or a throwaway

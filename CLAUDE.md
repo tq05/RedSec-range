@@ -14,6 +14,28 @@ Juice Shop, but for LLM/agent/MCP attack surfaces). Structured on the OffSec
 
 Owner/author context: built for R (GitHub tq05 / rolfh9). Not affiliated with OffSec.
 
+## Intent & resume (read this to continue the project)
+
+**Intent:** a detailed, guided, open-source, *self-verifying* AI & MCP security
+course + framework — guided by OffSec AI-300 but better/accurate/expandable;
+per-module vulnerable apps you actually exploit; automated proof an exploit worked;
+deployable on Kubernetes; usable as an interactive command centre; pluggable LLM
+assessors (Grok/OpenAI/local); GitHub as the durable store; resumable in Claude Code.
+Full intent, principles, backlog and open questions: **`docs/ROADMAP.md`** — read it
+when resuming or planning next steps.
+
+**Resume in Claude Code (cold start):**
+```bash
+# the repo is already cloned as your workspace; then:
+pip install -e .            # Python 3.11+
+redsec doctor               # expect 11/11 modules OK
+redsec selftest             # expect 40/40 fail->pass  (the correctness gate)
+./scripts/sandbox-up.sh     # optional: bring the interactive Docker range up (needs Docker)
+```
+Then read `docs/ROADMAP.md` for what's next and ask R which item to pick up.
+On a normal machine (unlike the Claude sandbox) `./scripts/kind-up.sh` runs the full
+Kubernetes path too.
+
 ## Status: all 11 modules complete + tested — 40 challenges
 
 | # | module | challenges | notes |
