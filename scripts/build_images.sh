@@ -44,6 +44,7 @@ build modules/07-mcp-tool-surfaces/targets/host/Dockerfile         m07-host
 build modules/08-supply-chain/targets/registry/Dockerfile          m08-registry
 build modules/09-infra-deployment/targets/appserver/Dockerfile     m09-appserver
 build modules/09-infra-deployment/targets/metadata/Dockerfile      m09-metadata
+build modules/09-infra-deployment/targets/vault/Dockerfile         m09-vault
 build modules/11-capstone/targets/assistant/Dockerfile             m11-assistant
 build modules/11-capstone/targets/vault/Dockerfile                 m11-vault
 # (Module 10 is artifact-scored and has no container targets.)
