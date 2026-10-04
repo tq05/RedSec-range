@@ -28,6 +28,7 @@ targets:
 challenges:
   - id: fingerprint-model
     title: Fingerprint the backing model/provider
+    tier: easy
     primitive: recon
     points: 100
     difficulty: beginner
@@ -42,6 +43,7 @@ challenges:
 
   - id: enumerate-surfaces
     title: Discover an undocumented internal endpoint
+    tier: easy
     primitive: recon
     points: 150
     difficulty: beginner
@@ -55,6 +57,7 @@ challenges:
 
   - id: leak-config
     title: Dump service config via a verbose error
+    tier: medium
     primitive: recon
     points: 150
     difficulty: intermediate

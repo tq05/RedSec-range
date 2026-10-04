@@ -28,6 +28,7 @@ targets:
 challenges:
   - id: first-contact
     title: First contact -- coax the orientation flag out of the Guide
+    tier: easy
     primitive: direct-injection
     points: 50
     difficulty: intro

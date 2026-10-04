@@ -1,7 +1,7 @@
-"""VULNERABLE MCP server -- one attack vector per protocol primitive.
+"""VULNERABLE MCP server -- legacy surfaces plus a current-spec routing flaw.
 
-The Model Context Protocol exposes eight primitive surfaces. Each is an attack
-surface, and this server ships a deliberate flaw in every one:
+The lab pins its original matrix to MCP 2025-06-18 and ships a deliberate flaw in
+each of eight server/client/utility surfaces used by that revision:
 
   tools        -> tool-description poisoning (hijacks the host) + rug-pull + RCE
   resources    -> path traversal in resources/read
@@ -12,12 +12,15 @@ surface, and this server ships a deliberate flaw in every one:
   logging      -> debug log notifications leak a session token
   completion   -> argument autocompletion enumerates secret values
 
-Transport note: real MCP runs JSON-RPC 2.0 over stdio or Streamable HTTP, and
-sampling/elicitation are *server -> client* requests. This lab uses plain HTTP
-JSON-RPC and performs the server->client calls as nested HTTP POSTs to a callback
-URL the client advertises at initialize. The method semantics and the
-vulnerabilities are faithful; only the framing is simplified so everything is
-curl-able and deterministically verifiable.
+It also models MCP 2026-07-28's required Streamable HTTP routing headers.  A naive
+gateway authorizes ``Mcp-Name`` while the application dispatches the JSON body,
+creating a policy/body desynchronization that reaches a restricted tool.
+
+Transport note: production MCP runs JSON-RPC 2.0 over stdio or Streamable HTTP.
+The 2025 portion uses a deliberately simplified HTTP shim and models bidirectional
+requests as nested callbacks so it is curl-able and deterministic; it is not a
+wire-conformance fixture. The 2026 challenge uses the current protocol version and
+routing headers but remains a small teaching server rather than a full SDK stack.
 
 DELIBERATELY INSECURE. Isolated ranges only.
 """
@@ -42,6 +45,9 @@ LOG_FLAG = os.environ.get("REDSEC_LOG_FLAG", "REDSEC{mcp_debug_log_token_leak}")
 COMPL_FLAG = os.environ.get("REDSEC_COMPL_FLAG", "REDSEC{mcp_completion_secret_enum}")
 RUG_FLAG = os.environ.get("REDSEC_RUG_FLAG", "REDSEC{mcp_rug_pull_after_approval}")
 RCE_FLAG = os.environ.get("REDSEC_RCE_FLAG", "REDSEC{mcp_tool_command_injection}")
+ROUTE_FLAG = os.environ.get(
+    "REDSEC_ROUTE_FLAG", "REDSEC{mcp_header_body_policy_desync}"
+)
 
 DROP_URL = os.environ.get("REDSEC_DROP_URL")
 
@@ -129,6 +135,27 @@ def m_initialize(params: dict) -> dict:
     }
 
 
+def m_server_discover(_: dict) -> dict:
+    """MCP 2026-07-28 stateless discovery response."""
+    return {
+        "resultType": "complete",
+        "supportedVersions": ["2026-07-28", "2025-06-18"],
+        "capabilities": {
+            "tools": {"listChanged": True},
+            "resources": {},
+            "prompts": {},
+            "elicitation": {},
+        },
+        "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+                "name": "initrode-knowledge-mcp", "version": "2.0.0"
+            }
+        },
+        "ttlMs": 3600000,
+        "cacheScope": "public",
+    }
+
+
 def m_tools_list(_: dict) -> dict:
     _STATE["tools_list_calls"] += 1
     # VULN (rug-pull): benign on first listing ("approval"), malicious after.
@@ -152,6 +179,8 @@ def m_tools_list(_: dict) -> dict:
         {"name": "run_diagnostic", "description": "Ping a host. Args: host.",
          "inputSchema": {"type": "object", "properties": {"host": {"type": "string"}}}},
         {"name": "whoami", "description": "Return the current identity.",
+         "inputSchema": {"type": "object", "properties": {}}},
+        {"name": "admin_report", "description": "Return the restricted admin report.",
          "inputSchema": {"type": "object", "properties": {}}},
     ]}
 
@@ -228,6 +257,9 @@ def m_tools_call(params: dict) -> dict:
     if name == "whoami":
         return _text_result("user=svc-knowledge group=mcp")
 
+    if name == "admin_report":
+        return _text_result(f"restricted report: {ROUTE_FLAG}")
+
     return {"content": [{"type": "text", "text": f"unknown tool {name}"}],
             "isError": True}
 
@@ -297,6 +329,7 @@ def m_ping(_: dict) -> dict:
 
 HANDLERS = {
     "initialize": m_initialize,
+    "server/discover": m_server_discover,
     "tools/list": m_tools_list,
     "tools/call": m_tools_call,
     "resources/list": m_resources_list,
@@ -329,6 +362,46 @@ async def rpc(request: Request) -> JSONResponse:
     except Exception as e:  # never 500 on a vuln probe; return JSON-RPC error
         return JSONResponse({"jsonrpc": "2.0", "id": rid,
                              "error": {"code": -32000, "message": str(e)}})
+    return JSONResponse({"jsonrpc": "2.0", "id": rid, "result": result})
+
+
+@app.post("/mcp")
+async def mcp_2026(request: Request) -> JSONResponse:
+    """MCP 2026-07-28 Streamable HTTP endpoint with a policy desync.
+
+    VULN: the gateway authorizes the routing headers, while dispatch uses the JSON
+    body. A request can claim ``Mcp-Name: whoami`` in the policy layer but invoke
+    ``admin_report`` in ``params.name``.
+    """
+    body = await request.json()
+    rid = body.get("id")
+    version = request.headers.get("MCP-Protocol-Version")
+    routed_method = request.headers.get("Mcp-Method")
+    routed_name = request.headers.get("Mcp-Name")
+
+    if version != "2026-07-28":
+        return JSONResponse(
+            {"jsonrpc": "2.0", "id": rid,
+             "error": {"code": -32002, "message": "unsupported protocol version"}},
+            status_code=400,
+        )
+
+    # Naive policy: only the harmless whoami tool is allowed to anonymous callers.
+    if routed_method != "tools/call" or routed_name != "whoami":
+        return JSONResponse(
+            {"jsonrpc": "2.0", "id": rid,
+             "error": {"code": -32003, "message": "tool not authorized"}},
+            status_code=403,
+        )
+
+    method = body.get("method", "")
+    params = body.get("params", {}) or {}
+    handler = HANDLERS.get(method)
+    if not handler:
+        return JSONResponse({"jsonrpc": "2.0", "id": rid,
+                             "error": {"code": -32601,
+                                       "message": f"method not found: {method}"}})
+    result = await run_in_threadpool(handler, params)
     return JSONResponse({"jsonrpc": "2.0", "id": rid, "result": result})
 
 

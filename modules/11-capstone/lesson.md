@@ -1,7 +1,7 @@
 # Module 11 — Capstone: Full Red Team Engagement
 
 > **Targets:** `assistant` + `vault` + `drop`. **Maps to:** AI-300 Module 11 · OWASP
-> LLM01/LLM02/LLM06/LLM08 · OWASP MCP · MITRE ATLAS AML.T0051, AML.T0024.
+> LLM01/LLM02/LLM06 · MITRE ATLAS AML.T0051, AML.T0024.
 
 ## 1. The engagement
 

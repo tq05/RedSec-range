@@ -46,10 +46,10 @@ map of the modern AI attack surface. RedSec Range turns that map into a hands-on
   vulnerable mock model, so challenges are reproducible with **no paid API**. Swap
   in a real model with one env var when you want to.
 
-It is designed to be *better than* existing vulnerable-MCP demos: organized by
-authoritative taxonomy (OWASP LLM Top 10, OWASP MCP Top 10, MITRE ATLAS), with the
-MCP module built systematically around the **8 protocol primitives** rather than an
-ad-hoc challenge list, and with automated verification throughout.
+It is designed to improve on one-off vulnerable-MCP demos: organized by
+authoritative taxonomy (OWASP LLM Top 10, OWASP MCP Top 10, MITRE ATLAS), with a
+version-pinned 2025 surface matrix plus a current-protocol challenge, and with
+automated verification throughout.
 
 ## Curriculum (maps to OffSec AI-300)
 
@@ -58,16 +58,16 @@ ad-hoc challenge list, and with automated verification throughout.
 | 01 | Introduction to Red Teaming AI Systems | ✅ | orientation + a first prompt-injection |
 | 02 | Reconnaissance for AI Targets | ✅ | fingerprinting, enumeration, config leakage |
 | 03 | Attacking AI Agents | ✅ | direct/indirect injection, excessive agency, memory poisoning |
-| 04 | Attacking Multi-Agent Systems & A2A | ✅ | inter-agent trust, forged messages, impersonation |
+| 04 | Attacking Multi-Agent Systems & A2A | ✅ | Agent Cards, JSON-RPC messages/tasks, trust, impersonation |
 | 05 | Exploiting RAG Pipelines | ✅ | knowledge poisoning, retrieval manipulation, citation spoofing |
 | 06 | Attacking Embeddings | ✅ | inversion, membership inference, collisions |
-| 07 | Attacking MCP & Tool Surfaces | ✅ | the 8-vector MCP matrix + rug-pull + RCE |
+| 07 | Attacking MCP & Tool Surfaces | ✅ | versioned MCP matrix + routing desync + rug-pull + RCE |
 | 08 | Supply Chain Attacks on AI/ML | ✅ | malicious weights (pickle RCE), data/adapter backdoors, dep confusion |
 | 09 | AI Infrastructure & Deployment | ✅ | SSRF→metadata, open inference API, registry secrets |
 | 10 | Threat Modeling for AI Targets | ✅ | assets, trust boundaries, attack paths (artifact-scored) |
 | 11 | Capstone — Full Engagement | ✅ | chain injection → vault pivot → crown-jewel exfiltration |
 
-**All 11 modules are fully implemented and tested — 42 challenges** with guided,
+**All 11 modules are fully implemented and tested — 43 challenges** with guided,
 copy-paste walkthroughs. Every challenge is proven solvable fail→pass by
 `redsec selftest`, and the walkthroughs were independently **red-teamed by a separate
 model** (a fresh-context Claude Sonnet following only the lesson text, not the
@@ -130,13 +130,13 @@ policy-enforcing CNI). See [docs/kubernetes.md](docs/kubernetes.md).
 
 ### Run every challenge in containers (no Kubernetes)
 
-If you can't run a nested cluster (some VMs/CI can't), this runs **all 37
+If you can't run a nested cluster (some VMs/CI can't), this runs **all 40
 container-backed challenges** in real Docker containers with service-name DNS — the
 same model kind uses — and verifies each:
 
 ```bash
 ./scripts/build_base_image.sh
-python scripts/docker_run_all.py            # 39/39 PASS
+python scripts/docker_run_all.py            # 40/40 PASS
 python scripts/docker_run_all.py --real     # same, using the per-module prod images
 ```
 
@@ -170,11 +170,12 @@ The harness is scoped to the local lab only and is self-tested with a stub (no k
 needed). Full guide incl. building your own harness:
 [docs/llm-assessor.md](docs/llm-assessor.md).
 
-## The 8-vector MCP attack matrix (Module 07)
+## The version-aware MCP attack matrix (Module 07)
 
-MCP exposes eight protocol primitives; this module ships a flaw in each (plus
-rug-pull and command-injection RCE), attacked both directly over JSON-RPC and
-through a naive MCP host:
+The module covers eight server/client/utility surfaces from MCP 2025-06-18, plus
+rug-pull and command-injection RCE, then adds a current MCP 2026-07-28 Streamable
+HTTP routing-policy challenge. Attacks run directly over JSON-RPC and through a
+naive MCP host:
 
 | Primitive | Vector | Verified by |
 |-----------|--------|-------------|
@@ -186,6 +187,11 @@ through a naive MCP host:
 | elicitation | **credential phishing** via auto-answer | sink oracle |
 | logging | **sensitive-data leak** at debug | flag |
 | completion | **secret enumeration** via autocomplete | flag |
+| Streamable HTTP | header/body authorization **desynchronization** | flag |
+
+Current MCP defines tools/resources/prompts as the three core server primitives and
+deprecates roots/sampling/logging. The course keeps legacy vectors for deployed
+systems while labelling their version explicitly.
 
 Full write-up: [modules/07-mcp-tool-surfaces/lesson.md](modules/07-mcp-tool-surfaces/lesson.md)
 and [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md).
@@ -212,12 +218,13 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/SOLUTIONS.md](docs/SOLUTIONS.md) | Full **answers** (flags + exact steps) |
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | **Visual** map — learning path, attack surface, MCP matrix, kill chain |
 | [docs/curriculum.md](docs/curriculum.md) | Module ↔ OWASP/ATLAS mapping table |
+| [docs/AI300-COVERAGE.md](docs/AI300-COVERAGE.md) | Public AI-300 syllabus coverage and course-quality contract |
 | [docs/architecture.md](docs/architecture.md) | How the framework is built |
 | [docs/TESTING.md](docs/TESTING.md) | Reproduce the end-to-end tests: envs, payloads, flags |
 | [docs/interactive-sandbox.md](docs/interactive-sandbox.md) | Run it live in a Docker sandbox (the command centre) |
 | [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
 | [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |
-| [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md) | The 8 MCP primitives in depth |
+| [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md) | Version-aware MCP surfaces and attack paths in depth |
 | [docs/THREAT-LANDSCAPE.md](docs/THREAT-LANDSCAPE.md) | Current AI-agent attack chains + threat actors, mapped to OWASP/CSA |
 | [docs/DIFFICULTY-TIERS.md](docs/DIFFICULTY-TIERS.md) | easy/medium/hard/impossible tiers per module |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Intent, principles, backlog |

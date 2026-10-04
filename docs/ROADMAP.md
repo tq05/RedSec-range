@@ -42,8 +42,8 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
 
 ## Status (keep in sync with CLAUDE.md)
 
-11 modules, 42 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
-`redsec selftest` 42/42, `pytest` green, `docker_run_all` 39/39, 62 K8s objects
+11 modules, 43 challenges, all complete + tested. Acceptance: `redsec doctor` 11/11,
+`redsec selftest` 43/43, `pytest` green, `docker_run_all` 40/40, 62 K8s objects
 valid. Walkthroughs independently red-teamed by a separate model.
 
 ## Backlog / next steps (suggestions, not commitments — confirm with R)
@@ -57,8 +57,10 @@ Near-term:
 - [ ] Decide the default Grok model tag (currently `grok-4` as a placeholder).
 
 Content expansion (hooks already noted in docs/mcp-attack-matrix.md):
-- [ ] MCP: Unicode tag-block tool-poisoning concealment; **token passthrough /
-      confused-deputy** as a dedicated vector; cross-server **tool shadowing**.
+- [x] MCP: Unicode tag-block tool-poisoning concealment and current 2026-07-28
+      Streamable HTTP header/body policy desynchronization.
+- [ ] MCP: **token passthrough / confused-deputy** as a dedicated vector;
+      cross-server **tool shadowing**.
 - [ ] More challenges per module; a harder capstone variant.
 - [ ] Swap module 07's HTTP/JSON-RPC shim for the **official MCP SDK over stdio** as
       an "advanced transport" variant.
@@ -130,7 +132,10 @@ and tighten the accuracy/integrity claims.
       don't break checks; spoiler-tag hints so the worksheet can exclude answers
       programmatically.
 - [ ] Key the `07` rug-pull counter per client (currently one global counter → order
-      dependence). Harden `module 10` artifact checks (keyword match is gameable).
+      dependence).
+- [x] **Threat-model artifact integrity.** Module 10 now requires structured asset
+      entries, same-entry trust relationships, and numbered multi-step chains; a
+      keyword dump is covered by a regression test. Done 2026-10-04.
 
 **P3 — minor:** `cli.verify` exit semantics; leftover temp values files in
 `k8s.render`; `datetime.utcnow()` deprecation; CI has no linter/type-check;
@@ -143,8 +148,11 @@ unpinned deps; base image copies `.git`.
   `docs/DIFFICULTY-TIERS.md`; research + OWASP Agentic/CSA MAESTRO mapping in
   `docs/THREAT-LANDSCAPE.md`.
 - **Built + tested:** Module 04 tiers (easy/medium/hard) + new **impossible**
-  `session-smuggling` (sealed answer in `solution/SEALED.md`; reference exploit proves
-  solvable via selftest).
+  `session-smuggling`, now exercised through A2A Agent Cards, JSON-RPC Messages,
+  Tasks and `contextId` (sealed answer in `solution/SEALED.md`; reference exploit
+  proves solvable via selftest). Every existing challenge now has a learning tier.
+- **Built + tested:** Module 07 Unicode-concealment impossible tier and current MCP
+  2026-07-28 routing-policy desynchronization challenge.
 - **Next:** build the remaining impossible/new tiers specced in DIFFICULTY-TIERS.md
-  (03 dual-guard exfil, 07 Unicode-concealment→RCE, 08 time-delayed rug pull, 09
-  SSRF→cred→second-service chain, 11 chain-vs-detection), each fail→pass + sealed.
+  (03 dual-guard exfil, 08 time-delayed rug pull, 09 SSRF→cred→second-service chain,
+  11 chain-vs-detection), each fail→pass + sealed.

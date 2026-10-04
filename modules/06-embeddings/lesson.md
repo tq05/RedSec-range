@@ -5,14 +5,18 @@
 
 ## 1. Idea
 
-Vector stores leak. An embedding retains enough of its source to be **inverted**,
-similarity structure enables **membership inference**, and lossy embeddings admit
-**collisions** — so "we only store embeddings" is not a privacy or safety control.
+Vector stores leak. Embeddings can enable **source reconstruction** when an attacker
+has a learned decoder, a candidate/reference corpus, or a useful query oracle.
+Similarity structure also enables **membership inference**, and lossy embeddings
+admit **collisions** — so "we only store embeddings" is not a privacy or safety
+control.
 
 This target uses a deliberately transparent character-histogram embedding so you can
-*see* why each attack works. A production embedding is heavier and
-non-deterministic, but the failure modes are identical. Read
-`targets/embeddings/app.py`.
+*see* why each attack works. The inversion challenge specifically models a
+**reference-corpus / nearest-neighbor reconstruction attack** through an exposed
+decoder oracle. It does not claim that any arbitrary production vector can be
+decoded exactly. Production attacks depend on the model, auxiliary data, query
+access and source predictability. Read `targets/embeddings/app.py`.
 
 ## 2. Start
 
@@ -24,7 +28,9 @@ URL=http://127.0.0.1:9060
 ## 3. Walkthrough
 
 ### 3.1 `embedding-inversion` (LLM08/LLM02)
-Leak the stored vectors, then reconstruct the secret's text via the decode endpoint.
+Leak the stored vector, then submit it to a decoder backed by the service's source
+corpus. The nearest candidate reveals the secret record. This is one practical
+member of the broader embedding-inversion/source-reconstruction attack family.
 
 ```bash
 curl -s $URL/records            # vectors incl. secret-1
