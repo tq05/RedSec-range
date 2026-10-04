@@ -87,6 +87,14 @@ and docs/interactive-sandbox.md.
 - Keep the deterministic mock as default; it's what makes CI and teaching reliable.
 - All targets are deliberately vulnerable — isolated use only (see SECURITY.md).
 
+## Maintenance convention
+
+- `RECREATE.md` (root) is the single reusable prompt to rebuild + verify the whole
+  environment. Keep it in sync with this file on any change affecting setup/scope
+  (new module, new run path, changed acceptance numbers like 40/40 or 37/37, new
+  integration): bump its "Last updated"/"State" and the acceptance numbers, commit
+  both. This file is the single source of truth; RECREATE.md references it, no dup.
+
 ## Git attribution (this session's harness)
 
 Commit footer:
