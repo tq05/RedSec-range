@@ -22,6 +22,25 @@ worked.
 
 ---
 
+## Start here: GitHub Codespaces
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/tq05/RedSec-range?quickstart=1)
+
+Sign in to GitHub, open the button, and wait for `RedSec Range is ready`. The
+Codespace installs the course and starts all container-backed targets automatically.
+No local Docker installation, Fly.io account, or model API key is required.
+
+```bash
+range status                 # live targets and private forwarded ports
+redsec lesson 01             # course material
+range solve 01               # reference exploit + verifier
+```
+
+Use the browser terminal, point Claude/Codex at the repository, or connect from a
+local terminal with `gh codespace ssh -R tq05/RedSec-range`. Challenge ports remain
+private to your GitHub account. Codespaces includes usage on eligible GitHub plans
+and shows any billable cost before creation. See the [Codespaces guide](docs/codespaces.md).
+
 ## Why this exists
 
 The OffSec **AI-300 / OSAI** ("Advanced AI Red Teaming") syllabus is an excellent
@@ -73,7 +92,7 @@ copy-paste walkthroughs. Every challenge is proven solvable fail→pass by
 model** (a fresh-context Claude Sonnet following only the lesson text, not the
 solutions). `redsec list` shows live status.
 
-## Quickstart (local, no Docker/Kubernetes)
+## Alternative: local Python quickstart
 
 ```bash
 pip install -e .            # Python 3.11+
@@ -156,6 +175,26 @@ Full guide: [docs/interactive-sandbox.md](docs/interactive-sandbox.md). This is 
 path that runs end-to-end **inside this project's own cloud sandbox** (where a
 nested Kubernetes cluster can't start — see the doc for why).
 
+### Dedicated cloud range (Fly.io)
+
+Want an ephemeral cloud VM you spin up, play with, and destroy? One private Fly.io
+Machine runs the Docker range. The repository includes interactive SSH, a
+non-interactive harness interface, model execution, readiness checks, and local
+port tunnels:
+
+```bash
+export OPENAI_API_KEY=...              # optional; staged as a Fly secret
+./deploy/fly/up.sh --ttl 60            # unique app; waits until targets are ready
+./deploy/fly/ssh.sh                    # interactive: range status / range solve 05
+./deploy/fly/exec.sh range solve 07    # Claude/Codex/CI command interface
+./deploy/fly/model.sh 07 --provider openai --model gpt-5
+./deploy/fly/down.sh                   # destroy app and Machine
+```
+
+The app has no public services; helpers use the app recorded in
+`.redsec/fly.json`. Fly credentials and billing are required. Full guide:
+[docs/deploy-fly.md](docs/deploy-fly.md).
+
 ### Point another LLM (Grok, OpenAI, local) at the range
 
 Two integration points, both OpenAI-compatible: run an **autonomous assessor** that
@@ -221,6 +260,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/AI300-COVERAGE.md](docs/AI300-COVERAGE.md) | Public AI-300 syllabus coverage and course-quality contract |
 | [docs/architecture.md](docs/architecture.md) | How the framework is built |
 | [docs/TESTING.md](docs/TESTING.md) | Reproduce the end-to-end tests: envs, payloads, flags |
+| [docs/codespaces.md](docs/codespaces.md) | One-click GitHub range, private ports, harness and SSH access |
 | [docs/interactive-sandbox.md](docs/interactive-sandbox.md) | Run it live in a Docker sandbox (the command centre) |
 | [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
 | [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |

@@ -11,7 +11,7 @@ and runs the bootstrap; the embedded spec is only a fallback for rebuilding if t
 repo is ever unavailable. This file is kept in sync with `CLAUDE.md` (the single
 source of truth for project detail) — update both together.
 
-- **Last updated:** 2026-10-04 (AI-300 coverage audit; protocol-faithful A2A surface; version-aware MCP 2025/2026 labs; all challenges tiered)
+- **Last updated:** 2026-10-05 (one-click Codespaces default plus dedicated Fly.io workflow)
 - **Repo:** https://github.com/tq05/RedSec-range
 - **State at last update:** 11 modules, 43 challenges, all complete + tested.
 
@@ -39,14 +39,22 @@ PRIMARY PATH (deterministic — do this first):
 4. Verify it loads:  redsec doctor   (expect all 11 modules OK)
 5. Prove every challenge is solvable:  redsec selftest   (expect 43/43 fail->pass)
 6. Choose how to RUN it (all use the same modules/verifiers/exploits):
-   a. Local processes:  redsec dev <id>   or   redsec up <id> / redsec down <id>
-   b. Persistent interactive Docker range (works even where Kubernetes can't start):
+   a. GitHub Codespaces (default cloud path): create a Codespace from the repo and
+      wait for "RedSec Range is ready". The devcontainer installs and starts the
+      range automatically. Use browser port forwarding or `gh codespace ssh`.
+      See docs/codespaces.md.
+   b. Local processes:  redsec dev <id>   or   redsec up <id> / redsec down <id>
+   c. Persistent interactive Docker range (works even where Kubernetes can't start):
         ./scripts/sandbox-up.sh      # dockerd + base image + whole range, persistent
         range status | range solve <mod> [chal] | range shell <mod> <target>
-   c. Ephemeral container check:  python scripts/docker_run_all.py [--real]  (40/40)
-   d. Kubernetes on a normal host:  ./scripts/kind-up.sh && ./scripts/kind-run-all.sh
+   d. Ephemeral container check:  python scripts/docker_run_all.py [--real]  (40/40)
+   e. Kubernetes on a normal host:  ./scripts/kind-up.sh && ./scripts/kind-run-all.sh
       (NOTE: nested k8s/kind CANNOT start pods in some microVM sandboxes — runc
-       'pipe EOF'; use path (b) there. Docker itself works. See docs/kubernetes.md.)
+       'pipe EOF'; use path (c) there. Docker itself works. See docs/kubernetes.md.)
+   f. Dedicated cloud box (Fly.io): `./deploy/fly/up.sh` creates a unique private
+      app and waits for readiness. Use `deploy/fly/ssh.sh` interactively,
+      `deploy/fly/exec.sh` from a harness, and `deploy/fly/model.sh` for a model
+      assessor. Destroy it with `deploy/fly/down.sh`. See docs/deploy-fly.md.
 
 ACCEPTANCE CHECKS (must all pass):
 - redsec doctor           -> 11/11 modules OK

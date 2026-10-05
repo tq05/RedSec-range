@@ -14,6 +14,11 @@ trap 'rm -rf "$CTX"' EXIT
 # Stage the repo into the build context.
 cp -a "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" "$CTX/redsec-range"
 
+# Apply the repository's Docker exclusions to the nested build context as well.
+# This keeps local virtualenvs, credentials, state, and generated challenge files
+# out of the shared runner image.
+awk 'NF && $1 !~ /^#/ { print "redsec-range/" $0 }' .dockerignore > "$CTX/.dockerignore"
+
 cat > "$CTX/Dockerfile" <<'EOF'
 FROM python:3.12-slim
 ARG PXY=

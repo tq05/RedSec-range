@@ -1,0 +1,22 @@
+# Template used by deploy/fly/up.sh. The script always supplies a unique app name.
+# No services or public ports are declared: access is only through Fly SSH/proxy.
+
+app = "redsec-range-template"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "deploy/fly/Dockerfile"
+
+[env]
+  MAX_RUNTIME_MIN = "0"
+  REDSEC_BIND_HOST = "all"
+
+[[vm]]
+  size = "shared-cpu-4x"
+  memory = "8gb"
+  # Retain the inner Docker images when this Machine restarts or is stopped/started.
+  persist_rootfs = "restart"
+
+[[restart]]
+  # A TTL exit must leave the Machine stopped instead of starting it again.
+  policy = "never"
