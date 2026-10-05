@@ -68,5 +68,6 @@ vulnerabilities taught live in the *applications*, which is the point.
   or network you care about.
 - External catalog adapters currently use Docker isolation on the same host. They do
   not inherit the built-in Helm NetworkPolicy and are not deployed into the built-in
-  Kubernetes namespaces. Their Docker networks are internal unless the operator
-  explicitly enables egress.
+  Kubernetes namespaces. Each target joins only an internal network; a read-only
+  gateway forwards its declared host ports. The target receives a routed bridge only
+  when the operator explicitly enables egress.

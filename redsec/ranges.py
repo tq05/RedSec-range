@@ -173,6 +173,28 @@ def _network_name(definition: RangeDefinition) -> str:
     return f"redsec-ext-{definition.id}"
 
 
+def _proxy_name(definition: RangeDefinition) -> str:
+    return f"redsec-ext-{definition.id}-gateway"
+
+
+def _access_network_name(definition: RangeDefinition) -> str:
+    return f"redsec-ext-{definition.id}-access"
+
+
+def _proxy_image() -> str:
+    image = "redsec/range-tcp-gateway:local"
+    present = subprocess.run(
+        ["docker", "image", "inspect", image], capture_output=True, text=True
+    ).returncode == 0
+    if not present:
+        _run([
+            "docker", "build", "--pull",
+            "-f", str(repo_root() / "ranges" / "adapters" / "tcp-proxy.Dockerfile"),
+            "-t", image, str(repo_root()),
+        ], stream=True)
+    return image
+
+
 def _wait_port(port: int, timeout: float = 60) -> bool:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -206,8 +228,12 @@ def up_one(
     image, revision = build_external(definition, rebuild=rebuild)
     container = _container_name(definition)
     network = _network_name(definition)
+    proxy = _proxy_name(definition)
+    access_network = _access_network_name(definition)
     _run(["docker", "rm", "-f", container], check=False)
+    _run(["docker", "rm", "-f", proxy], check=False)
     _run(["docker", "network", "rm", network], check=False)
+    _run(["docker", "network", "rm", access_network], check=False)
     network_args = ["docker", "network", "create"]
     if not allow_egress:
         network_args.append("--internal")
@@ -217,8 +243,9 @@ def up_one(
         "docker", "run", "-d", "--restart", "unless-stopped", "--name", container,
         "--network", network,
     ]
-    for port in definition.runtime.ports:
-        args += ["-p", _publish(port.host, port.container)]
+    if allow_egress:
+        for port in definition.runtime.ports:
+            args += ["-p", _publish(port.host, port.container)]
     for name, value in definition.runtime.environment.items():
         args += ["-e", f"{name}={value}"]
     args.append(image)
@@ -226,6 +253,22 @@ def up_one(
 
     try:
         _run(args)
+        if not allow_egress:
+            gateway_image = _proxy_image()
+            _run(["docker", "network", "create", access_network])
+            gateway_args = [
+                "docker", "run", "-d", "--restart", "unless-stopped",
+                "--read-only", "--name", proxy, "--network", access_network,
+                "-e", f"TARGET_HOST={container}",
+                "-e", "TARGET_PORTS=" + ",".join(
+                    str(port.container) for port in definition.runtime.ports
+                ),
+            ]
+            for port in definition.runtime.ports:
+                gateway_args += ["-p", _publish(port.host, port.container)]
+            gateway_args.append(gateway_image)
+            _run(gateway_args)
+            _run(["docker", "network", "connect", network, proxy])
         health_name = definition.runtime.health_port
         health = next(
             (port for port in definition.runtime.ports if port.name == health_name), None
@@ -237,7 +280,9 @@ def up_one(
             )
     except Exception:
         _run(["docker", "rm", "-f", container], check=False)
+        _run(["docker", "rm", "-f", proxy], check=False)
         _run(["docker", "network", "rm", network], check=False)
+        _run(["docker", "network", "rm", access_network], check=False)
         raise
 
     entry = {
@@ -245,6 +290,8 @@ def up_one(
         "driver": definition.runtime.driver,
         "container": container,
         "network": network,
+        "gateway": proxy if not allow_egress else None,
+        "access_network": access_network if not allow_egress else None,
         "revision": revision,
         "egress": allow_egress,
         "endpoints": {
@@ -273,7 +320,9 @@ def down_one(definition: RangeDefinition) -> None:
         _builtin_down()
     elif definition.runtime.driver in {"dockerfile", "adapter"}:
         _run(["docker", "rm", "-f", _container_name(definition)], check=False)
+        _run(["docker", "rm", "-f", _proxy_name(definition)], check=False)
         _run(["docker", "network", "rm", _network_name(definition)], check=False)
+        _run(["docker", "network", "rm", _access_network_name(definition)], check=False)
     state = load_state()
     state["running"].pop(definition.id, None)
     save_state(state)

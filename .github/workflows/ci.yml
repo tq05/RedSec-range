@@ -104,6 +104,8 @@ jobs:
           redsec ranges entrypoints appsecco-mcp
           for network in dvaa mcpgoat dvmcp appsecco-mcp; do
             test "$(docker network inspect -f '{{.Internal}}' "redsec-ext-$network")" = true
+            test "$(docker inspect -f '{{len .NetworkSettings.Networks}}' "redsec-ext-$network")" = 1
+            test "$(docker inspect -f '{{len .NetworkSettings.Networks}}' "redsec-ext-$network-gateway")" = 2
           done
       - name: Show logs and clean up
         if: always()

@@ -33,15 +33,17 @@ already used by built-in module 01. The protocols and container ports are unchan
 ## Infrastructure and isolation
 
 All selected ranges run on the same Docker-capable host: a laptop, Codespace, or
-private Fly Machine. Each external project has a dedicated container and an
-independent Docker network. The built-in range continues to use one network per
+private Fly Machine. Each external project has a dedicated target container and
+independent Docker networks. The built-in range continues to use one network per
 course module. This allows all projects to run at once without merging their
 processes, filesystems, dependencies, or lifecycle.
 
-External networks are created with Docker's `--internal` setting, so deliberately
-vulnerable targets cannot reach the internet by default. Host ports bind to
-`127.0.0.1` outside Fly and remain private Codespaces ports. If a lab exercise
-requires outbound content, recreate the selected ranges explicitly:
+The target container joins only a Docker `--internal` network, so deliberately
+vulnerable code cannot reach the internet by default. A small read-only RedSec TCP
+gateway joins that internal network and a host-access bridge, forwarding only the
+ports declared in the catalog. Host ports bind to `127.0.0.1` outside Fly and
+remain private Codespaces ports. The gateway offers no general-purpose proxy. If a
+lab exercise requires outbound content, recreate the selected ranges explicitly:
 
 ```bash
 redsec ranges up appsecco-mcp --allow-egress

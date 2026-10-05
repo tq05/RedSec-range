@@ -53,6 +53,7 @@ def test_external_up_uses_private_ports_and_an_internal_network(tmp_path, monkey
     calls = []
 
     monkeypatch.setattr(ranges, "build_external", lambda *_args, **_kwargs: ("image:test", "a" * 40))
+    monkeypatch.setattr(ranges, "_proxy_image", lambda: "gateway:test")
     monkeypatch.setattr(ranges, "_wait_port", lambda *_args, **_kwargs: True)
     monkeypatch.setattr(
         ranges, "_run",
@@ -62,8 +63,16 @@ def test_external_up_uses_private_ports_and_an_internal_network(tmp_path, monkey
     result = ranges.up_one(definition)
 
     assert ["docker", "network", "create", "--internal", "redsec-ext-mcpgoat"] in calls
-    run = next(command for command in calls if command[:2] == ["docker", "run"])
-    assert "127.0.0.1:7332:7332" in run
+    assert ["docker", "network", "create", "redsec-ext-mcpgoat-access"] in calls
+    runs = [command for command in calls if command[:2] == ["docker", "run"]]
+    target, gateway = runs
+    assert "127.0.0.1:7332:7332" not in target
+    assert "127.0.0.1:7332:7332" in gateway
+    assert "TARGET_HOST=redsec-ext-mcpgoat" in gateway
+    assert [
+        "docker", "network", "connect", "redsec-ext-mcpgoat",
+        "redsec-ext-mcpgoat-gateway",
+    ] in calls
     assert result["endpoints"] == {"control-panel": "http://127.0.0.1:7332/"}
 
 

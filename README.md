@@ -55,7 +55,7 @@ redsec ranges update mcpgoat  # update one upstream without changing the others
 
 Integrations include Damn Vulnerable AI Agent, MCPGoat, Damn Vulnerable MCP
 Server, and Appsecco's Vulnerable MCP Servers Lab. Each uses a pinned upstream
-revision, its own container, and an isolated internal network. An unavailable
+revision, its own target container, and an isolated internal network. An unavailable
 `offsec` placeholder is reserved for a future officially deployable OffSec lab.
 See [the external ranges guide](docs/external-ranges.md).
 

@@ -64,10 +64,12 @@ Deliberately vulnerable targets are contained by:
 Containment is both a safety control and a lesson (Module 09 is about blast
 radius). See [kubernetes.md](kubernetes.md).
 
-External catalog ranges share the Docker host but not a container or network. Each
-adapter gets its own internal bridge network and loopback-bound ports. The built-in
-Kubernetes backend remains module-oriented; a future external Kubernetes driver
-should create a separate namespace and release per catalog range.
+External catalog ranges share the Docker host but not an application container or
+network. Each target gets its own internal bridge. A read-only TCP gateway forwards
+only declared ports between that bridge and loopback-bound host ports, without
+giving the target a default route. The built-in Kubernetes backend remains
+module-oriented; a future external Kubernetes driver should create a separate
+namespace and release per catalog range.
 
 ## Extensibility
 
