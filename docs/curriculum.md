@@ -9,7 +9,10 @@ public-syllabus traceability and course-quality contract.
 This table is the `builtin` course. The range catalog also contains 22 DVAA, 26
 MCPGoat, 10 DVMCP, and 9 Appsecco challenge concepts. See the generated
 [challenge catalog](CHALLENGE-CATALOG.md) for every cross-range challenge and its
-solution provenance, or run `redsec ranges challenges`.
+solution provenance, or run `redsec ranges challenges`. The complete
+[learning guide](training/RedSec-Range-Learning-Guide.pdf) teaches the challenges
+step by step; the companion [workshop deck](training/RedSec-Range-Learning-Deck.pptx)
+distils the material into one key takeaway per slide.
 
 > This table mirrors the module manifests (`redsec list`), so it stays in sync.
 > **ATLAS IDs are indicative** — verify against the current

@@ -1,0 +1,94 @@
+@page {
+  size: A4;
+  margin: 19mm 17mm 20mm 17mm;
+  @bottom-left {
+    content: "REDSEC RANGE  •  COMPLETE CHALLENGE LEARNING GUIDE";
+    color: #72838d;
+    font-size: 7pt;
+    letter-spacing: .08em;
+  }
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    color: #72838d;
+    font-size: 7pt;
+  }
+}
+@page:first {
+  background: #071827;
+  @bottom-left { color: #8fa4ad; }
+  @bottom-right { color: #8fa4ad; }
+}
+:root {
+  --ink: #101d2d;
+  --navy: #071827;
+  --cyan: #00a7a7;
+  --red: #e34b5f;
+  --sand: #f4f1e9;
+  --mist: #e8f4f4;
+  --line: #ccd8dc;
+}
+html { font-size: 10.3pt; }
+body {
+  color: var(--ink);
+  font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+h1, h2, h3 { color: var(--navy); line-height: 1.12; break-after: avoid; }
+h1 {
+  font-size: 25pt;
+  margin-top: 1.4em;
+  padding-top: .35em;
+  border-top: 5px solid var(--cyan);
+  page-break-before: always;
+}
+h1.unnumbered:first-of-type { page-break-before: avoid; }
+h2 { font-size: 17pt; margin-top: 1.35em; border-bottom: 1px solid var(--line); padding-bottom: .25em; }
+h3 { font-size: 12.5pt; color: #0b777c; margin-top: 1.1em; }
+p, li { orphans: 3; widows: 3; }
+a { color: #087e86; text-decoration: none; }
+blockquote {
+  margin: 1em 0;
+  padding: .7em 1em;
+  background: var(--mist);
+  border-left: 4px solid var(--cyan);
+  color: #173b47;
+  break-inside: avoid;
+}
+code { font-family: "SFMono-Regular", Menlo, monospace; color: #8f2840; font-size: 8.8pt; }
+pre {
+  background: var(--navy);
+  color: #edf8f7;
+  border-radius: 6px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 8.1pt;
+  line-height: 1.35;
+  break-inside: avoid;
+}
+pre code { color: inherit; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 8.2pt; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th { color: white; background: var(--navy); text-align: left; padding: 6px; }
+td { border-bottom: 1px solid var(--line); padding: 5px 6px; vertical-align: top; }
+tbody tr:nth-child(even) { background: #f6f8f8; }
+ul, ol { padding-left: 1.35em; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+#TOC { background: var(--sand); padding: 1em 1.4em; border-radius: 8px; }
+#TOC ul { list-style: none; padding-left: 1em; }
+#title-block-header {
+  min-height: 220mm;
+  color: white;
+  background: var(--navy);
+  margin: -19mm -17mm 0 -17mm;
+  padding: 58mm 22mm 20mm 22mm;
+  box-sizing: border-box;
+  page-break-after: always;
+}
+#title-block-header h1 { color: white; border: 0; page-break-before: avoid; font-size: 38pt; max-width: 145mm; }
+#title-block-header .subtitle { color: #78e0df; font-size: 16pt; max-width: 135mm; }
+#title-block-header .author, #title-block-header .date { color: #afbec5; }
