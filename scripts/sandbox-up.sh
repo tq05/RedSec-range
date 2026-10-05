@@ -5,7 +5,7 @@
 #
 #   ./scripts/sandbox-up.sh            # ensure dockerd + base image + full range up
 #   ./scripts/sandbox-up.sh 03 07      # only these modules
-set -uo pipefail
+set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
@@ -13,12 +13,13 @@ echo "== 1/4 ensure dockerd =="
 if ! docker info >/dev/null 2>&1; then
   [ -e /dev/kmsg ] || ln -s /dev/console /dev/kmsg 2>/dev/null || true
   (dockerd --host=unix:///var/run/docker.sock >/var/log/dockerd.log 2>&1 &)
-  for i in $(seq 1 20); do docker info >/dev/null 2>&1 && break; sleep 1; done
+  for _ in $(seq 1 60); do docker info >/dev/null 2>&1 && break; sleep 1; done
 fi
 docker info >/dev/null 2>&1 && echo "   dockerd up" || { echo "   dockerd FAILED"; exit 1; }
 
 echo "== 2/4 ensure python deps for the controller =="
-python3 -c "import redsec" 2>/dev/null || pip install --break-system-packages -q -e . 2>/dev/null || true
+python3 -c "import fastapi, httpx, pydantic, redsec, uvicorn, yaml" 2>/dev/null || \
+  python3 -m pip install --break-system-packages -q -e .
 
 echo "== 3/4 ensure base image =="
 if ! docker images redsec/base:local -q | grep -q .; then
@@ -42,7 +43,8 @@ chmod +x /usr/local/bin/range /usr/local/bin/grok /usr/local/bin/assess
 echo "   range, grok, assess installed on PATH"
 
 echo "== 5/5 bring the range up =="
-python3 scripts/range_ctl.py up ${*:-} 2>/dev/null || python3 scripts/range_ctl.py up-all
+python3 scripts/range_ctl.py up "$@"
+python3 scripts/range_ctl.py status
 echo
 echo "ready."
 echo "  range status | range solve <mod> [chal] | range shell <mod> <target>"

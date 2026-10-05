@@ -87,9 +87,10 @@ Kubernetes path too.
 3. **Ephemeral container check**: `python scripts/docker_run_all.py [--real]` (40/40).
 4. **Kubernetes/kind** (normal host): `./scripts/kind-up.sh` + `./scripts/kind-run-all.sh`.
    Helm chart in deploy/helm/redsec-module; see docs/kubernetes.md.
-5. **Ephemeral cloud box (Fly.io)**: `./deploy/fly/up.sh` → one Firecracker Machine
-   runs path 2 via Docker-in-Docker; drive it over `fly ssh console`, destroy with
-   `./deploy/fly/down.sh`. No public ports/ingress. See docs/deploy-fly.md.
+5. **Ephemeral cloud box (Fly.io)**: `./deploy/fly/up.sh` creates a unique private
+   app and waits for readiness. Use `deploy/fly/ssh.sh` interactively,
+   `deploy/fly/exec.sh` from a harness, or `deploy/fly/model.sh` for the bundled
+   assessor; destroy it with `deploy/fly/down.sh`. See docs/deploy-fly.md.
 
 **Known环境 limit**: nested k8s (kind/k3s) can't start pods in a Firecracker microVM
 (`runc … pipe EOF`); Docker works. Use path 2 there. Documented in docs/kubernetes.md
@@ -110,15 +111,18 @@ or *on your own machine* from the repo. Same commands; different host. All need
   sandbox). Also self-tested via the stub.
 - `scripts/sandbox-up.sh` installs `range`, `grok`, `assess` on PATH.
 - Target-side (apps think with a real model): `REDSEC_LLM_BACKEND=openai` +
-  `REDSEC_LLM_BASE_URL=https://api.x.ai/v1` + `REDSEC_LLM_MODEL` + `REDSEC_LLM_API_KEY`.
+  `REDSEC_LLM_BASE_URL` + `REDSEC_LLM_MODEL` + `REDSEC_LLM_API_KEY`. The persistent
+  Docker controller passes these four variables into target containers.
 - aider (optional external CLI) only via pipx/venv isolation — never the main env.
 
 ## Verification / tests
 
-- `pytest` (23 tests): engine/verifier units + per-module fail→pass integration.
+- `pytest` (29 tests): engine/verifier units, per-module fail→pass integration,
+  and the Fly deployment contract.
 - `redsec doctor` (all modules load + checks resolve), `redsec selftest` (43/43).
 - `python scripts/validate_manifests.py` (62 K8s objects vs schema offline).
-- CI: `.github/workflows/ci.yml` — tests, selftest, helm+kubeconform, container run, kind.
+- CI: `.github/workflows/ci.yml` — tests, selftest, helm+kubeconform, container run,
+  kind, and a local boot/solve smoke test of the Fly Docker-in-Docker image.
 - Evidence log: `docs/proof/verification.log`.
 - Walkthroughs independently red-teamed by a separate model (fresh-context Sonnet).
 

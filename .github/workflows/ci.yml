@@ -67,6 +67,45 @@ jobs:
       - name: Run all challenges in containers
         run: python scripts/docker_run_all.py
 
+  fly-image:
+    # Exercises the exact Fly image locally; no Fly credentials or paid resources.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate scripts and Fly config
+        env:
+          FLYCTL_VERSION: "0.4.111"
+        run: |
+          bash -n deploy/fly/*.sh scripts/sandbox-up.sh
+          curl -fsSL -o /tmp/flyctl.tgz \
+            "https://github.com/superfly/flyctl/releases/download/v${FLYCTL_VERSION}/flyctl_${FLYCTL_VERSION}_Linux_x86_64.tar.gz"
+          tar -xzf /tmp/flyctl.tgz -C /tmp flyctl
+          FLY_API_TOKEN=dummy /tmp/flyctl config validate --config deploy/fly/fly.toml
+      - name: Build Fly Docker-in-Docker image
+        run: docker build -f deploy/fly/Dockerfile -t redsec/fly:test .
+      - name: Boot one module and wait for readiness
+        run: |
+          docker run -d --privileged --name redsec-fly-smoke \
+            -e REDSEC_MODULES=01 redsec/fly:test
+          for _ in $(seq 1 90); do
+            if docker exec redsec-fly-smoke test -f /run/redsec-ready; then
+              docker exec redsec-fly-smoke range status
+              exit 0
+            fi
+            docker inspect -f '{{.State.Running}}' redsec-fly-smoke | grep -qx true
+            sleep 10
+          done
+          echo "range did not become ready" >&2
+          exit 1
+      - name: Solve and verify through the harness command surface
+        run: docker exec redsec-fly-smoke range solve 01
+      - name: Show logs and clean up
+        if: always()
+        run: |
+          docker logs --tail 200 redsec-fly-smoke || true
+          docker rm -f redsec-fly-smoke || true
+
   kind:
     # Full Kubernetes deploy on a runner that CAN nest (GitHub's can).
     runs-on: ubuntu-latest

@@ -1,160 +1,187 @@
-# Deploy to Fly.io — an ephemeral cloud range
+# Deploy the range on Fly.io
 
-Stand up the **whole** RedSec Range on a throwaway cloud VM, use it for an hour,
-and destroy it — with remote access built in and **no VPC ingress rules and no
-per-box VPN install**. Good for "I just want to mess around and run the
-challenges" without touching your laptop's Docker or any cloud console.
+This path creates one private Fly Machine, runs the Docker-backed RedSec Range
+inside it, and lets a person or an AI harness control it. The deployment declares
+no Fly services or public ports. Access goes through Fly SSH or a local `fly proxy`
+tunnel.
 
-> ⚠️ The targets are deliberately vulnerable (see [SECURITY.md](../SECURITY.md)).
-> This setup is isolated by design: access is over Fly's private WireGuard only,
-> nothing is published to the internet.
+Fly.io is a paid external service. You need a Fly account with billing enabled,
+`flyctl`, and either an interactive login or a scoped `FLY_API_TOKEN`. Current
+usage and stopped-Machine root filesystems can incur charges; destroy the app when
+you finish. See [Fly pricing](https://fly.io/docs/about/pricing/).
 
-## TL;DR
-
-```bash
-# one-time
-brew install flyctl && fly auth login     # or https://fly.io/docs/flyctl/install/
-
-# from the repo root
-export XAI_API_KEY=xai-...                 # optional: real Grok for targets + harness
-./deploy/fly/up.sh                         # build + deploy one Machine
-
-fly ssh console --app redsec-range-lab     # your command centre
-#   range status
-#   range solve 05               # run a reference exploit, verifier-scored
-#   assess 05 --provider grok --model grok-4
-
-./deploy/fly/down.sh                        # throw it all away
-```
-
-## What this is
-
-One Fly **Machine** (a Firecracker micro-VM) runs an inner `dockerd` and brings
-the range up with the repo's own [`scripts/sandbox-up.sh`](../scripts/sandbox-up.sh)
-— the exact bootstrap used in the interactive sandbox
-([docs/interactive-sandbox.md](interactive-sandbox.md)). You get the same
-`range` / `grok` / `assess` command centre, in the cloud, reachable from anywhere
-you can run `fly`.
-
-Files live in [`deploy/fly/`](../deploy/fly):
-
-| file | purpose |
-|------|---------|
-| `Dockerfile` | `docker:dind` + python; copies the repo in; runs `sandbox-up.sh` at boot |
-| `entrypoint.sh` | PID 1: bring the range up, hold the Machine, optional self-destruct |
-| `fly.toml` | one Machine, `lhr`, **no public ports**, `MAX_RUNTIME_MIN` knob |
-| `up.sh` / `down.sh` | one command to deploy, one to destroy |
-
-## Why Fly works here (kind doesn't, Docker does)
-
-A Fly Machine is a Firecracker micro-VM — the **same substrate** as the Claude
-cloud sandbox, where this range already runs. The range is a Docker stack, not
-Kubernetes, so the Firecracker nested-kubelet limit that blocks `kind`
-([docs/kubernetes.md](kubernetes.md)) does **not** apply. Running `dockerd`
-inside the Machine (Docker-in-Docker) is the standard Fly pattern for this.
-
-## Access model — no ingress, no VPN install
-
-`fly.toml` declares **no `[[services]]`**, so the Machine has no public address.
-You reach it two ways, both over Fly's built-in WireGuard:
-
-- **`fly ssh console --app <app>`** — a shell on the Machine. Drive the range from
-  here (this is the intended workflow; targets are on `127.0.0.1:90xx` inside the
-  Machine, and the assessor's `http_request` tool is scoped to them).
-- **`fly proxy 9010:9010 --app <app>`** — forward a challenge's web port to your
-  laptop to poke it in a browser. Forward several at once:
-  `fly proxy 9010:9010 9070:9070 9112:9112 --app <app>`.
-
-Nothing inbound is ever opened, so there are no security-group / ingress rules to
-edit, and there is no Tailscale (or similar) to install per box.
-
-## Module ports
-
-`range status` prints the live map. The range uses `127.0.0.1:9010–9112` for
-module targets and `92xx` for the exfil/oracle sinks, e.g.:
-
-```
-01 guide 9010 · 02 saas 9020 · 03 assistant 9030 · 04 agents 9040 · 05 rag 9050
-06 embeddings 9060 · 07 vuln-mcp 9070 / host 9071 · 08 registry 9080
-09 appserver 9090 / metadata 9091 · 11 assistant 9110 / vault 9112
-```
-
-## Using your LLM harness against the deployed range
-
-The range ships two OpenAI-compatible harnesses; `sandbox-up.sh` puts both on
-PATH inside the Machine (details in [docs/llm-assessor.md](llm-assessor.md)):
-
-- **`assess`** (`scripts/agent_solver.py`) — the autonomous range assessor: the
-  model gets the objective, live target URLs, a lab-scoped `http_request` tool and
-  `submit_flag`; the verifier scores each step.
-- **`grok`** (`scripts/grok_cli.py`) — a general Grok chat/agent CLI.
-
-From inside the Machine (`fly ssh console`):
+## Start and stop
 
 ```bash
-# Grok (needs the XAI_API_KEY secret; up.sh sets it if it was in your env)
-assess 07 --provider grok --model grok-4
-grok "what MCP tool-poisoning vectors does module 07 expose?"
+# One-time setup
+brew install flyctl                 # or use Fly's installer
+fly auth login
 
-# OpenAI instead
-OPENAI_API_KEY=sk-... assess 05 --provider openai --model gpt-4.1
-
-# Any OpenAI-compatible endpoint (local model, gateway, your own harness)
-assess 05 --provider custom --base-url http://host:8000/v1 --model m --api-key x
+# From the repository root
+./deploy/fly/up.sh --ttl 60
+./deploy/fly/status.sh
+./deploy/fly/down.sh
 ```
 
-Bring your **own** harness by pointing it at the same contract: an
-OpenAI-compatible chat endpoint plus the two tools, scored by `run_challenge`.
-`scripts/agent_solver.py` (~150 lines) is the reference to fork.
-
-To make the **targets** think with a real model instead of the deterministic mock,
-set the backend (the mock is the default, which is what keeps challenges
-reproducible):
+`up.sh` generates a unique app name and saves it in `.redsec/fly.json`. Every
+other helper reads that file, so app names do not need to be copied between
+commands. Set `FLY_APP` or pass `--app NAME` when you need a fixed name. Useful
+options include:
 
 ```bash
-REDSEC_LLM_BACKEND=openai REDSEC_LLM_BASE_URL=https://api.x.ai/v1 \
-  REDSEC_LLM_MODEL=grok-4 REDSEC_LLM_API_KEY="$XAI_API_KEY" range reset
+./deploy/fly/up.sh --region lhr --ttl 90
+./deploy/fly/up.sh --modules "01 07"       # smaller range for a focused session
+./deploy/fly/up.sh --json                  # machine-readable completion record
 ```
 
-## Cost & lifecycle
+For CI or an AI harness, set `FLY_API_TOKEN` instead of using `fly auth login`.
+The script checks authentication, creates the app, stages any supported model
+keys, deploys, and waits until all selected targets pass their health checks. A
+failed first deployment removes the new app rather than leaving an unknown
+resource behind.
 
-A `shared-cpu-4x` / 8 GB Machine is cheap for hour-long use, and you only pay
-while it exists. Three ways to make it ephemeral:
+## Use SSH directly
 
-- `./deploy/fly/down.sh` when you're done (destroys app + Machine + volume);
-- set `MAX_RUNTIME_MIN = "60"` in `fly.toml` so the Machine halts itself;
-- `fly machine stop` / `start` to pause without rebuilding.
+Open an interactive command centre:
 
-## How this was verified
+```bash
+./deploy/fly/ssh.sh
 
-On the identical Firecracker substrate (the Claude cloud sandbox), before this
-was committed:
+# Inside the Machine
+range status
+range solve 07
+range verify 07
+range shell 07 vuln-mcp
+```
 
-- `pip install -e .`, `redsec doctor` (11/11), `redsec selftest` (**43/43**
-  fail→pass);
-- `scripts/sandbox-up.sh` brought **19 containers** up across the module networks;
-- `range solve` ran reference exploits that the verifier scored **PASS**,
-  including side-effect oracle (exfil-sink) modules;
-- the `assess` harness drove the live range end-to-end (tool loop + verifier).
+`ssh.sh` accepts normal `fly ssh console` options. The generated app has no public
+service; Fly's SSH transport reaches it over Fly's private network.
 
-The Docker-in-Docker image was separately confirmed to build, boot its inner
-`dockerd`, and run a module stack on a private network with published ports. The
-only step not exercisable without a Fly account is Fly's own Machine privilege for
-the inner daemon; `docker:dind` on a Fly Machine is the standard way to run it.
+## Drive it from Claude, Codex, or another harness
 
-## Troubleshooting
+`exec.sh` is the non-interactive interface. It preserves the remote command's exit
+status and is suitable for tool calls and CI:
 
-- **`429 Too Many Requests` during first boot** — Docker Hub anonymous pull limit
-  while building the base image, not a bug. Re-run `range reset` / re-deploy; or
-  `fly ssh console` and authenticate the inner daemon (`docker login`) to raise the
-  limit.
-- **Inner `dockerd` won't start** — the Machine needs the privilege to run DinD. If
-  a Fly change ever blocks it, the fallback is one native Fly Machine per challenge
-  (no DinD); open an issue and we'll add that variant.
-- **`fly ssh console` can't connect** — the Machine may still be building images on
-  first boot; wait a minute, or check `fly logs --app <app>`.
-- **`XAI_API_KEY` not picked up** — set it as a secret:
-  `fly secrets set XAI_API_KEY=... --app <app>` (then `range reset`).
+```bash
+./deploy/fly/exec.sh range status
+./deploy/fly/exec.sh range solve 04
+./deploy/fly/exec.sh 'range solve 07 resource-traversal'
+./deploy/fly/status.sh --json
+```
 
-See also: [docs/interactive-sandbox.md](interactive-sandbox.md),
-[docs/llm-assessor.md](llm-assessor.md), [docs/kubernetes.md](kubernetes.md).
+The root [`AGENTS.md`](../AGENTS.md) gives repository-aware agents the full setup,
+test, and cleanup contract. A typical prompt is: “Deploy this repository to Fly,
+test modules 04 and 07, report the results, then destroy the app.” Provisioning is
+still an explicit action because it creates billable infrastructure.
+
+## Use a model as the assessor
+
+The Machine includes the `assess` agent. `model.sh` runs it next to the targets so
+all challenge traffic stays within the private Machine:
+
+```bash
+# Export before up.sh; it becomes a Fly secret.
+export OPENAI_API_KEY=...
+./deploy/fly/up.sh
+./deploy/fly/model.sh 07 --provider openai --model gpt-5
+
+# Or xAI
+export XAI_API_KEY=...
+./deploy/fly/up.sh
+./deploy/fly/model.sh 04 --provider grok --model grok-4
+```
+
+Supported assessor providers are `openai`, `grok`, and `custom`. For a custom
+OpenAI-compatible endpoint, set `REDSEC_LLM_API_KEY` before deployment and pass
+the endpoint explicitly:
+
+```bash
+./deploy/fly/model.sh 05 --provider custom \
+  --base-url https://gateway.example/v1 --model my-model
+```
+
+API keys passed with `--api-key` become command-line arguments. Prefer the Fly
+secret path above. `up.sh` automatically stages `OPENAI_API_KEY`, `XAI_API_KEY`,
+and `REDSEC_LLM_API_KEY` when they exist in the local environment.
+
+The vulnerable targets use the deterministic mock model by default. To test the
+targets themselves with a real OpenAI-compatible model, set these values on the
+Fly app and restart the target containers:
+
+```bash
+APP=$(python3 -c 'import json; print(json.load(open(".redsec/fly.json"))["app"])')
+fly secrets set --app "$APP" \
+  REDSEC_LLM_BACKEND=openai \
+  REDSEC_LLM_BASE_URL=https://api.openai.com/v1 \
+  REDSEC_LLM_MODEL=gpt-5 \
+  REDSEC_LLM_API_KEY="$OPENAI_API_KEY"
+./deploy/fly/exec.sh 'range down-all && scripts/sandbox-up.sh'
+```
+
+The controller passes only the four `REDSEC_LLM_*` variables into target
+containers. The assessor key variables are separate, so exporting an API key does
+not silently change deterministic target behavior.
+
+## Open a target in a browser or local tool
+
+The challenge containers publish their ports on the Machine's private interface,
+which lets [`fly proxy`](https://fly.io/docs/flyctl/proxy/) tunnel one port to
+localhost:
+
+```bash
+./deploy/fly/proxy.sh 07            # module 07 primary target: localhost:9070
+./deploy/fly/proxy.sh 9071 19071    # secondary target: localhost:19071
+```
+
+Run separate proxy processes when you need several ports. The primary module map
+is:
+
+| Module | Port | Module | Port |
+|---|---:|---|---:|
+| 01 | 9010 | 02 | 9020 |
+| 03 | 9030 | 04 | 9040 |
+| 05 | 9050 | 06 | 9060 |
+| 07 | 9070 | 08 | 9080 |
+| 09 | 9090 | 11 | 9110 |
+
+Secondary ports are `9071`, `9091`, and `9112`. `range status` is the source of
+truth for the live target map.
+
+## Lifecycle and storage
+
+`--ttl MINUTES` makes PID 1 exit after the deadline. The Fly restart policy leaves
+the Machine stopped. It does not delete the app. `persist_rootfs = "restart"`
+keeps the inner Docker state across Machine restarts, but a new deployment replaces
+it. Run `down.sh` to destroy the app and remove the stopped root filesystem charge.
+
+```bash
+./deploy/fly/down.sh
+./deploy/fly/down.sh --app redsec-range-...
+```
+
+No Fly Volume is created. The range is disposable, and redeploying may rebuild its
+inner images and reset progress.
+
+## How startup is verified
+
+The outer image installs the Python package and dependencies at build time. At
+boot, `entrypoint.sh` starts the inner Docker daemon and selected modules through
+`scripts/sandbox-up.sh`. Startup fails if Docker, dependency installation, an image
+build, or a target health check fails. Only then does it create
+`/run/redsec-ready`; `up.sh` waits for that marker and a successful `range status`.
+
+Useful diagnostics:
+
+```bash
+./deploy/fly/status.sh
+APP=$(python3 -c 'import json; print(json.load(open(".redsec/fly.json"))["app"])')
+fly logs --app "$APP"
+./deploy/fly/ssh.sh -C 'tail -100 /var/log/dockerd.log'
+```
+
+The local CI job builds and boots the Fly image with Docker-in-Docker and solves a
+module without using Fly credentials. A live deployment still depends on Fly
+account permissions, regional capacity, and remote-builder availability.
+
+See also [the interactive sandbox](interactive-sandbox.md),
+[the LLM assessor](llm-assessor.md), and [Kubernetes deployment](kubernetes.md).

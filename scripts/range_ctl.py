@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -43,6 +44,12 @@ from redsec.verify.runner import run_challenge  # noqa: E402
 
 STATE = state_dir() / "range.json"
 BASE_IMAGE = "redsec/base:local"
+MODEL_ENV = (
+    "REDSEC_LLM_BACKEND",
+    "REDSEC_LLM_BASE_URL",
+    "REDSEC_LLM_MODEL",
+    "REDSEC_LLM_API_KEY",
+)
 
 
 def sh(*a, check=True, quiet=False):
@@ -76,6 +83,14 @@ def wait_http(url, timeout=40):
         except Exception:
             time.sleep(0.4)
     return False
+
+
+def publish_arg(host_port: int, container_port: int) -> str:
+    """Return a private-by-default Docker port publication specification."""
+    bind = os.environ.get("REDSEC_BIND_HOST", "127.0.0.1").strip()
+    if bind in {"all", "0.0.0.0", "*"}:
+        return f"{host_port}:{container_port}"
+    return f"{bind}:{host_port}:{container_port}"
 
 
 def target_cmd(tdef):
@@ -121,18 +136,25 @@ def up(module_dir, module, real=False) -> dict:
                           f"http://{names[x.name]}:{p}"]
         for k, v in (t.env or {}).items():
             env += ["-e", f"{k}={v}"]
+        for name in MODEL_ENV:
+            if value := os.environ.get(name):
+                env += ["-e", f"{name}={value}"]
         real_img = image_for(module, t, real)
         extra = [] if real else ["-w", workdir(module_dir, t)]
         cmd = [] if real else target_cmd(t)
         sh("docker", "run", "-d", "--restart", "unless-stopped",
            "--name", cname, "--network", net, "--network-alias", t.name,
-           "-p", f"127.0.0.1:{hport}:{cport}", *extra, *env, real_img, *cmd)
+           "-p", publish_arg(hport, cport), *extra, *env, real_img, *cmd)
         url = f"http://127.0.0.1:{hport}"
         endpoints[t.name] = url
         if t.uses_builtin == "drop":
             drop_url = url
     for t in module.targets:
-        wait_http(endpoints[t.name] + "/healthz")
+        if not wait_http(endpoints[t.name] + "/healthz"):
+            raise RuntimeError(
+                f"target {module.id}/{t.name} did not become healthy at "
+                f"{endpoints[t.name]}"
+            )
     return {"net": net, "names": names, "endpoints": endpoints,
             "drop_url": drop_url, "real": real}
 
@@ -153,21 +175,24 @@ def cmd_up(args, real):
         print(f"  starting {m.id} {m.title} ...")
         st[m.id] = up(mdir, m, real=real)
     save_state(st)
-    cmd_status([])
+    return cmd_status([])
 
 
 def cmd_status(_):
     st = load_state()
     if not st:
         print("range is down. `range up-all` to start everything.")
-        return
+        return False
     print(f"{'MODULE':<6} {'TARGET':<12} {'URL':<28} STATUS")
+    healthy = True
     for mid, e in sorted(st.items()):
         for name, url in e["endpoints"].items():
             cname = e["names"][name]
             status = sh("docker", "inspect", "-f", "{{.State.Status}}", cname,
                         check=False, quiet=True) or "gone"
             print(f"{mid:<6} {name:<12} {url:<28} {status}")
+            healthy = healthy and status == "running"
+    return healthy
 
 
 def cmd_solve(args, verify_only=False):
@@ -177,7 +202,7 @@ def cmd_solve(args, verify_only=False):
     mdir, m = find(mid)
     if m.id not in st and m.targets:
         print(f"module {m.id} is not up. `range up {m.id}` first.")
-        return
+        return False
     entry = st.get(m.id, {"endpoints": {}, "drop_url": None})
 
     flags, artifacts = {}, {}
@@ -207,6 +232,7 @@ def cmd_solve(args, verify_only=False):
         print(f"  {'PASS' if oc.passed else 'FAIL'}  {c.id} — {c.title}")
         ok += oc.passed
     print(f"  {ok}/{len(chals)} passed")
+    return ok == len(chals)
 
 
 def cmd_shell(args):
@@ -265,27 +291,29 @@ def main():
     a = ap.parse_args()
     v = a.verb
     if v == "up":
-        cmd_up(a.args, a.real)
+        result = cmd_up(a.args, a.real)
     elif v == "up-all":
-        cmd_up([], a.real)
+        result = cmd_up([], a.real)
     elif v == "status":
-        cmd_status(a.args)
+        result = cmd_status(a.args)
     elif v == "solve":
-        cmd_solve(a.args, verify_only=False)
+        result = cmd_solve(a.args, verify_only=False)
     elif v == "verify":
-        cmd_solve(a.args, verify_only=True)
+        result = cmd_solve(a.args, verify_only=True)
     elif v == "shell":
-        cmd_shell(a.args)
+        result = cmd_shell(a.args)
     elif v == "logs":
-        cmd_logs(a.args)
+        result = cmd_logs(a.args)
     elif v == "reset":
-        cmd_reset(a.args)
+        result = cmd_reset(a.args)
     elif v == "down":
-        cmd_down(a.args)
+        result = cmd_down(a.args)
     elif v == "down-all":
-        cmd_down([])
+        result = cmd_down([])
     else:
         print(f"unknown verb {v!r}"); sys.exit(2)
+    if result is False:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -158,19 +158,23 @@ nested Kubernetes cluster can't start — see the doc for why).
 
 ### Run it in the cloud on a throwaway box (Fly.io)
 
-Want an ephemeral cloud VM you spin up, play with for an hour, and destroy — with
-remote access built in and **no ingress rules or VPN to manage**? One Fly.io
-Machine runs the whole range (same `sandbox-up.sh` bootstrap as above) and you
-drive it over `fly ssh console`:
+Want an ephemeral cloud VM you spin up, play with, and destroy? One private Fly.io
+Machine runs the Docker range. The repository includes interactive SSH, a
+non-interactive harness interface, model execution, readiness checks, and local
+port tunnels:
 
 ```bash
-export XAI_API_KEY=xai-...     # optional: real Grok for targets + assessor
-./deploy/fly/up.sh             # build + deploy one Machine (no public ports)
-fly ssh console --app redsec-range-lab   # then: range status / range solve 05 / assess 05 ...
-./deploy/fly/down.sh           # throw it all away
+export OPENAI_API_KEY=...              # optional; staged as a Fly secret
+./deploy/fly/up.sh --ttl 60            # unique app; waits until targets are ready
+./deploy/fly/ssh.sh                    # interactive: range status / range solve 05
+./deploy/fly/exec.sh range solve 07    # Claude/Codex/CI command interface
+./deploy/fly/model.sh 07 --provider openai --model gpt-5
+./deploy/fly/down.sh                   # destroy app and Machine
 ```
 
-Full guide: [docs/deploy-fly.md](docs/deploy-fly.md).
+The app has no public services; helpers use the app recorded in
+`.redsec/fly.json`. Fly credentials and billing are required. Full guide:
+[docs/deploy-fly.md](docs/deploy-fly.md).
 
 ### Point another LLM (Grok, OpenAI, local) at the range
 

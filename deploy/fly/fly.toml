@@ -1,29 +1,22 @@
-# Fly.io config for an ephemeral RedSec Range box.
-#
-# No [[services]] / public ports on purpose: you reach the range over Fly's private
-# WireGuard via `fly ssh console` and `fly proxy`, so NOTHING is exposed to the
-# internet and there are NO ingress rules to manage. That is the whole point — the
-# targets here are deliberately vulnerable (see SECURITY.md) and must never be
-# internet-reachable.
-#
-# `app` is filled in by `fly launch --no-deploy`, or edit it to a unique name.
+# Template used by deploy/fly/up.sh. The script always supplies a unique app name.
+# No services or public ports are declared: access is only through Fly SSH/proxy.
 
-app = "redsec-range-lab"
-primary_region = "lhr"            # change to your nearest Fly region
+app = "redsec-range-template"
+primary_region = "lhr"
 
 [build]
-  dockerfile = "deploy/fly/Dockerfile"   # built from the repo root (see deploy/fly/up.sh)
+  dockerfile = "deploy/fly/Dockerfile"
 
 [env]
-  # Minutes before the Machine halts itself. 0 = stay up until you destroy it.
-  # Set to 60 for a guaranteed "play for an hour then it's gone" box.
   MAX_RUNTIME_MIN = "0"
+  REDSEC_BIND_HOST = "all"
 
-# One Machine, sized to build + run ~19 containers. Bump if first-boot builds are
-# tight. shared CPU keeps throwaway use cheap.
 [[vm]]
   size = "shared-cpu-4x"
   memory = "8gb"
+  # Retain the inner Docker images when this Machine restarts or is stopped/started.
+  persist_rootfs = "restart"
 
-[machine]
-  auto_destroy = false
+[[restart]]
+  # A TTL exit must leave the Machine stopped instead of starting it again.
+  policy = "never"

@@ -28,9 +28,7 @@ RUN apk add --no-cache \
 WORKDIR /opt/redsec-range
 COPY . /opt/redsec-range
 
-RUN chmod +x deploy/fly/entrypoint.sh scripts/*.sh 2>/dev/null || true
-
-# Inner daemon data lives on the Machine's writable layer.
-VOLUME /var/lib/docker
+RUN python3 -m pip install --break-system-packages --no-cache-dir . \
+    && chmod +x deploy/fly/*.sh scripts/*.sh
 
 ENTRYPOINT ["/opt/redsec-range/deploy/fly/entrypoint.sh"]

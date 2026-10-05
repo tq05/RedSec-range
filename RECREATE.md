@@ -11,7 +11,7 @@ and runs the bootstrap; the embedded spec is only a fallback for rebuilding if t
 repo is ever unavailable. This file is kept in sync with `CLAUDE.md` (the single
 source of truth for project detail) — update both together.
 
-- **Last updated:** 2026-10-04 (AI-300 coverage audit; protocol-faithful A2A surface; version-aware MCP 2025/2026 labs; all challenges tiered; Fly.io ephemeral-cloud run path added)
+- **Last updated:** 2026-10-05 (Fly.io harness, SSH, model, readiness, and lifecycle workflow)
 - **Repo:** https://github.com/tq05/RedSec-range
 - **State at last update:** 11 modules, 43 challenges, all complete + tested.
 
@@ -47,9 +47,10 @@ PRIMARY PATH (deterministic — do this first):
    d. Kubernetes on a normal host:  ./scripts/kind-up.sh && ./scripts/kind-run-all.sh
       (NOTE: nested k8s/kind CANNOT start pods in some microVM sandboxes — runc
        'pipe EOF'; use path (b) there. Docker itself works. See docs/kubernetes.md.)
-   e. Ephemeral cloud box (Fly.io):  ./deploy/fly/up.sh  (one Firecracker Machine
-      runs path (b) via Docker-in-Docker; drive over `fly ssh console`; destroy with
-      ./deploy/fly/down.sh). No public ports/ingress. See docs/deploy-fly.md.
+   e. Ephemeral cloud box (Fly.io): `./deploy/fly/up.sh` creates a unique private
+      app and waits for readiness. Use `deploy/fly/ssh.sh` interactively,
+      `deploy/fly/exec.sh` from a harness, and `deploy/fly/model.sh` for a model
+      assessor. Destroy it with `deploy/fly/down.sh`. See docs/deploy-fly.md.
 
 ACCEPTANCE CHECKS (must all pass):
 - redsec doctor           -> 11/11 modules OK
