@@ -1,6 +1,6 @@
 # TESTING — reproduce the end-to-end environments (read me, fresh agent)
 
-This is the single place that tells you **how every challenge is tested end-to-end,
+This is the single place that tells you **how every built-in challenge is tested end-to-end,
 where the exploit payloads live, what flags they hit, and how to reproduce all of it
 from a clean checkout**. Nothing here depends on a previous chat — it's all in the
 repo.
@@ -11,9 +11,9 @@ repo.
 pip install -e .
 redsec doctor        # 11/11 modules load + checks resolve
 redsec selftest      # 43/43 challenges: verify FAILS pre-exploit, PASSES post-exploit
-pytest -q            # 23 unit + per-module integration tests
+pytest -q            # framework, integration, deployment, and catalog tests
 ```
-That proves every challenge is solvable by its real exploit. For the **container**
+That proves every built-in challenge is solvable by its real exploit. For the **container**
 path (real Docker, production images):
 ```bash
 ./scripts/build_base_image.sh          # or: REGISTRY=ghcr.io/you ./scripts/build_images.sh
@@ -34,6 +34,22 @@ python scripts/docker_run_all.py --real   # 40/40 container-backed challenges
 and `scripts/range_ctl.py`: before the exploit runs, every verifier must FAIL; after
 it runs, every verifier must PASS. A verifier that passes with no exploit is a bug the
 suite catches.
+
+## External range verification
+
+The four external ranges use their pinned upstream implementations. RedSec's
+catalog tests validate their 67 challenge concepts, immutable revisions, solution
+provenance, ports, and adapter coverage. CI builds and starts the external ranges
+together, enumerates DVAA's solution-bearing challenges, runs MCPGoat's native
+all-level regression, probes DVMCP and Appsecco network services, initializes every
+Appsecco stdio MCP server, and checks Docker network isolation.
+
+That evidence is distinct from the built-in correctness gate. DVAA embeds solutions
+for 22 CTF challenges; MCPGoat has a native attacker and guide for 26 concepts × 3
+levels; DVMCP publishes 10 solution guides; Appsecco publishes per-lab demonstration
+payloads. A successful adapter smoke test proves the surface is available, not that
+RedSec independently solved every upstream challenge. The exact inventory and pinned
+answer sources are in [`CHALLENGE-CATALOG.md`](CHALLENGE-CATALOG.md).
 
 ## Where the payloads and flags live (this is "what payloads run, what flags are hit")
 

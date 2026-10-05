@@ -85,6 +85,43 @@ def _challenge(module: Module, cid: str):
     raise typer.BadParameter(f"module {module.id} has no challenge {cid!r}")
 
 
+def _range_challenge_rows(definition) -> list[dict]:
+    """Return one normalized row per challenge concept in a range."""
+    if definition.runtime.driver == "builtin":
+        rows = []
+        for _, module in load_all():
+            for challenge in module.challenges:
+                difficulty = challenge.tier
+                if not difficulty and challenge.difficulty:
+                    difficulty = challenge.difficulty.value
+                rows.append({
+                    "range": definition.id,
+                    "id": f"{module.id}/{challenge.id}",
+                    "title": challenge.title,
+                    "category": module.title,
+                    "difficulty": difficulty or module.difficulty.value,
+                    "variants": 1,
+                    "solution_status": definition.curriculum.solution_status,
+                    "solution_url": definition.curriculum.solution_url,
+                    "solution_path": definition.curriculum.solution_path,
+                })
+        return rows
+    return [
+        {
+            "range": definition.id,
+            "id": challenge.id,
+            "title": challenge.title,
+            "category": challenge.category,
+            "difficulty": challenge.difficulty,
+            "variants": challenge.variants,
+            "solution_status": definition.curriculum.solution_status,
+            "solution_url": definition.curriculum.solution_url,
+            "solution_path": definition.curriculum.solution_path,
+        }
+        for challenge in definition.curriculum.challenges
+    ]
+
+
 # --------------------------------------------------------------------------- #
 # discovery
 # --------------------------------------------------------------------------- #
@@ -97,6 +134,7 @@ def list_ranges() -> None:
     table.add_column("ID")
     table.add_column("Range")
     table.add_column("Maintainer")
+    table.add_column("Challenges", justify="right")
     table.add_column("Enabled", justify="center")
     table.add_column("Status")
     table.add_column("Revision", style="dim")
@@ -104,12 +142,53 @@ def list_ranges() -> None:
         row = rows[definition.id]
         enabled = "[green]yes[/]" if row["enabled"] else "[dim]no[/]"
         revision = (row["revision"] or "-")[:12]
+        challenges = _range_challenge_rows(definition)
+        concepts = len(challenges)
+        variants = sum(item["variants"] for item in challenges)
+        count = str(concepts) if concepts == variants else f"{concepts}/{variants}"
         table.add_row(
             definition.id, definition.title, definition.maintainer,
-            enabled, row["status"], revision,
+            count, enabled, row["status"], revision,
         )
     console.print(table)
     console.print("[dim]The OffSec entry is reserved and cannot be enabled until a supported lab is published.[/]")
+
+
+@ranges_app.command("challenges")
+def ranges_challenges(
+    range_ids: Optional[list[str]] = typer.Argument(None, help="range IDs or aliases"),
+    json_output: bool = typer.Option(False, "--json", help="print machine-readable JSON"),
+) -> None:
+    """List every built-in and upstream challenge with solution provenance."""
+    catalog = load_catalog()
+    definitions = (
+        range_lifecycle.resolve_many(range_ids, catalog)
+        if range_ids else list(catalog.ranges.values())
+    )
+    rows = [
+        row for definition in definitions
+        for row in _range_challenge_rows(definition)
+    ]
+    if json_output:
+        print(json.dumps(rows, indent=2))
+        return
+    table = Table(title="RedSec challenge catalog", header_style="bold cyan")
+    table.add_column("Range")
+    table.add_column("ID")
+    table.add_column("Challenge")
+    table.add_column("Category", style="dim")
+    table.add_column("Difficulty")
+    table.add_column("Variants", justify="right")
+    table.add_column("Solution")
+    for row in rows:
+        solution = row["solution_status"]
+        if row["solution_path"]:
+            solution += f" ({row['solution_path']})"
+        table.add_row(
+            row["range"], row["id"], row["title"], row["category"],
+            row["difficulty"], str(row["variants"]), solution,
+        )
+    console.print(table)
 
 
 @ranges_app.command("enable")
@@ -177,12 +256,15 @@ def ranges_status(json_output: bool = typer.Option(False, "--json")) -> None:
     table.add_column("Enabled", justify="center")
     table.add_column("Status")
     table.add_column("Revision", style="dim")
+    table.add_column("Curriculum")
     table.add_column("Endpoints")
     for row in rows:
         endpoints = "\n".join(f"{name}: {url}" for name, url in row["endpoints"].items())
         table.add_row(
             row["id"], "yes" if row["enabled"] else "no", row["status"],
-            (row["revision"] or "-")[:12], endpoints or "-",
+            (row["revision"] or "-")[:12],
+            "current" if row["curriculum_current"] else "[yellow]revision drift[/]",
+            endpoints or "-",
         )
     console.print(table)
     unhealthy = [
@@ -192,6 +274,12 @@ def ranges_status(json_output: bool = typer.Option(False, "--json")) -> None:
     ]
     if unhealthy:
         raise typer.Exit(1)
+    stale = [row["id"] for row in rows if not row["curriculum_current"]]
+    if stale:
+        console.print(
+            "[yellow]Curriculum metadata describes the committed pinned revision; "
+            f"locally updated range(s) may differ: {', '.join(stale)}[/]"
+        )
 
 
 @ranges_app.command("update")

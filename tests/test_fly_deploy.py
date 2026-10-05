@@ -35,7 +35,10 @@ def test_fly_config_has_no_public_service_and_stops_on_ttl():
     assert config["env"]["REDSEC_BIND_HOST"] == "all"
     assert config["env"]["REDSEC_RANGES"] == "builtin"
     assert config["vm"][0]["persist_rootfs"] == "restart"
+    assert config["vm"][0]["size"] == "shared-cpu-2x"
+    assert config["vm"][0]["memory"] == "4gb"
     assert config["restart"][0]["policy"] == "never"
+    assert config["build"]["dockerfile"] == "Dockerfile"
 
 
 def test_fly_shell_entrypoints_parse_and_help_without_credentials():
@@ -54,6 +57,11 @@ def test_fly_shell_entrypoints_parse_and_help_without_credentials():
 def test_docker_context_excludes_local_credentials_and_state():
     ignored = set((ROOT / ".dockerignore").read_text().splitlines())
     assert {".env", ".env.*", ".redsec", ".aws", ".fly", "*.key"} <= ignored
+
+
+def test_repository_root_has_no_public_fly_launch_configuration():
+    assert not (ROOT / "fly.toml").exists()
+    assert not (ROOT / "Dockerfile").exists()
 
 
 def test_up_script_creates_unique_app_and_persists_harness_state(tmp_path):
@@ -95,7 +103,7 @@ exit 0
     assert saved["app"] == output["app"]
     commands = calls.read_text()
     assert f"apps create {output['app']} --yes" in commands
-    assert f"deploy --app {output['app']}" in commands
+    assert f"deploy {ROOT} --app {output['app']}" in commands
     assert "--env REDSEC_RANGES=builtin mcpgoat" in commands
     assert f"ssh console --quiet --app {output['app']}" in commands
 

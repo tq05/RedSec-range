@@ -374,6 +374,8 @@ def status_rows(catalog: RangeCatalog | None = None) -> list[dict]:
         else:
             status = "placeholder"
             endpoints = {}
+        revision = entry.get("revision") or state["revisions"].get(definition.id)
+        catalog_revision = definition.source.revision if definition.source else None
         rows.append({
             "id": definition.id,
             "title": definition.title,
@@ -381,7 +383,9 @@ def status_rows(catalog: RangeCatalog | None = None) -> list[dict]:
             "availability": definition.availability,
             "enabled": enabled,
             "status": status,
-            "revision": entry.get("revision") or state["revisions"].get(definition.id),
+            "revision": revision,
+            "catalog_revision": catalog_revision,
+            "curriculum_current": not revision or not catalog_revision or revision == catalog_revision,
             "endpoints": endpoints,
         })
     return rows

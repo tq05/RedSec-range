@@ -8,12 +8,12 @@ coding agent) to stand the whole RedSec Range environment back up and verify it.
 is non-deterministic, so a from-scratch rebuild would approximate, not reproduce).
 So the prompt below is **deterministic first**: its primary path clones this repo
 and runs the bootstrap; the embedded spec is only a fallback for rebuilding if the
-repo is ever unavailable. This file is kept in sync with `CLAUDE.md` (the single
-source of truth for project detail) — update both together.
+repo is ever unavailable. This file is kept in sync with `intent.md` (decisions) and
+`CLAUDE.md` (current operational state) — update them together.
 
 - **Last updated:** 2026-10-05 (multi-range catalog, external adapters, Codespaces and Fly)
 - **Repo:** https://github.com/tq05/RedSec-range
-- **State at last update:** 11 modules, 43 challenges, all complete + tested.
+- **State at last update:** 43 built-in verified challenges; 110 cataloged concepts / 162 runnable variants across five available ranges.
 
 ---
 
@@ -33,11 +33,11 @@ PRIMARY PATH (deterministic — do this first):
 1. Clone the repo:
    git clone https://github.com/tq05/RedSec-range /home/<you>/redsec-range
    (If you lack access, see FALLBACK below.)
-2. Read CLAUDE.md at the repo root — it is the authoritative context (architecture,
-   module list, run paths, conventions). Read docs/ as needed.
+2. Read intent.md, then CLAUDE.md — they are the authoritative decisions and current
+   operational context (architecture, module list, run paths, conventions).
 3. Install the framework:  pip install -e .   (Python 3.11+)
 4. Verify it loads:  redsec doctor   (expect all 11 modules OK)
-5. Prove every challenge is solvable:  redsec selftest   (expect 43/43 fail->pass)
+5. Prove every built-in challenge is solvable:  redsec selftest   (expect 43/43 fail->pass)
 6. Choose how to RUN it (all use the same modules/verifiers/exploits):
    a. GitHub Codespaces (default cloud path): create a Codespace from the repo and
       wait for "RedSec Range is ready". The devcontainer installs and starts the
@@ -58,16 +58,19 @@ PRIMARY PATH (deterministic — do this first):
 
 7. Optional external ranges (same private Docker host, isolated networks):
      redsec ranges list
+     redsec ranges challenges
      redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
      redsec ranges up
      redsec ranges update mcpgoat
    The built-in course remains `builtin`; `offsec` is a non-deployable placeholder.
-   See docs/external-ranges.md.
+   See docs/CHALLENGE-CATALOG.md and docs/external-ranges.md. External adapter health
+   checks do not replace the built-in fail-before/pass-after guarantee.
 
 ACCEPTANCE CHECKS (must all pass):
 - redsec doctor           -> 11/11 modules OK
 - redsec selftest         -> 43/43 challenges PASS (fail-before, pass-after)
 - pytest -q               -> all green (engine/verifier units + per-module integration)
+- python scripts/generate_challenge_catalog.py --check -> generated catalog is current
 - python scripts/docker_run_all.py  -> 40/40 container-backed challenges PASS
   (module 10 is artifact-scored; its 3 are covered by selftest)
 
@@ -83,7 +86,7 @@ targets (ports from `range status`). Do not weaken any verifier to make it pass;
 if something fails, set up your own end-to-end test and fix the code, then re-verify.
 
 FALLBACK (only if the repo is genuinely unavailable): rebuild from the spec in this
-repo's CLAUDE.md + docs/ (architecture.md, authoring-modules.md, verification.md,
+repo's intent.md + CLAUDE.md + docs/ (architecture.md, authoring-modules.md, verification.md,
 mcp-attack-matrix.md, curriculum.md). The unit of the framework is a declarative
 module: modules/NN-slug/ with module.yaml + lesson.md + targets/ (vulnerable apps +
 Dockerfiles) + verify/ (flag|oracle|artifact checks) + solution/solve.py

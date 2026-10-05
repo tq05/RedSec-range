@@ -18,7 +18,9 @@
   `k8s.py` (derive Helm values from a module, invoke helm).
 - **Range catalog** (`ranges/catalog.yaml`, `redsec/ranges.py`) — distinguishes the
   built-in curriculum from pinned external projects, tracks the enabled profile,
-  and applies each external project's Docker adapter independently.
+  indexes every upstream challenge and its solution provenance, and applies each
+  external project's Docker adapter independently. `redsec ranges challenges`
+  exposes the combined catalog; `docs/CHALLENGE-CATALOG.md` is generated from it.
 - **Helm chart** (`deploy/helm/redsec-module/`) — templates one module into an
   isolated namespace with default-deny networking.
 - **Modules** (`modules/NN-slug/`) — the content: manifest, lesson, targets,

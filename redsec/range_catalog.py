@@ -52,6 +52,36 @@ class RangeRuntime(BaseModel):
         return self
 
 
+class RangeChallenge(BaseModel):
+    """A challenge implemented and maintained by an external range."""
+
+    id: str
+    title: str
+    category: str
+    difficulty: str
+    variants: int = Field(default=1, ge=1)
+
+
+class RangeCurriculum(BaseModel):
+    """Discoverability and solution provenance for a cataloged range."""
+
+    source: Literal["builtin", "upstream", "placeholder"]
+    solution_status: Literal["redsec", "upstream", "unknown", "unavailable"]
+    solution_url: str | None = None
+    solution_path: str | None = None
+    note: str | None = None
+    challenges: list[RangeChallenge] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_curriculum(self):
+        ids = [challenge.id for challenge in self.challenges]
+        if len(ids) != len(set(ids)):
+            raise ValueError("challenge IDs must be unique within a range")
+        if self.solution_status == "upstream" and not self.solution_url:
+            raise ValueError("upstream solutions require solution_url")
+        return self
+
+
 class RangeDefinition(BaseModel):
     id: str
     title: str
@@ -64,6 +94,7 @@ class RangeDefinition(BaseModel):
     note: str | None = None
     source: RangeSource | None = None
     runtime: RangeRuntime
+    curriculum: RangeCurriculum
 
     @model_validator(mode="after")
     def validate_source(self):
@@ -72,6 +103,12 @@ class RangeDefinition(BaseModel):
             raise ValueError("external runtimes require source; other runtimes must omit it")
         if self.availability == "placeholder" and self.runtime.driver != "placeholder":
             raise ValueError("placeholder ranges must use the placeholder driver")
+        if external and not self.curriculum.challenges:
+            raise ValueError("external ranges must enumerate their upstream challenges")
+        if self.runtime.driver == "builtin" and self.curriculum.source != "builtin":
+            raise ValueError("builtin runtime must use the builtin curriculum")
+        if self.runtime.driver == "placeholder" and self.curriculum.source != "placeholder":
+            raise ValueError("placeholder runtime must use the placeholder curriculum")
         return self
 
 
