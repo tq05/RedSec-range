@@ -1,8 +1,33 @@
 # RedSec Range agent instructions
 
 Read `CLAUDE.md` for architecture, module status, and project conventions. This
-file defines the Fly.io workflow for repository-aware harnesses such as Codex and
+file defines the cloud workflows for repository-aware harnesses such as Codex and
 Claude Code.
+
+## Default GitHub Codespaces workflow
+
+Codespaces is the default hosted environment. Its devcontainer installs the Python
+package and starts the private Docker range automatically. Wait for
+`.redsec/codespaces-ready`, then use the repository's command surface directly:
+
+```bash
+range status
+redsec lesson 01
+range solve 07
+range shell 07 vuln-mcp
+```
+
+Do not provision Fly.io from a Codespace unless the user explicitly requests Fly.
+Keep all forwarded challenge ports private; these targets are deliberately
+vulnerable. Use `assess MODULE --provider ... --model ...` for an autonomous model
+assessment. Read model keys from environment variables or Codespaces secrets and
+never print or commit them.
+
+For external SSH, the user can run `gh codespace ssh -R tq05/RedSec-range` after
+authenticating the GitHub CLI. An external harness can run
+`./scripts/codespaces-connect.sh range status` (or another command) over the same
+authenticated SSH path. A repository connection alone does not create a tunnel or
+move tool execution into the Codespace. Full details: `docs/codespaces.md`.
 
 ## Fly.io range workflow
 

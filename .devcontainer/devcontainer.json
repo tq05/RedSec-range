@@ -1,0 +1,71 @@
+{
+  "name": "RedSec Range",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {}
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "postCreateCommand": "./scripts/codespaces-setup.sh",
+  "postStartCommand": "./scripts/codespaces-up.sh",
+  "forwardPorts": [
+    9010,
+    9020,
+    9030,
+    9040,
+    9050,
+    9060,
+    9070,
+    9071,
+    9080,
+    9090,
+    9091,
+    9110,
+    9112
+  ],
+  "portsAttributes": {
+    "9010": { "label": "01 · Introduction", "onAutoForward": "silent" },
+    "9020": { "label": "02 · Recon", "onAutoForward": "silent" },
+    "9030": { "label": "03 · Agents", "onAutoForward": "silent" },
+    "9040": { "label": "04 · A2A", "onAutoForward": "silent" },
+    "9050": { "label": "05 · RAG", "onAutoForward": "silent" },
+    "9060": { "label": "06 · Embeddings", "onAutoForward": "silent" },
+    "9070": { "label": "07 · MCP server", "onAutoForward": "silent" },
+    "9071": { "label": "07 · MCP host", "onAutoForward": "silent" },
+    "9080": { "label": "08 · Supply chain", "onAutoForward": "silent" },
+    "9090": { "label": "09 · App server", "onAutoForward": "silent" },
+    "9091": { "label": "09 · Metadata", "onAutoForward": "silent" },
+    "9110": { "label": "11 · Assistant", "onAutoForward": "silent" },
+    "9112": { "label": "11 · Vault", "onAutoForward": "silent" }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md",
+        "docs/WORKSHEET.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "ms-python.python"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
+      }
+    }
+  }
+}

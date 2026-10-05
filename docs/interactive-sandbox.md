@@ -82,10 +82,12 @@ range up-all --real                                        # use m<ID>-<target> 
 
 | Path | Where | Command |
 |------|-------|---------|
+| **GitHub Codespaces (default cloud path)** | GitHub-hosted devcontainer | create a Codespace; range starts automatically |
 | Local processes | anywhere with Python | `redsec dev/up <id>` |
 | **Persistent Docker range (this doc)** | any Docker sandbox | `./scripts/sandbox-up.sh` + `range …` |
 | Ephemeral container check | any Docker host | `python scripts/docker_run_all.py [--real]` |
 | Kubernetes | real cluster / kind on a normal host | `./scripts/kind-up.sh` |
+| Fly.io | dedicated private cloud machine | `./deploy/fly/up.sh` + `deploy/fly/exec.sh` |
 
-All four use the identical modules, verifiers, and reference exploits, so a
+All paths use the identical modules, verifiers, and reference exploits, so a
 challenge solved in one is solved in all.

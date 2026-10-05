@@ -77,23 +77,27 @@ Kubernetes path too.
   and CI-able offline. Vulnerabilities live in the *apps* (how they assemble context
   and wire tools), so they transfer to a real model.
 
-## How to run (5 paths, same modules/verifiers/exploits)
+## How to run (6 paths, same modules/verifiers/exploits)
 
-1. **Local processes** (Python only): `pip install -e . && redsec dev <id>` /
+1. **GitHub Codespaces (default cloud path)**: create a Codespace from the repository;
+   the devcontainer installs the course and starts the private Docker range. Use
+   `range status|solve|verify|shell|logs|reset|down`, browser port forwarding, or
+   `gh codespace ssh`. See docs/codespaces.md.
+2. **Local processes** (Python only): `pip install -e . && redsec dev <id>` /
    `redsec up <id>`; `redsec selftest` proves every challenge fail→pass (43/43).
-2. **Interactive persistent Docker range** (the in-sandbox command centre):
+3. **Interactive persistent Docker range** (the in-sandbox command centre):
    `./scripts/sandbox-up.sh` then `range status|solve|verify|shell|logs|reset|down`.
    See docs/interactive-sandbox.md.
-3. **Ephemeral container check**: `python scripts/docker_run_all.py [--real]` (40/40).
-4. **Kubernetes/kind** (normal host): `./scripts/kind-up.sh` + `./scripts/kind-run-all.sh`.
+4. **Ephemeral container check**: `python scripts/docker_run_all.py [--real]` (40/40).
+5. **Kubernetes/kind** (normal host): `./scripts/kind-up.sh` + `./scripts/kind-run-all.sh`.
    Helm chart in deploy/helm/redsec-module; see docs/kubernetes.md.
-5. **Ephemeral cloud box (Fly.io)**: `./deploy/fly/up.sh` creates a unique private
+6. **Dedicated cloud box (Fly.io)**: `./deploy/fly/up.sh` creates a unique private
    app and waits for readiness. Use `deploy/fly/ssh.sh` interactively,
    `deploy/fly/exec.sh` from a harness, or `deploy/fly/model.sh` for the bundled
    assessor; destroy it with `deploy/fly/down.sh`. See docs/deploy-fly.md.
 
-**Known环境 limit**: nested k8s (kind/k3s) can't start pods in a Firecracker microVM
-(`runc … pipe EOF`); Docker works. Use path 2 there. Documented in docs/kubernetes.md
+**Known environment limit**: nested k8s (kind/k3s) can't start pods in a Firecracker
+microVM (`runc … pipe EOF`); Docker works. Use path 3 there. Documented in docs/kubernetes.md
 and docs/interactive-sandbox.md.
 
 ## LLM assessor + Grok CLI (Grok/OpenAI/local) — docs/llm-assessor.md
@@ -117,12 +121,13 @@ or *on your own machine* from the repo. Same commands; different host. All need
 
 ## Verification / tests
 
-- `pytest` (29 tests): engine/verifier units, per-module fail→pass integration,
-  and the Fly deployment contract.
+- `pytest` (33 tests): engine/verifier units, per-module fail→pass integration,
+  and the Codespaces/Fly deployment contracts.
 - `redsec doctor` (all modules load + checks resolve), `redsec selftest` (43/43).
 - `python scripts/validate_manifests.py` (62 K8s objects vs schema offline).
 - CI: `.github/workflows/ci.yml` — tests, selftest, helm+kubeconform, container run,
-  kind, and a local boot/solve smoke test of the Fly Docker-in-Docker image.
+  kind, a Codespaces devcontainer boot/solve test, and a local boot/solve smoke test
+  of the Fly Docker-in-Docker image.
 - Evidence log: `docs/proof/verification.log`.
 - Walkthroughs independently red-teamed by a separate model (fresh-context Sonnet).
 
