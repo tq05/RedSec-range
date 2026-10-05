@@ -15,6 +15,7 @@ def _config() -> dict:
 def test_codespaces_devcontainer_has_runtime_and_lifecycle():
     config = _config()
 
+    assert config["build"] == {"dockerfile": "Dockerfile"}
     assert any("docker-in-docker:4" in key for key in config["features"])
     assert any("node:1" in key for key in config["features"])
     assert any("sshd:1" in key for key in config["features"])
