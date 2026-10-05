@@ -82,6 +82,39 @@ jobs:
             range status
             range solve 01
 
+  external-ranges:
+    # Builds every pinned third-party adapter and proves they run concurrently.
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install RedSec
+        run: pip install -e .
+      - name: Start all external ranges on isolated networks
+        run: |
+          redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
+          redsec ranges up
+          redsec ranges status
+      - name: Check dashboards, adapters, and network isolation
+        run: |
+          curl -fsS http://127.0.0.1:9000/stats >/dev/null
+          curl -fsS http://127.0.0.1:7332/ >/dev/null
+          redsec ranges entrypoints appsecco-mcp
+          for network in dvaa mcpgoat dvmcp appsecco-mcp; do
+            test "$(docker network inspect -f '{{.Internal}}' "redsec-ext-$network")" = true
+            test "$(docker inspect -f '{{len .NetworkSettings.Networks}}' "redsec-ext-$network")" = 1
+            test "$(docker inspect -f '{{len .NetworkSettings.Networks}}' "redsec-ext-$network-gateway")" = 2
+          done
+      - name: Show logs and clean up
+        if: always()
+        run: |
+          for container in dvaa mcpgoat dvmcp appsecco-mcp; do
+            docker logs --tail 100 "redsec-ext-$container" || true
+          done
+          redsec ranges down --all || true
+
   fly-image:
     # Exercises the exact Fly image locally; no Fly credentials or paid resources.
     runs-on: ubuntu-latest

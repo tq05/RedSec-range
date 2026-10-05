@@ -106,6 +106,18 @@ range down-all
 You can also create a Codespaces secret named `REDSEC_MODULES` with space-separated
 two-digit IDs such as `04 07`; future starts will bring up only those modules.
 
+`builtin` is the default range. To start external integrations alongside it, set
+the `REDSEC_RANGES` Codespaces secret or enable them interactively:
+
+```bash
+redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
+redsec ranges up
+redsec ranges status
+```
+
+See [the external ranges guide](external-ranges.md) for isolation, ports, stdio MCP
+entrypoints, and individual updates.
+
 ## Stop or delete the Codespace
 
 Stop the Codespace when you finish so it stops consuming compute quota. Delete it

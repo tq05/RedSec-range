@@ -41,6 +41,24 @@ local terminal with `gh codespace ssh -R tq05/RedSec-range`. Challenge ports rem
 private to your GitHub account. Codespaces includes usage on eligible GitHub plans
 and shows any billable cost before creation. See the [Codespaces guide](docs/codespaces.md).
 
+### Enable additional maintained ranges
+
+The guided curriculum is the `builtin` range. RedSec can also fetch, build, and
+operate independently maintained labs on the same private attacking machine:
+
+```bash
+redsec ranges list
+redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
+redsec ranges up              # built-in and all enabled external ranges together
+redsec ranges update mcpgoat  # update one upstream without changing the others
+```
+
+Integrations include Damn Vulnerable AI Agent, MCPGoat, Damn Vulnerable MCP
+Server, and Appsecco's Vulnerable MCP Servers Lab. Each uses a pinned upstream
+revision, its own target container, and an isolated internal network. An unavailable
+`offsec` placeholder is reserved for a future officially deployable OffSec lab.
+See [the external ranges guide](docs/external-ranges.md).
+
 ## Why this exists
 
 The OffSec **AI-300 / OSAI** ("Advanced AI Red Teaming") syllabus is an excellent
@@ -261,6 +279,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/architecture.md](docs/architecture.md) | How the framework is built |
 | [docs/TESTING.md](docs/TESTING.md) | Reproduce the end-to-end tests: envs, payloads, flags |
 | [docs/codespaces.md](docs/codespaces.md) | One-click GitHub range, private ports, harness and SSH access |
+| [docs/external-ranges.md](docs/external-ranges.md) | Enable, isolate, and independently update external maintained labs |
 | [docs/interactive-sandbox.md](docs/interactive-sandbox.md) | Run it live in a Docker sandbox (the command centre) |
 | [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
 | [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |

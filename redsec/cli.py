@@ -19,6 +19,8 @@ from .config import state_dir
 from .deploy.local import local_range, start_range
 from .loader import ModuleError, find, load_all
 from .models import Module
+from .range_catalog import load_catalog
+from . import ranges as range_lifecycle
 from .verify.base import CheckContext
 from .verify.runner import run_challenge
 
@@ -29,6 +31,12 @@ app = typer.Typer(
 )
 console = Console()
 err = Console(stderr=True)
+ranges_app = typer.Typer(
+    add_completion=False,
+    help="Enable and operate the built-in course and external maintained ranges.",
+    no_args_is_help=True,
+)
+app.add_typer(ranges_app, name="ranges")
 
 DIFF_COLOR = {
     "intro": "green", "beginner": "green", "intermediate": "yellow",
@@ -80,6 +88,170 @@ def _challenge(module: Module, cid: str):
 # --------------------------------------------------------------------------- #
 # discovery
 # --------------------------------------------------------------------------- #
+@ranges_app.command("list")
+def list_ranges() -> None:
+    """List built-in, external, and placeholder ranges."""
+    catalog = load_catalog()
+    rows = {row["id"]: row for row in range_lifecycle.status_rows(catalog)}
+    table = Table(title="RedSec range catalog", header_style="bold cyan")
+    table.add_column("ID")
+    table.add_column("Range")
+    table.add_column("Maintainer")
+    table.add_column("Enabled", justify="center")
+    table.add_column("Status")
+    table.add_column("Revision", style="dim")
+    for definition in catalog.ranges.values():
+        row = rows[definition.id]
+        enabled = "[green]yes[/]" if row["enabled"] else "[dim]no[/]"
+        revision = (row["revision"] or "-")[:12]
+        table.add_row(
+            definition.id, definition.title, definition.maintainer,
+            enabled, row["status"], revision,
+        )
+    console.print(table)
+    console.print("[dim]The OffSec entry is reserved and cannot be enabled until a supported lab is published.[/]")
+
+
+@ranges_app.command("enable")
+def enable_ranges(
+    range_ids: Optional[list[str]] = typer.Argument(None, help="range IDs or aliases"),
+    all_ranges: bool = typer.Option(False, "--all", help="enable every available range"),
+) -> None:
+    """Add ranges to the enabled profile. Run `redsec ranges up` to start them."""
+    definitions = range_lifecycle.selected_ranges(range_ids, select_all=all_ranges)
+    if not range_ids and not all_ranges:
+        raise typer.BadParameter("provide range IDs or --all")
+    enabled = range_lifecycle.set_enabled([item.id for item in definitions], enable=True)
+    console.print(f"enabled: [cyan]{' '.join(enabled)}[/]")
+    console.print("start them with `redsec ranges up`")
+
+
+@ranges_app.command("disable")
+def disable_ranges(range_ids: list[str] = typer.Argument(..., help="range IDs or aliases")) -> None:
+    """Stop ranges and remove them from the enabled profile."""
+    definitions = range_lifecycle.resolve_many(range_ids)
+    range_lifecycle.down_many(definitions)
+    enabled = range_lifecycle.set_enabled([item.id for item in definitions], enable=False)
+    console.print(f"enabled: [cyan]{' '.join(enabled) or '(none)'}[/]")
+
+
+@ranges_app.command("up")
+def ranges_up(
+    range_ids: Optional[list[str]] = typer.Argument(None, help="range IDs or aliases"),
+    all_ranges: bool = typer.Option(False, "--all", help="start every available range"),
+    allow_egress: bool = typer.Option(
+        False, help="allow external ranges to reach the internet at runtime"
+    ),
+    rebuild: bool = typer.Option(False, help="rebuild external images"),
+) -> None:
+    """Start explicit ranges, or all ranges in the enabled profile."""
+    definitions = range_lifecycle.selected_ranges(range_ids, select_all=all_ranges)
+    for result in range_lifecycle.up_many(
+        definitions, allow_egress=allow_egress, rebuild=rebuild
+    ):
+        console.print(f"[green]up[/] {result['id']}")
+        for name, url in result.get("endpoints", {}).items():
+            console.print(f"  {name}: {url}")
+
+
+@ranges_app.command("down")
+def ranges_down(
+    range_ids: Optional[list[str]] = typer.Argument(None, help="range IDs or aliases"),
+    all_ranges: bool = typer.Option(False, "--all", help="stop every available range"),
+) -> None:
+    """Stop explicit ranges, or all ranges in the enabled profile."""
+    definitions = range_lifecycle.selected_ranges(range_ids, select_all=all_ranges)
+    range_lifecycle.down_many(definitions)
+    console.print("stopped: " + " ".join(item.id for item in definitions))
+
+
+@ranges_app.command("status")
+def ranges_status(json_output: bool = typer.Option(False, "--json")) -> None:
+    """Show enabled state, runtime status, revisions, and endpoints."""
+    rows = range_lifecycle.status_rows()
+    if json_output:
+        print(json.dumps(rows, indent=2))
+        return
+    table = Table(title="RedSec ranges", header_style="bold cyan")
+    table.add_column("ID")
+    table.add_column("Enabled", justify="center")
+    table.add_column("Status")
+    table.add_column("Revision", style="dim")
+    table.add_column("Endpoints")
+    for row in rows:
+        endpoints = "\n".join(f"{name}: {url}" for name, url in row["endpoints"].items())
+        table.add_row(
+            row["id"], "yes" if row["enabled"] else "no", row["status"],
+            (row["revision"] or "-")[:12], endpoints or "-",
+        )
+    console.print(table)
+    unhealthy = [
+        row["id"] for row in rows
+        if row["enabled"] and row["availability"] == "available"
+        and row["status"] != "running"
+    ]
+    if unhealthy:
+        raise typer.Exit(1)
+
+
+@ranges_app.command("update")
+def ranges_update(range_ids: list[str] = typer.Argument(..., help="external range IDs")) -> None:
+    """Fetch, build, and if necessary restart external ranges individually."""
+    for definition in range_lifecycle.resolve_many(range_ids):
+        old, new, restarted = range_lifecycle.update_one(definition)
+        action = "rebuilt and restarted" if restarted else "rebuilt"
+        console.print(f"{definition.id}: {old[:12]} -> {new[:12]} ({action})")
+
+
+@ranges_app.command(
+    "exec", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
+def ranges_exec(
+    ctx: typer.Context,
+    range_id: str = typer.Argument(...),
+) -> None:
+    """Run a command in an external range container."""
+    definition = range_lifecycle.resolve_many([range_id])[0]
+    command = list(ctx.args)
+    if not command:
+        raise typer.BadParameter("provide a command after the range ID")
+    raise typer.Exit(range_lifecycle.container_exec(definition, command))
+
+
+@ranges_app.command("shell")
+def ranges_shell(range_id: str) -> None:
+    """Open an interactive shell in an external range container."""
+    definition = range_lifecycle.resolve_many([range_id])[0]
+    raise typer.Exit(range_lifecycle.container_exec(definition, ["sh"], interactive=True))
+
+
+@ranges_app.command("entrypoints")
+def ranges_entrypoints(range_id: str) -> None:
+    """List named stdio servers supplied by an external range adapter."""
+    definition = range_lifecycle.resolve_many([range_id])[0]
+    if not definition.runtime.entrypoints:
+        console.print(f"{definition.id} has no named stdio entrypoints")
+        return
+    table = Table(title=f"{definition.id} stdio entrypoints", header_style="bold cyan")
+    table.add_column("Name")
+    table.add_column("Command", style="dim")
+    for name, command in definition.runtime.entrypoints.items():
+        table.add_row(name, " ".join(command))
+    console.print(table)
+
+
+@ranges_app.command("launch")
+def ranges_launch(range_id: str, entrypoint: str) -> None:
+    """Attach stdin/stdout to a named MCP server inside an external range."""
+    definition = range_lifecycle.resolve_many([range_id])[0]
+    command = definition.runtime.entrypoints.get(entrypoint)
+    if not command:
+        raise typer.BadParameter(
+            f"unknown entrypoint {entrypoint!r}; run `redsec ranges entrypoints {definition.id}`"
+        )
+    raise typer.Exit(range_lifecycle.container_exec(definition, command))
+
+
 @app.command("list")
 def list_modules() -> None:
     """List all modules in the curriculum."""
@@ -482,7 +654,7 @@ def schema(out: Optional[Path] = typer.Option(None, help="write to file")) -> No
 def main() -> None:  # console-script entrypoint
     try:
         app()
-    except ModuleError as e:
+    except (ModuleError, range_lifecycle.RangeLifecycleError) as e:
         err.print(f"[red]{e}[/]")
         raise SystemExit(2)
 

@@ -21,6 +21,11 @@ exfiltration, and more. They exist so defenders can learn to find and fix them.
 - The RCE target (`07/vuln-mcp`) executes a shell. It is marked `privileged` and is
   contained by NetworkPolicy; keep it in an isolated namespace and never on a node
   you care about.
+- External catalog ranges are third-party deliberately vulnerable code. RedSec pins
+  their default Git revisions, builds them locally, binds ports to loopback, and
+  gives each an internal Docker network. Review upstream changes before running
+  `redsec ranges update`; use `--allow-egress` only on a disposable host when an
+  exercise explicitly needs internet content.
 
 ## Intended use
 
@@ -61,3 +66,8 @@ vulnerabilities taught live in the *applications*, which is the point.
   real cloud metadata endpoint on a cloud VM) are genuinely dangerous there. Run those
   modules via the Docker or Kubernetes paths, on a throwaway host, never on a machine
   or network you care about.
+- External catalog adapters currently use Docker isolation on the same host. They do
+  not inherit the built-in Helm NetworkPolicy and are not deployed into the built-in
+  Kubernetes namespaces. Each target joins only an internal network; a read-only
+  gateway forwards its declared host ports. The target receives a routed bridge only
+  when the operator explicitly enables egress.

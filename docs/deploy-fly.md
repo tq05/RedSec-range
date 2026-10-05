@@ -31,6 +31,7 @@ options include:
 ```bash
 ./deploy/fly/up.sh --region lhr --ttl 90
 ./deploy/fly/up.sh --modules "01 07"       # smaller range for a focused session
+./deploy/fly/up.sh --ranges "builtin dvaa mcpgoat"  # several maintained ranges
 ./deploy/fly/up.sh --json                  # machine-readable completion record
 ```
 
@@ -65,6 +66,7 @@ status and is suitable for tool calls and CI:
 ```bash
 ./deploy/fly/exec.sh range status
 ./deploy/fly/exec.sh range solve 04
+./deploy/fly/exec.sh redsec ranges status
 ./deploy/fly/exec.sh 'range solve 07 resource-traversal'
 ./deploy/fly/status.sh --json
 ```
@@ -147,6 +149,10 @@ is:
 Secondary ports are `9071`, `9091`, and `9112`. `range status` is the source of
 truth for the live target map.
 
+External ports can be tunneled numerically in the same way, for example
+`deploy/fly/proxy.sh 7332` for MCPGoat or `deploy/fly/proxy.sh 9000` for DVAA.
+See [external ranges](external-ranges.md) for the complete catalog and port map.
+
 ## Lifecycle and storage
 
 `--ttl MINUTES` makes PID 1 exit after the deadline. The Fly restart policy leaves
@@ -165,10 +171,10 @@ inner images and reset progress.
 ## How startup is verified
 
 The outer image installs the Python package and dependencies at build time. At
-boot, `entrypoint.sh` starts the inner Docker daemon and selected modules through
-`scripts/sandbox-up.sh`. Startup fails if Docker, dependency installation, an image
-build, or a target health check fails. Only then does it create
-`/run/redsec-ready`; `up.sh` waits for that marker and a successful `range status`.
+boot, `entrypoint.sh` starts the enabled profile through `redsec ranges up`.
+Startup fails if Docker, dependency installation, an image build, or a target
+health check fails. Only then does it create `/run/redsec-ready`; `up.sh` waits
+for that marker and a successful `redsec ranges status`.
 
 Useful diagnostics:
 

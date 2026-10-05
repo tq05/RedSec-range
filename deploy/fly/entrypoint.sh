@@ -6,6 +6,7 @@ ROOT=/opt/redsec-range
 cd "$ROOT"
 : "${MAX_RUNTIME_MIN:=0}"
 : "${REDSEC_MODULES:=}"
+: "${REDSEC_RANGES:=builtin}"
 
 log() { echo "[redsec-fly $(date -u +%H:%M:%S)] $*"; }
 
@@ -15,17 +16,16 @@ log() { echo "[redsec-fly $(date -u +%H:%M:%S)] $*"; }
 }
 rm -f /run/redsec-ready
 
-modules=()
-if [ -n "$REDSEC_MODULES" ]; then
-  read -r -a modules <<<"$REDSEC_MODULES"
-fi
+ranges=()
+read -r -a ranges <<<"$REDSEC_RANGES"
 
-log "starting the range${REDSEC_MODULES:+ (modules: $REDSEC_MODULES)}"
-bash scripts/sandbox-up.sh "${modules[@]}"
+log "starting ranges: $REDSEC_RANGES${REDSEC_MODULES:+ (built-in modules: $REDSEC_MODULES)}"
+redsec ranges enable "${ranges[@]}"
+redsec ranges up
 redsec doctor
-range status
+redsec ranges status
 touch /run/redsec-ready
-log "ready: use range, assess, or grok over Fly SSH"
+log "ready: use redsec ranges, range, assess, or grok over Fly SSH"
 
 if [ "$MAX_RUNTIME_MIN" -gt 0 ]; then
   log "Machine will stop after ${MAX_RUNTIME_MIN} minutes; destroy the app with deploy/fly/down.sh"
