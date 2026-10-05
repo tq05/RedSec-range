@@ -33,6 +33,7 @@ def test_fly_config_has_no_public_service_and_stops_on_ttl():
     assert "services" not in config
     assert "http_service" not in config
     assert config["env"]["REDSEC_BIND_HOST"] == "all"
+    assert config["env"]["REDSEC_RANGES"] == "builtin"
     assert config["vm"][0]["persist_rootfs"] == "restart"
     assert config["restart"][0]["policy"] == "never"
 
@@ -77,7 +78,10 @@ exit 0
     }
 
     result = subprocess.run(
-        [str(FLY / "up.sh"), "--region", "lhr", "--modules", "01", "--json"],
+        [
+            str(FLY / "up.sh"), "--region", "lhr", "--modules", "01",
+            "--ranges", "builtin mcpgoat", "--json",
+        ],
         cwd=ROOT,
         env=env,
         check=True,
@@ -92,6 +96,7 @@ exit 0
     commands = calls.read_text()
     assert f"apps create {output['app']} --yes" in commands
     assert f"deploy --app {output['app']}" in commands
+    assert "--env REDSEC_RANGES=builtin mcpgoat" in commands
     assert f"ssh console --quiet --app {output['app']}" in commands
 
 

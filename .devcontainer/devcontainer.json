@@ -34,7 +34,21 @@
     9090,
     9091,
     9110,
-    9112
+    9112,
+    7332,
+    9000,
+    13000,
+    18000,
+    19001,
+    19002,
+    19003,
+    19004,
+    19005,
+    19006,
+    19007,
+    19008,
+    19009,
+    19010
   ],
   "portsAttributes": {
     "9010": { "label": "01 · Introduction", "onAutoForward": "silent" },
@@ -49,7 +63,21 @@
     "9090": { "label": "09 · App server", "onAutoForward": "silent" },
     "9091": { "label": "09 · Metadata", "onAutoForward": "silent" },
     "9110": { "label": "11 · Assistant", "onAutoForward": "silent" },
-    "9112": { "label": "11 · Vault", "onAutoForward": "silent" }
+    "9112": { "label": "11 · Vault", "onAutoForward": "silent" },
+    "7332": { "label": "External · MCPGoat", "onAutoForward": "silent" },
+    "9000": { "label": "External · DVAA dashboard", "onAutoForward": "silent" },
+    "13000": { "label": "External · Appsecco SSE", "onAutoForward": "silent" },
+    "18000": { "label": "External · Appsecco Streamable HTTP", "onAutoForward": "silent" },
+    "19001": { "label": "External · DVMCP 01", "onAutoForward": "silent" },
+    "19002": { "label": "External · DVMCP 02", "onAutoForward": "silent" },
+    "19003": { "label": "External · DVMCP 03", "onAutoForward": "silent" },
+    "19004": { "label": "External · DVMCP 04", "onAutoForward": "silent" },
+    "19005": { "label": "External · DVMCP 05", "onAutoForward": "silent" },
+    "19006": { "label": "External · DVMCP 06", "onAutoForward": "silent" },
+    "19007": { "label": "External · DVMCP 07", "onAutoForward": "silent" },
+    "19008": { "label": "External · DVMCP 08", "onAutoForward": "silent" },
+    "19009": { "label": "External · DVMCP 09", "onAutoForward": "silent" },
+    "19010": { "label": "External · DVMCP 10", "onAutoForward": "silent" }
   },
   "otherPortsAttributes": {
     "onAutoForward": "ignore"

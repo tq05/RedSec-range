@@ -29,6 +29,20 @@ authenticating the GitHub CLI. An external harness can run
 authenticated SSH path. A repository connection alone does not create a tunnel or
 move tool execution into the Codespace. Full details: `docs/codespaces.md`.
 
+## Range catalog
+
+Treat `builtin` as the default course. Discover optional integrations with
+`redsec ranges list`; never assume the `offsec` placeholder is deployable. When a
+user asks for external ranges, use `redsec ranges enable ...` followed by
+`redsec ranges up`, then report `redsec ranges status` including source revisions
+and endpoints. External ranges use separate containers and internal Docker
+networks on the same host.
+
+Use `redsec ranges update ID` only for the IDs the user requested; it fetches,
+builds, and optionally restarts that one upstream. Use `--allow-egress` only when
+the user needs an exercise that depends on outbound content. Full details:
+`docs/external-ranges.md`.
+
 ## Fly.io range workflow
 
 Fly provisioning creates billable external infrastructure. Run it when the user
@@ -48,8 +62,9 @@ From the repository root:
 
 `up.sh` creates a unique private app and waits for target readiness. Deployment
 state is stored in ignored `.redsec/fly.json`; all helpers use that app by default.
-Use `--modules "01 07"` for a focused session and `--ttl MINUTES` as a compute
-deadline.
+Use `--modules "01 07"` for a focused built-in session,
+`--ranges "builtin dvaa"` for a multi-range session, and `--ttl MINUTES` as a
+compute deadline.
 
 Use `deploy/fly/ssh.sh` when the user wants an interactive shell. Use
 `deploy/fly/exec.sh` for non-interactive harness commands. Use

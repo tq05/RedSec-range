@@ -11,7 +11,7 @@ and runs the bootstrap; the embedded spec is only a fallback for rebuilding if t
 repo is ever unavailable. This file is kept in sync with `CLAUDE.md` (the single
 source of truth for project detail) — update both together.
 
-- **Last updated:** 2026-10-05 (one-click Codespaces default plus dedicated Fly.io workflow)
+- **Last updated:** 2026-10-05 (multi-range catalog, external adapters, Codespaces and Fly)
 - **Repo:** https://github.com/tq05/RedSec-range
 - **State at last update:** 11 modules, 43 challenges, all complete + tested.
 
@@ -55,6 +55,14 @@ PRIMARY PATH (deterministic — do this first):
       app and waits for readiness. Use `deploy/fly/ssh.sh` interactively,
       `deploy/fly/exec.sh` from a harness, and `deploy/fly/model.sh` for a model
       assessor. Destroy it with `deploy/fly/down.sh`. See docs/deploy-fly.md.
+
+7. Optional external ranges (same private Docker host, isolated networks):
+     redsec ranges list
+     redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
+     redsec ranges up
+     redsec ranges update mcpgoat
+   The built-in course remains `builtin`; `offsec` is a non-deployable placeholder.
+   See docs/external-ranges.md.
 
 ACCEPTANCE CHECKS (must all pass):
 - redsec doctor           -> 11/11 modules OK

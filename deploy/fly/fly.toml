@@ -10,6 +10,7 @@ primary_region = "lhr"
 [env]
   MAX_RUNTIME_MIN = "0"
   REDSEC_BIND_HOST = "all"
+  REDSEC_RANGES = "builtin"
 
 [[vm]]
   size = "shared-cpu-4x"

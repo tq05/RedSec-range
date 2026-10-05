@@ -1,0 +1,142 @@
+version: 1
+ranges:
+  builtin:
+    title: RedSec built-in course
+    maintainer: RedSec Range
+    homepage: https://github.com/tq05/RedSec-range
+    license: Apache-2.0
+    availability: available
+    aliases: [redsec]
+    summary: The guided, self-verifying 11-module RedSec curriculum.
+    runtime:
+      driver: builtin
+
+  offsec:
+    title: OffSec labs
+    maintainer: OffSec
+    homepage: https://www.offsec.com/courses/ai-300/
+    license: proprietary
+    availability: placeholder
+    aliases: [ai300-offsec]
+    summary: Reserved integration point; no public deployable range is configured.
+    note: Add only when OffSec publishes and licenses an automation interface.
+    runtime:
+      driver: placeholder
+
+  dvaa:
+    title: Damn Vulnerable AI Agent
+    maintainer: OpenA2A
+    homepage: https://github.com/opena2a-org/damn-vulnerable-ai-agent
+    license: Apache-2.0
+    availability: available
+    aliases: [damn-vulnerable-ai-agent]
+    summary: AI-agent, MCP, and A2A attack fleet with an interactive dashboard.
+    source:
+      repository: https://github.com/opena2a-org/damn-vulnerable-ai-agent.git
+      revision: faf3fb172ef526d12db0eb5377701549693118a6
+      branch: main
+    runtime:
+      driver: dockerfile
+      dockerfile: Dockerfile
+      command: [node, src/index.js, --offline]
+      environment:
+        OPENA2A_TELEMETRY: "off"
+      health_port: dashboard
+      ports:
+        - {name: agent-7001, host: 7001, container: 7001}
+        - {name: agent-7002, host: 7002, container: 7002}
+        - {name: agent-7003, host: 7003, container: 7003}
+        - {name: agent-7004, host: 7004, container: 7004}
+        - {name: agent-7005, host: 7005, container: 7005}
+        - {name: agent-7006, host: 7006, container: 7006}
+        - {name: agent-7007, host: 7007, container: 7007}
+        - {name: agent-7008, host: 7008, container: 7008}
+        - {name: mcp-7010, host: 7010, container: 7010}
+        - {name: mcp-7011, host: 7011, container: 7011}
+        - {name: mcp-7012, host: 7012, container: 7012}
+        - {name: mcp-7013, host: 7013, container: 7013}
+        - {name: agent-7014, host: 7014, container: 7014}
+        - {name: agent-7015, host: 7015, container: 7015}
+        - {name: agent-7016, host: 7016, container: 7016}
+        - {name: agent-7017, host: 7017, container: 7017}
+        - {name: agent-7018, host: 7018, container: 7018}
+        - {name: a2a-7020, host: 7020, container: 7020}
+        - {name: a2a-7021, host: 7021, container: 7021}
+        - {name: agent-7022, host: 7022, container: 7022}
+        - {name: agent-7023, host: 7023, container: 7023}
+        - {name: dashboard, host: 9000, container: 9000, path: /}
+
+  mcpgoat:
+    title: MCPGoat
+    maintainer: Sabyasachi Dhal
+    homepage: https://github.com/SabyasachiDhal/MCPGoat
+    license: MIT
+    availability: available
+    aliases: [mcp-goat]
+    summary: Streamable HTTP MCP target with tiered challenges and a scoreboard.
+    source:
+      repository: https://github.com/SabyasachiDhal/MCPGoat.git
+      revision: 80ceaf7ffedb8e0e74fd612798a6e09dfdd543ed
+      branch: main
+    runtime:
+      driver: dockerfile
+      dockerfile: Dockerfile
+      health_port: control-panel
+      ports:
+        - {name: control-panel, host: 7332, container: 7332, path: /}
+
+  dvmcp:
+    title: Damn Vulnerable MCP Server
+    maintainer: Harish Santhanalakshmi Ganesan
+    homepage: https://github.com/harishsg993010/damn-vulnerable-MCP-server
+    license: MIT (declared in README; no license file at pinned revision)
+    availability: available
+    aliases: [damn-vulnerable-mcp-server]
+    summary: Ten MCP challenges served together under supervisord.
+    source:
+      repository: https://github.com/harishsg993010/damn-vulnerable-MCP-server.git
+      revision: 79734c19f5104cd11486c90926d245560f53befa
+      branch: main
+    runtime:
+      driver: dockerfile
+      dockerfile: Dockerfile
+      health_port: challenge-01
+      ports:
+        - {name: challenge-01, host: 19001, container: 9001}
+        - {name: challenge-02, host: 19002, container: 9002}
+        - {name: challenge-03, host: 19003, container: 9003}
+        - {name: challenge-04, host: 19004, container: 9004}
+        - {name: challenge-05, host: 19005, container: 9005}
+        - {name: challenge-06, host: 19006, container: 9006}
+        - {name: challenge-07, host: 19007, container: 9007}
+        - {name: challenge-08, host: 19008, container: 9008}
+        - {name: challenge-09, host: 19009, container: 9009}
+        - {name: challenge-10, host: 19010, container: 9010}
+
+  appsecco-mcp:
+    title: Vulnerable MCP Servers Lab
+    maintainer: Appsecco
+    homepage: https://github.com/appsecco/vulnerable-mcp-servers-lab
+    license: MIT
+    availability: available
+    aliases: [appsecco, vulnerable-mcp-servers-lab]
+    summary: Collection of stdio, SSE, and Streamable HTTP MCP servers.
+    source:
+      repository: https://github.com/appsecco/vulnerable-mcp-servers-lab.git
+      revision: 47b7f2082261136b667daa7be9273698e66e479e
+      branch: main
+    runtime:
+      driver: adapter
+      dockerfile: ranges/adapters/appsecco.Dockerfile
+      health_port: indirect-injection-sse
+      entrypoints:
+        filesystem-workspace-actions: [/opt/appsecco-venv/bin/python, /lab/vulnerable-mcp-server-filesystem-workspace-actions/vulnerable-mcp-server-filesystem-workspace-actions-mcp.py, /tmp/appsecco-workspace]
+        indirect-prompt-injection: [bash, -lc, "cd /lab/vulnerable-mcp-server-indirect-prompt-injection && node index.js"]
+        malicious-code-exec: [bash, -lc, "cd /lab/vulnerable-mcp-server-malicious-code-exec && node index.js"]
+        malicious-tools: [bash, -lc, "cd /lab/vulnerable-mcp-server-malicious-tools && node index.js"]
+        namespace-typosquatting: [bash, -lc, "cd /lab/vulnerable-mcp-server-namespace-typosquatting && node index.js"]
+        outdated-packages: [bash, -lc, "cd /lab/vulnerable-mcp-server-outdated-pacakges && node index.js"]
+        secrets-pii: [bash, -lc, "cd /lab/vulnerable-mcp-server-secrets-pii && node index.js"]
+      ports:
+        - {name: indirect-injection-sse, host: 13000, container: 3000, path: /mcp}
+        - {name: wikipedia-streamable, host: 18000, container: 8000, path: /mcp}

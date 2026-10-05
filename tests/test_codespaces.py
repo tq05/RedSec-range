@@ -31,7 +31,9 @@ def test_codespaces_devcontainer_has_runtime_and_lifecycle():
 def test_codespaces_ports_are_declared_private_by_default():
     config = _config()
     expected = {9010, 9020, 9030, 9040, 9050, 9060, 9070, 9071,
-                9080, 9090, 9091, 9110, 9112}
+                9080, 9090, 9091, 9110, 9112, 7332, 9000, 13000, 18000,
+                19001, 19002, 19003, 19004, 19005, 19006, 19007, 19008,
+                19009, 19010}
 
     assert set(config["forwardPorts"]) == expected
     assert set(map(int, config["portsAttributes"])) == expected

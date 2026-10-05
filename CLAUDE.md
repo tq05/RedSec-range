@@ -96,6 +96,11 @@ Kubernetes path too.
    `deploy/fly/exec.sh` from a harness, or `deploy/fly/model.sh` for the bundled
    assessor; destroy it with `deploy/fly/down.sh`. See docs/deploy-fly.md.
 
+All Docker-capable paths also support the range catalog. `builtin` is the RedSec
+course; `dvaa`, `mcpgoat`, `dvmcp`, and `appsecco-mcp` are pinned external
+integrations, while `offsec` is a disabled placeholder. Use `redsec ranges list`,
+`enable`, `up`, `status`, and per-ID `update`; see docs/external-ranges.md.
+
 **Known environment limit**: nested k8s (kind/k3s) can't start pods in a Firecracker
 microVM (`runc … pipe EOF`); Docker works. Use path 3 there. Documented in docs/kubernetes.md
 and docs/interactive-sandbox.md.
@@ -121,13 +126,13 @@ or *on your own machine* from the repo. Same commands; different host. All need
 
 ## Verification / tests
 
-- `pytest` (33 tests): engine/verifier units, per-module fail→pass integration,
+- `pytest` (39 tests): engine/verifier units, per-module fail→pass integration,
   and the Codespaces/Fly deployment contracts.
 - `redsec doctor` (all modules load + checks resolve), `redsec selftest` (43/43).
 - `python scripts/validate_manifests.py` (62 K8s objects vs schema offline).
 - CI: `.github/workflows/ci.yml` — tests, selftest, helm+kubeconform, container run,
-  kind, a Codespaces devcontainer boot/solve test, and a local boot/solve smoke test
-  of the Fly Docker-in-Docker image.
+  kind, a Codespaces devcontainer boot/solve test, every external adapter running
+  concurrently, and a local boot/solve smoke test of the Fly Docker-in-Docker image.
 - Evidence log: `docs/proof/verification.log`.
 - Walkthroughs independently red-teamed by a separate model (fresh-context Sonnet).
 
