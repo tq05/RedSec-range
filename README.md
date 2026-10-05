@@ -6,8 +6,9 @@ and Model Context Protocol servers — against deliberately vulnerable targets y
 deploy yourself, with automated checks that confirm whether your exploit actually
 worked.
 
-> **New here / resuming?** Read [`CLAUDE.md`](CLAUDE.md) (project context + resume
-> steps) and [`docs/ROADMAP.md`](docs/ROADMAP.md) (intent + what's next). To recreate
+> **New here / resuming?** Read [`intent.md`](intent.md) (product and architecture
+> decisions), [`CLAUDE.md`](CLAUDE.md) (current state + resume steps), and
+> [`docs/ROADMAP.md`](docs/ROADMAP.md) (what's next). To recreate
 > the whole environment from one prompt, see [`RECREATE.md`](RECREATE.md).
 >
 > **Want to play?** Work the [**worksheet**](docs/WORKSHEET.md) (attack paths, no
@@ -27,7 +28,7 @@ worked.
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/tq05/RedSec-range?quickstart=1)
 
 Sign in to GitHub, open the button, and wait for `RedSec Range is ready`. The
-Codespace installs the course and starts all container-backed targets automatically.
+Codespace installs the course and starts all built-in container targets automatically.
 No local Docker installation, Fly.io account, or model API key is required.
 
 ```bash
@@ -36,8 +37,9 @@ redsec lesson 01             # course material
 range solve 01               # reference exploit + verifier
 ```
 
-Use the browser terminal, point Claude/Codex at the repository, or connect from a
-local terminal with `gh codespace ssh -R tq05/RedSec-range`. Challenge ports remain
+Use the browser terminal, start Claude/Codex inside the Codespace, or connect an
+external harness with `gh codespace ssh -R tq05/RedSec-range`. Repository access
+alone does not create a tunnel. Challenge ports remain
 private to your GitHub account. Codespaces includes usage on eligible GitHub plans
 and shows any billable cost before creation. See the [Codespaces guide](docs/codespaces.md).
 
@@ -48,6 +50,7 @@ operate independently maintained labs on the same private attacking machine:
 
 ```bash
 redsec ranges list
+redsec ranges challenges       # every challenge, grouped by range
 redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
 redsec ranges up              # built-in and all enabled external ranges together
 redsec ranges update mcpgoat  # update one upstream without changing the others
@@ -74,8 +77,8 @@ map of the modern AI attack surface. RedSec Range turns that map into a hands-on
 - **Deployable on Kubernetes** — one declarative `module.yaml` renders to a Helm
   release with per-module vulnerable apps in a **default-deny namespace** (egress
   containment is enforced when the cluster runs a policy-enforcing CNI).
-- **Accurate & self-testing** — each complete module ships a reference exploit, and
-  CI proves every challenge goes **fail → pass** (`redsec selftest`). A verifier
+- **Accurate & self-testing** — each complete built-in module ships a reference exploit,
+  and CI proves every built-in challenge goes **fail → pass** (`redsec selftest`). A verifier
   that passes before you attack is a bug, and the suite catches it.
 - **Expandable** — add a module by writing a manifest, a target, and a verifier.
   No infrastructure code to touch.
@@ -88,7 +91,9 @@ authoritative taxonomy (OWASP LLM Top 10, OWASP MCP Top 10, MITRE ATLAS), with a
 version-pinned 2025 surface matrix plus a current-protocol challenge, and with
 automated verification throughout.
 
-## Curriculum (maps to OffSec AI-300)
+## Curriculum and range catalog
+
+The built-in course maps the public OffSec AI-300 syllabus one-to-one:
 
 | # | Module | Status | Focus |
 |---|--------|--------|-------|
@@ -109,6 +114,25 @@ copy-paste walkthroughs. Every challenge is proven solvable fail→pass by
 `redsec selftest`, and the walkthroughs were independently **red-teamed by a separate
 model** (a fresh-context Claude Sonnet following only the lesson text, not the
 solutions). `redsec list` shows live status.
+
+The optional maintained ranges add 67 upstream challenge concepts. MCPGoat's 26
+concepts each have three scored levels, so the full catalog contains **110 concepts
+and 162 runnable variants**:
+
+| Range | Maintainer | Concepts | Variants | Solution source |
+|---|---|---:|---:|---|
+| `builtin` | RedSec | 43 | 43 | RedSec runnable solutions; fail-before/pass-after verified |
+| `dvaa` | OpenA2A | 22 | 22 | Solutions embedded in the pinned upstream definitions |
+| `mcpgoat` | Sabyasachi Dhal | 26 | 78 | Upstream trainer guide + automated attacker |
+| `dvmcp` | Harish Santhanalakshmi Ganesan | 10 | 10 | Ten upstream solution guides |
+| `appsecco-mcp` | Appsecco | 9 labs | 9 | Per-lab demonstration and attack guidance |
+| `offsec` | OffSec | 0 | 0 | Unavailable placeholder |
+
+[The complete challenge catalog](docs/CHALLENGE-CATALOG.md) lists every ID, title,
+category, difficulty, variant count, and pinned solution source. External targets are
+implemented and maintained upstream; RedSec pins, deploys, isolates, indexes, and
+smoke-tests them. Their health checks do not carry RedSec's built-in solvability
+guarantee.
 
 ## Alternative: local Python quickstart
 
@@ -165,7 +189,7 @@ The Helm chart ([deploy/helm/redsec-module](deploy/helm/redsec-module)) applies 
 vulnerable targets can't reach the internet or other ranges (enforcement needs a
 policy-enforcing CNI). See [docs/kubernetes.md](docs/kubernetes.md).
 
-### Run every challenge in containers (no Kubernetes)
+### Run every built-in container challenge (no Kubernetes)
 
 If you can't run a nested cluster (some VMs/CI can't), this runs **all 40
 container-backed challenges** in real Docker containers with service-name DNS — the
@@ -275,6 +299,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/SOLUTIONS.md](docs/SOLUTIONS.md) | Full **answers** (flags + exact steps) |
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | **Visual** map — learning path, attack surface, MCP matrix, kill chain |
 | [docs/curriculum.md](docs/curriculum.md) | Module ↔ OWASP/ATLAS mapping table |
+| [docs/CHALLENGE-CATALOG.md](docs/CHALLENGE-CATALOG.md) | Every built-in and upstream challenge, grouped by range, with solution provenance |
 | [docs/AI300-COVERAGE.md](docs/AI300-COVERAGE.md) | Public AI-300 syllabus coverage and course-quality contract |
 | [docs/architecture.md](docs/architecture.md) | How the framework is built |
 | [docs/TESTING.md](docs/TESTING.md) | Reproduce the end-to-end tests: envs, payloads, flags |
@@ -286,7 +311,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md) | Version-aware MCP surfaces and attack paths in depth |
 | [docs/THREAT-LANDSCAPE.md](docs/THREAT-LANDSCAPE.md) | Current AI-agent attack chains + threat actors, mapped to OWASP/CSA |
 | [docs/DIFFICULTY-TIERS.md](docs/DIFFICULTY-TIERS.md) | easy/medium/hard/impossible tiers per module |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Intent, principles, backlog |
+| [intent.md](intent.md) · [docs/ROADMAP.md](docs/ROADMAP.md) | Durable decisions · future work |
 | [CLAUDE.md](CLAUDE.md) · [RECREATE.md](RECREATE.md) | Resume context · one-prompt rebuild |
 
 ## Add your own module
@@ -307,8 +332,12 @@ Verification patterns: [docs/verification.md](docs/verification.md).
 
 ## Prior art & references
 
-RedSec Range is informed by, and aims to improve on, existing work:
-the [Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server),
+RedSec Range integrates pinned releases of
+[Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent),
+[MCPGoat](https://github.com/SabyasachiDhal/MCPGoat),
+[Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server),
+and [Appsecco's Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab).
+It is also informed by
 the [OWASP LLM Top 10](https://genai.owasp.org/) and emerging OWASP MCP Top 10,
 the [Cloud Security Alliance MCP attack-surface analysis](https://cloudsecurityalliance.org/),
 and [MITRE ATLAS](https://atlas.mitre.org/). ATLAS mappings in the scaffolds are

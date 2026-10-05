@@ -8,6 +8,11 @@ ranges:
     availability: available
     aliases: [redsec]
     summary: The guided, self-verifying 11-module RedSec curriculum.
+    curriculum:
+      source: builtin
+      solution_status: redsec
+      solution_path: docs/SOLUTIONS.md
+      note: Challenge metadata is derived from the 11 module manifests.
     runtime:
       driver: builtin
 
@@ -20,6 +25,10 @@ ranges:
     aliases: [ai300-offsec]
     summary: Reserved integration point; no public deployable range is configured.
     note: Add only when OffSec publishes and licenses an automation interface.
+    curriculum:
+      source: placeholder
+      solution_status: unavailable
+      note: No public OffSec lab catalog or automation interface is available.
     runtime:
       driver: placeholder
 
@@ -31,6 +40,35 @@ ranges:
     availability: available
     aliases: [damn-vulnerable-ai-agent]
     summary: AI-agent, MCP, and A2A attack fleet with an interactive dashboard.
+    curriculum:
+      source: upstream
+      solution_status: upstream
+      solution_url: https://github.com/opena2a-org/damn-vulnerable-ai-agent/blob/faf3fb172ef526d12db0eb5377701549693118a6/src/challenges/index.js
+      solution_path: src/challenges/index.js
+      note: The dashboard exposes 22 CTF challenges; each upstream definition embeds hints, a solution, success criteria, and defenses.
+      challenges:
+        - {id: L1-01, title: Extract the System Prompt, category: data-exfiltration, difficulty: easy}
+        - {id: L1-02, title: API Key Leak, category: data-exfiltration, difficulty: easy}
+        - {id: L1-03, title: Basic Prompt Injection, category: prompt-injection, difficulty: easy}
+        - {id: L2-01, title: Jailbreak via Roleplay, category: jailbreak, difficulty: medium}
+        - {id: L2-02, title: Context Window Manipulation, category: context-manipulation, difficulty: medium}
+        - {id: L2-03, title: MCP Path Traversal, category: mcp-exploitation, difficulty: medium}
+        - {id: L2-04, title: Persistent Memory Injection, category: memory-injection, difficulty: medium}
+        - {id: L2-05, title: Memory Credential Extraction, category: memory-injection, difficulty: medium}
+        - {id: L2-06, title: Context Padding Attack, category: context-overflow, difficulty: medium}
+        - {id: L2-07, title: Safety Instruction Displacement, category: context-overflow, difficulty: medium}
+        - {id: L2-08, title: Malicious Tool Registration, category: tool-registry-poisoning, difficulty: medium}
+        - {id: L2-09, title: Tool Call MITM, category: tool-mitm, difficulty: medium}
+        - {id: L3-01, title: Chained Prompt Injection, category: prompt-injection, difficulty: hard}
+        - {id: L3-02, title: SSRF via MCP, category: mcp-exploitation, difficulty: hard}
+        - {id: L3-03, title: Self-Replicating Memory Entry, category: memory-injection, difficulty: hard}
+        - {id: L3-04, title: System Prompt Extraction via Context Pressure, category: context-overflow, difficulty: hard}
+        - {id: L3-05, title: Tool Typosquatting, category: tool-registry-poisoning, difficulty: hard}
+        - {id: L3-06, title: Tool Chain Data Exfiltration, category: tool-registry-poisoning, difficulty: hard}
+        - {id: L3-07, title: Tool Shadowing, category: tool-mitm, difficulty: hard}
+        - {id: L3-08, title: Traffic Redirection Attack, category: tool-mitm, difficulty: hard}
+        - {id: L4-01, title: Compromise SecureBot, category: mixed, difficulty: expert}
+        - {id: L4-02, title: Agent-to-Agent Attack Chain, category: agent-to-agent, difficulty: expert}
     source:
       repository: https://github.com/opena2a-org/damn-vulnerable-ai-agent.git
       revision: faf3fb172ef526d12db0eb5377701549693118a6
@@ -74,6 +112,39 @@ ranges:
     availability: available
     aliases: [mcp-goat]
     summary: Streamable HTTP MCP target with tiered challenges and a scoreboard.
+    curriculum:
+      source: upstream
+      solution_status: upstream
+      solution_url: https://github.com/SabyasachiDhal/MCPGoat/blob/80ceaf7ffedb8e0e74fd612798a6e09dfdd543ed/docs/SOLUTIONS.md
+      solution_path: docs/SOLUTIONS.md
+      note: There are 26 challenge concepts, each implemented at easy, moderate, and difficult levels (78 scored flags), plus a Secure reference level.
+      challenges:
+        - {id: A1, title: Tool Poisoning, category: MCP-specific, difficulty: tiered, variants: 3}
+        - {id: A2, title: Tool Shadowing / Trusted-Tool Override, category: MCP-specific, difficulty: tiered, variants: 3}
+        - {id: A3, title: Rug Pull / Tool Mutation (TOCTOU), category: MCP-specific, difficulty: tiered, variants: 3}
+        - {id: B1, title: Indirect Prompt Injection via Tool Output, category: Prompt/Context, difficulty: tiered, variants: 3}
+        - {id: D1, title: Command Injection (RCE), category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: D2, title: Path Traversal / Arbitrary File Read, category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: D3, title: Server-Side Request Forgery, category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: D4, title: SQL Injection, category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: C2, title: Broken Authorization / Confused Deputy, category: AuthN/AuthZ, difficulty: tiered, variants: 3}
+        - {id: C3, title: Insecure Direct Object Reference, category: AuthN/AuthZ, difficulty: tiered, variants: 3}
+        - {id: E1, title: Sensitive Data Exposure, category: Secrets/Exposure, difficulty: tiered, variants: 3}
+        - {id: A9, title: Invisible-Text Tool Poisoning, category: MCP-specific, difficulty: tiered, variants: 3}
+        - {id: B2, title: Indirect Injection via Resource Content, category: Prompt/Context, difficulty: tiered, variants: 3}
+        - {id: B3, title: Prompt-Template Injection, category: Prompt/Context, difficulty: tiered, variants: 3}
+        - {id: B5, title: Sampling Abuse (server-driven LLM calls), category: MCP-specific, difficulty: tiered, variants: 3}
+        - {id: C4, title: OAuth Token-Audience Confusion, category: AuthN/AuthZ, difficulty: tiered, variants: 3}
+        - {id: D6, title: Server-Side Template Injection, category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: F1, title: DNS Rebinding / Missing Origin Validation, category: Transport, difficulty: tiered, variants: 3}
+        - {id: F2, title: CORS Misconfiguration, category: Transport, difficulty: tiered, variants: 3}
+        - {id: C6, title: Predictable Session IDs (hijack), category: Transport, difficulty: tiered, variants: 3}
+        - {id: G1, title: Unbounded Consumption (cost/DoS), category: DoS/Cost, difficulty: tiered, variants: 3}
+        - {id: G4, title: Regular-Expression DoS (ReDoS), category: DoS/Cost, difficulty: tiered, variants: 3}
+        - {id: D5, title: NoSQL Injection, category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: D7, title: XML External Entity (XXE), category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: D8, title: Insecure Deserialization (prototype pollution), category: Injection sink, difficulty: tiered, variants: 3}
+        - {id: H1, title: Supply Chain (typosquat / unsigned package), category: Supply chain, difficulty: tiered, variants: 3}
     source:
       repository: https://github.com/SabyasachiDhal/MCPGoat.git
       revision: 80ceaf7ffedb8e0e74fd612798a6e09dfdd543ed
@@ -93,6 +164,23 @@ ranges:
     availability: available
     aliases: [damn-vulnerable-mcp-server]
     summary: Ten MCP challenges served together under supervisord.
+    curriculum:
+      source: upstream
+      solution_status: upstream
+      solution_url: https://github.com/harishsg993010/damn-vulnerable-MCP-server/tree/79734c19f5104cd11486c90926d245560f53befa/solutions
+      solution_path: solutions/README.md
+      note: All ten challenges have upstream step-by-step solution guides and mitigation advice.
+      challenges:
+        - {id: "01", title: Basic Prompt Injection, category: Prompt/Context, difficulty: easy}
+        - {id: "02", title: Tool Poisoning, category: MCP-specific, difficulty: easy}
+        - {id: "03", title: Excessive Permission Scope, category: AuthN/AuthZ, difficulty: easy}
+        - {id: "04", title: Rug Pull Attack, category: MCP-specific, difficulty: medium}
+        - {id: "05", title: Tool Shadowing, category: MCP-specific, difficulty: medium}
+        - {id: "06", title: Indirect Prompt Injection, category: Prompt/Context, difficulty: medium}
+        - {id: "07", title: Token Theft, category: Secrets/Exposure, difficulty: medium}
+        - {id: "08", title: Malicious Code Execution, category: Injection sink, difficulty: hard}
+        - {id: "09", title: Remote Access Control, category: Injection sink, difficulty: hard}
+        - {id: "10", title: Multi-Vector Attack, category: Attack chain, difficulty: hard}
     source:
       repository: https://github.com/harishsg993010/damn-vulnerable-MCP-server.git
       revision: 79734c19f5104cd11486c90926d245560f53befa
@@ -121,6 +209,22 @@ ranges:
     availability: available
     aliases: [appsecco, vulnerable-mcp-servers-lab]
     summary: Collection of stdio, SSE, and Streamable HTTP MCP servers.
+    curriculum:
+      source: upstream
+      solution_status: upstream
+      solution_url: https://github.com/appsecco/vulnerable-mcp-servers-lab/tree/47b7f2082261136b667daa7be9273698e66e479e
+      solution_path: README.md
+      note: Upstream publishes demonstration payloads in each lab README rather than a formal graded solution suite.
+      challenges:
+        - {id: filesystem-workspace-actions, title: Filesystem Workspace Actions, category: Path traversal / code execution, difficulty: ungraded}
+        - {id: indirect-prompt-injection, title: Indirect Prompt Injection (stdio), category: Prompt/Context, difficulty: ungraded}
+        - {id: indirect-prompt-injection-remote, title: Indirect Prompt Injection (HTTP+SSE), category: Prompt/Context, difficulty: ungraded}
+        - {id: malicious-code-exec, title: Malicious Code Execution, category: Injection sink, difficulty: ungraded}
+        - {id: malicious-tools, title: Malicious Tools, category: Tool output poisoning, difficulty: ungraded}
+        - {id: namespace-typosquatting, title: Namespace Typosquatting, category: Supply chain, difficulty: ungraded}
+        - {id: outdated-packages, title: Outdated Packages, category: Supply chain, difficulty: ungraded}
+        - {id: secrets-pii, title: Secrets and PII Exposure, category: Secrets/Exposure, difficulty: ungraded}
+        - {id: wikipedia-streamable, title: Wikipedia (Streamable HTTP), category: Remote content injection, difficulty: ungraded}
     source:
       repository: https://github.com/appsecco/vulnerable-mcp-servers-lab.git
       revision: 47b7f2082261136b667daa7be9273698e66e479e

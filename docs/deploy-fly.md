@@ -10,6 +10,16 @@ Fly.io is a paid external service. You need a Fly account with billing enabled,
 usage and stopped-Machine root filesystems can incur charges; destroy the app when
 you finish. See [Fly pricing](https://fly.io/docs/about/pricing/).
 
+Fly trial Machines without a payment method are automatically stopped after five
+minutes. A focused module can finish its first build in that window, but the full
+external catalog generally cannot. Add billing before using Fly for a complete
+multi-range session; Codespaces remains the default hosted path.
+
+The default Machine is `shared-cpu-2x` with 4 GB RAM, which fits a normal personal
+Fly organization's per-Machine limits. Use `--modules` or `--ranges` to keep a
+session focused. Running every external range together may require a larger
+Machine; change `deploy/fly/fly.toml` when your organization allows one.
+
 ## Start and stop
 
 ```bash
@@ -67,6 +77,7 @@ status and is suitable for tool calls and CI:
 ./deploy/fly/exec.sh range status
 ./deploy/fly/exec.sh range solve 04
 ./deploy/fly/exec.sh redsec ranges status
+./deploy/fly/exec.sh redsec ranges challenges mcpgoat
 ./deploy/fly/exec.sh 'range solve 07 resource-traversal'
 ./deploy/fly/status.sh --json
 ```
@@ -75,6 +86,10 @@ The root [`AGENTS.md`](../AGENTS.md) gives repository-aware agents the full setu
 test, and cleanup contract. A typical prompt is: “Deploy this repository to Fly,
 test modules 04 and 07, report the results, then destroy the app.” Provisioning is
 still an explicit action because it creates billable infrastructure.
+
+Use only this `deploy/fly` workflow. A root-level `fly.toml` produced by
+`fly launch` declares a public web service and is incompatible with the private
+range lifecycle and Docker-in-Docker build context.
 
 ## Use a model as the assessor
 

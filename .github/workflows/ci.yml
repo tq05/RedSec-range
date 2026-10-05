@@ -21,7 +21,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]" kubernetes-validate
       - name: Validate all modules load
-        run: redsec doctor
+        run: |
+          redsec doctor
+          python scripts/generate_challenge_catalog.py --check
       - name: Unit + integration tests
         run: pytest -q
       - name: Prove every complete module is solvable (fail -> pass)
@@ -86,10 +88,14 @@ jobs:
     # Builds every pinned third-party adapter and proves they run concurrently.
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      REDSEC_STATE: ${{ github.workspace }}/.redsec
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
       - name: Install RedSec
         run: pip install -e .
       - name: Start all external ranges on isolated networks
@@ -100,12 +106,31 @@ jobs:
       - name: Check dashboards, adapters, and network isolation
         run: |
           curl -fsS http://127.0.0.1:9000/stats >/dev/null
+          curl -fsS http://127.0.0.1:9000/api/challenges > /tmp/dvaa-challenges.json
+          python -c 'import json; x=json.load(open("/tmp/dvaa-challenges.json")); assert len(x) == 22 and all(c.get("solution") for c in x)'
           curl -fsS http://127.0.0.1:7332/ >/dev/null
           redsec ranges entrypoints appsecco-mcp
+          for port in $(seq 19001 19010) 13000 18000; do
+            : > "/dev/tcp/127.0.0.1/$port"
+          done
           for network in dvaa mcpgoat dvmcp appsecco-mcp; do
             test "$(docker network inspect -f '{{.Internal}}' "redsec-ext-$network")" = true
             test "$(docker inspect -f '{{len .NetworkSettings.Networks}}' "redsec-ext-$network")" = 1
             test "$(docker inspect -f '{{len .NetworkSettings.Networks}}' "redsec-ext-$network-gateway")" = 2
+          done
+      - name: Run MCPGoat's native all-level and Secure regression gate
+        working-directory: .redsec/external-ranges/mcpgoat/source
+        run: |
+          npm ci
+          npm run ci
+      - name: Initialize every Appsecco stdio MCP server
+        shell: bash
+        run: |
+          request='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"redsec-ci","version":"1.0"}}}'
+          entries=$(python -c 'from redsec.range_catalog import load_catalog; print(" ".join(load_catalog().ranges["appsecco-mcp"].runtime.entrypoints))')
+          for entry in $entries; do
+            printf '%s\n' "$request" | timeout 15 redsec ranges launch appsecco-mcp "$entry" > "/tmp/appsecco-$entry.json" || true
+            grep -Eq '"id"[[:space:]]*:[[:space:]]*1' "/tmp/appsecco-$entry.json"
           done
       - name: Show logs and clean up
         if: always()

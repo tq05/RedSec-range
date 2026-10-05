@@ -5,7 +5,9 @@ app = "redsec-range-template"
 primary_region = "lhr"
 
 [build]
-  dockerfile = "deploy/fly/Dockerfile"
+  # Paths in a Fly config are relative to this file. up.sh separately supplies
+  # the repository root as Docker's build context so COPY . includes the course.
+  dockerfile = "Dockerfile"
 
 [env]
   MAX_RUNTIME_MIN = "0"
@@ -13,8 +15,8 @@ primary_region = "lhr"
   REDSEC_RANGES = "builtin"
 
 [[vm]]
-  size = "shared-cpu-4x"
-  memory = "8gb"
+  size = "shared-cpu-2x"
+  memory = "4gb"
   # Retain the inner Docker images when this Machine restarts or is stopped/started.
   persist_rootfs = "restart"
 

@@ -1,9 +1,8 @@
-# ROADMAP — intent, principles, and what's next
+# ROADMAP — backlog and what's next
 
-This is the durable record of **why** RedSec Range exists and **where it's going**,
-so any session (Claude Code or otherwise) can resume with the owner's intent intact.
-`CLAUDE.md` says what exists and how to run it; this says what it's *for* and what to
-do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
+[`intent.md`](../intent.md) is the durable product and architecture decision record.
+`CLAUDE.md` says what exists and how to run it. This file tracks remaining work and
+open questions. Owner: R (GitHub `tq05` / `rolfh9`).
 
 ## Intent (what R wants this to be)
 
@@ -16,7 +15,8 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
   can actually exploit, and **automated verification** that proves an exploit worked
   (not an honour system).
 - **Accurate and tested** — due diligence and real end-to-end testing are the point;
-  every challenge must be demonstrably solvable (fail→pass).
+  every built-in challenge must be demonstrably solvable (fail→pass), while external
+  claims retain their upstream provenance.
 - Usable as an **interactive command centre**: stand the range up and solve
   challenges live (in a sandbox driven through chat, or on your own machine).
 - **Pluggable LLMs**: point Grok / OpenAI / local models at it as autonomous
@@ -35,8 +35,8 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
   `solution/solve.py`. Prefer oracle (per-vector sink markers) for action vulns.
 - **Containment by default**: targets non-root, egress denied; `privileged`/`egress`
   must be explicit. Everything is deliberately vulnerable → isolated use only.
-- **Single source of truth = `CLAUDE.md`**; `RECREATE.md` and this file reference it
-  rather than duplicating, to avoid drift.
+- **Decision source of truth = `intent.md`**; operational source of truth =
+  `CLAUDE.md`; `RECREATE.md` references both rather than duplicating them.
 - **kind works on a normal host**; the Claude sandbox can't nest pods (Firecracker
   microVM), so there we use the persistent Docker range. Same modules either way.
 
@@ -46,9 +46,21 @@ do next. Owner: R (GitHub `tq05` / `rolfh9`), UK-based, senior AI/ML-infra role.
 `redsec selftest` 43/43, `pytest` green, `docker_run_all` 40/40, 62 K8s objects
 valid. Walkthroughs independently red-teamed by a separate model.
 
+The range catalog additionally indexes 67 external challenge concepts (119 runnable
+variants): DVAA 22, MCPGoat 26 concepts / 78 levels, DVMCP 10, and Appsecco 9 labs.
+External implementation and solution provenance remain upstream; see
+`docs/CHALLENGE-CATALOG.md`.
+
 ## Backlog / next steps (suggestions, not commitments — confirm with R)
 
 Near-term:
+- [x] Deepen external CI with MCPGoat's native 78-flag regression, DVAA's 22
+      challenge/solution inventory, all ten DVMCP TCP services, and both Appsecco
+      network services.
+- [x] Initialize all seven Appsecco stdio MCP servers in CI.
+- [ ] Add protocol-level calls for DVMCP's individual methods and Appsecco's two
+      network transports; their current CI checks TCP reachability while upstream
+      guides remain the solution authority.
 - [ ] Run a **live Grok assessment** once `XAI_API_KEY` is available (`assess <mod>
       --provider grok`); capture a scorecard. Consider a multi-model **benchmark**
       mode that scores several models across all modules and emits a table.

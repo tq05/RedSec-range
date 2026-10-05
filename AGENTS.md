@@ -1,6 +1,7 @@
 # RedSec Range agent instructions
 
-Read `CLAUDE.md` for architecture, module status, and project conventions. This
+Read `intent.md` for the product and architecture decisions, then `CLAUDE.md` for
+module status and project conventions. This
 file defines the cloud workflows for repository-aware harnesses such as Codex and
 Claude Code.
 
@@ -32,7 +33,8 @@ move tool execution into the Codespace. Full details: `docs/codespaces.md`.
 ## Range catalog
 
 Treat `builtin` as the default course. Discover optional integrations with
-`redsec ranges list`; never assume the `offsec` placeholder is deployable. When a
+`redsec ranges list` and enumerate content with `redsec ranges challenges`; never
+assume the `offsec` placeholder is deployable. When a
 user asks for external ranges, use `redsec ranges enable ...` followed by
 `redsec ranges up`, then report `redsec ranges status` including source revisions
 and endpoints. External ranges use separate containers and internal Docker

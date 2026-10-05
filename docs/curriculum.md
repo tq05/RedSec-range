@@ -1,10 +1,15 @@
 # Curriculum & taxonomy mapping
 
 RedSec Range follows the structure of OffSec's **AI-300 / OSAI ("Advanced AI Red
-Teaming")** syllabus, and maps every module to the **OWASP LLM Top 10 (2025)**, the
+Teaming")** syllabus, and maps every built-in module to the **OWASP LLM Top 10 (2025)**, the
 emerging **OWASP MCP Top 10**, and **MITRE ATLAS**. **43 challenges across 11
 modules, all complete and tested** (8650 pts). See `AI300-COVERAGE.md` for the
 public-syllabus traceability and course-quality contract.
+
+This table is the `builtin` course. The range catalog also contains 22 DVAA, 26
+MCPGoat, 10 DVMCP, and 9 Appsecco challenge concepts. See the generated
+[challenge catalog](CHALLENGE-CATALOG.md) for every cross-range challenge and its
+solution provenance, or run `redsec ranges challenges`.
 
 > This table mirrors the module manifests (`redsec list`), so it stays in sync.
 > **ATLAS IDs are indicative** — verify against the current

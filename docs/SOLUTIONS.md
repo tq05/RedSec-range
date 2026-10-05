@@ -1,6 +1,6 @@
 # RedSec Range — Solutions
 
-> **Spoilers.** This file gives the full answer to every challenge: the technique, the
+> **Spoilers.** This file gives the full answer to every built-in challenge: the technique, the
 > exact steps, and the flag. Use it to check your work or when you're well and truly
 > stuck. To learn, try the **[WORKSHEET.md](WORKSHEET.md)** first.
 >
@@ -13,6 +13,20 @@
 Flag challenges end in a `redsec submit`; oracle challenges end in a `redsec verify`
 (the verifier watches the exfil sink or a privileged action); artifact challenges
 submit a file.
+
+This answer key covers the 43 RedSec-authored `builtin` challenges. Solutions for
+the four external maintained ranges stay with their pinned upstream source:
+
+| Range | Known answer material |
+|---|---|
+| `dvaa` | All 22 challenge definitions embed a solution, hints, success criteria, and defense notes. |
+| `mcpgoat` | All 26 concepts and their easy/moderate/difficult variants are covered by the upstream `docs/SOLUTIONS.md` and attacker client. |
+| `dvmcp` | Each of the 10 challenges has `solutions/challengeN_solution.md`. |
+| `appsecco-mcp` | Each of the 9 lab READMEs provides demonstration or attack guidance; there is no single formal graded solution suite. |
+
+Use [`CHALLENGE-CATALOG.md`](CHALLENGE-CATALOG.md) for pinned links to every
+external solution source. Run `redsec ranges challenges RANGE` to discover the
+same inventory from the CLI.
 
 ---
 

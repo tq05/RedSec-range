@@ -2,7 +2,7 @@
 
 GitHub Codespaces is the default cloud path for RedSec Range. It gives each
 learner a private, disposable development machine with Docker, the course CLI,
-all container-backed targets, browser port forwarding, and SSH access. A Fly.io account is not
+all built-in container targets, browser port forwarding, and SSH access. A Fly.io account is not
 required.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/tq05/RedSec-range?quickstart=1)
@@ -15,7 +15,7 @@ required.
 3. Wait for the terminal to print `RedSec Range is ready`. The first build pulls
    dependencies and creates the shared target image, so later starts are faster.
 
-The devcontainer starts the complete range automatically. Check it with:
+The devcontainer starts the complete built-in range automatically. Check it with:
 
 ```bash
 range status
@@ -113,10 +113,11 @@ the `REDSEC_RANGES` Codespaces secret or enable them interactively:
 redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
 redsec ranges up
 redsec ranges status
+redsec ranges challenges
 ```
 
 See [the external ranges guide](external-ranges.md) for isolation, ports, stdio MCP
-entrypoints, and individual updates.
+entrypoints, individual updates, and the complete challenge/solution catalog.
 
 ## Stop or delete the Codespace
 

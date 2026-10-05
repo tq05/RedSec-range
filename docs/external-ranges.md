@@ -7,6 +7,7 @@ thin deployment adapter instead of copying their challenges into this repository
 
 ```bash
 redsec ranges list
+redsec ranges challenges
 redsec ranges enable dvaa mcpgoat dvmcp appsecco-mcp
 redsec ranges up
 redsec ranges status
@@ -18,14 +19,26 @@ enabled unless OffSec publishes and licenses an automatable lab interface.
 
 ## Included integrations
 
-| ID | Upstream | Runtime | Main access |
-|----|----------|---------|-------------|
-| `builtin` | RedSec Range | Per-module Docker networks | `range status`, ports 9010–9112 |
-| `dvaa` | [Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent) | One upstream container | dashboard `http://127.0.0.1:9000` |
-| `mcpgoat` | [MCPGoat](https://github.com/SabyasachiDhal/MCPGoat) | One upstream container | control/MCP `http://127.0.0.1:7332` |
-| `dvmcp` | [Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server) | One upstream container, ten services | host ports 19001–19010 |
-| `appsecco-mcp` | [Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab) | RedSec adapter container | SSE `:13000`, Streamable HTTP `:18000`, seven stdio entrypoints |
-| `offsec` | Future OffSec lab | Placeholder | unavailable |
+| ID | Upstream | Concepts / variants | Runtime | Solutions |
+|----|----------|--------------------:|---------|-----------|
+| `builtin` | RedSec Range | 43 / 43 | Per-module Docker networks | RedSec `SOLUTIONS.md` + runnable exploits |
+| `dvaa` | [Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent) | 22 / 22 | One upstream container; dashboard `:9000` | Embedded in pinned challenge definitions |
+| `mcpgoat` | [MCPGoat](https://github.com/SabyasachiDhal/MCPGoat) | 26 / 78 | One upstream container; control/MCP `:7332` | Trainer guide + attacker client |
+| `dvmcp` | [Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server) | 10 / 10 | One upstream container, ten services on `19001–19010` | Ten detailed upstream guides |
+| `appsecco-mcp` | [Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab) | 9 labs / 9 | Adapter container; SSE `:13000`, HTTP `:18000`, seven stdio entries | Per-lab README guidance |
+| `offsec` | Future OffSec lab | 0 / 0 | Placeholder | unavailable |
+
+The [complete generated catalog](CHALLENGE-CATALOG.md) lists every challenge. The
+CLI provides the same data as a table or JSON:
+
+```bash
+redsec ranges challenges
+redsec ranges challenges mcpgoat --json
+```
+
+The challenge list describes each committed pinned revision. A locally updated
+range can move beyond that baseline; `redsec ranges status` reports both revisions
+and warns when its curriculum metadata may be stale.
 
 DVMCP is remapped from upstream ports 9001–9010 to 19001–19010 because 9010 is
 already used by built-in module 01. The protocols and container ports are unchanged.
@@ -48,6 +61,11 @@ lab exercise requires outbound content, recreate the selected ranges explicitly:
 ```bash
 redsec ranges up appsecco-mcp --allow-egress
 ```
+
+Appsecco's `malicious-code-exec`, `malicious-tools`, `secrets-pii`, and
+`wikipedia-streamable` labs contain tools that call public services. Enable egress
+only when exercising those outbound tools. The other Appsecco labs and all adapter
+startup checks run on the internal network without egress.
 
 This adapter release does not force external projects into Kubernetes. They do not
 publish compatible charts or health/lifecycle contracts, and placing unrelated
@@ -121,3 +139,12 @@ For Fly.io, choose the same profile when creating the private Machine:
 
 External sources and built images live in ignored RedSec state on that machine.
 Destroying the Codespace or Fly app removes them with the disposable environment.
+
+## Verification and solution provenance
+
+`builtin` alone has RedSec's fail-before/pass-after contract. The external CI path
+builds pinned sources together, starts their adapters, checks declared ports and
+entrypoints, and tests network isolation. DVAA and MCPGoat also ship substantial
+native validation; DVMCP ships solution guides; Appsecco ships demonstrator
+payloads. RedSec does not describe a responding external container as proof that
+every upstream challenge has been solved. See [TESTING.md](TESTING.md).

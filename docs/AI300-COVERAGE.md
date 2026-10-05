@@ -4,7 +4,7 @@ This document is the product-level traceability record for RedSec Range. It maps
 the public OffSec **Advanced AI Red Teaming (AI-300)** syllabus to implemented,
 self-verifying labs and records where this course deliberately goes deeper.
 
-Source reviewed: [OffSec AI-300 public syllabus](https://manage.offsec.com/app/uploads/2026/03/AI-300_Syllabus_33126.pdf)
+Source reviewed: [OffSec AI-300 public syllabus supplied for this audit](https://cdn.sanity.io/files/t7y0tkf4/production/024258d4bfacd78f94e3565a3657894842f68061.pdf?dl=AI-300_Syllabus.pdf)
 (11 modules, retrieved 2026-10-04). The public syllabus is a high-level outline;
 matching it does not make this project an OffSec course or guarantee exam coverage.
 RedSec Range is independent and is not affiliated with OffSec.

@@ -86,6 +86,6 @@ module-specific lives in `verify/checks.py` and is referenced as `checks:Name`.
 1. **verify FAIL** — before the exploit, no challenge may pass (catches trivially
    true verifiers).
 2. **run `solution/solve.py`** — the reference exploit.
-3. **verify PASS** — after the exploit, every challenge must pass.
+3. **verify PASS** — after the exploit, every built-in challenge must pass.
 
 A module that doesn't flip fail → pass is not shippable.

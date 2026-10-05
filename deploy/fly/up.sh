@@ -99,7 +99,7 @@ if [ "${#secrets[@]}" -gt 0 ]; then
 fi
 
 log "deploying to $APP in $REGION (the first image build can take several minutes)"
-deploy_args=(deploy --app "$APP" --config "$HERE/fly.toml"
+deploy_args=(deploy "$FLY_ROOT" --app "$APP" --config "$HERE/fly.toml"
   --dockerfile "$HERE/Dockerfile" --primary-region "$REGION"
   --ha=false --remote-only --wait-timeout 15m
   --env "MAX_RUNTIME_MIN=$TTL" --env "REDSEC_RANGES=$RANGES")

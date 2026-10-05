@@ -1,15 +1,15 @@
 # CLAUDE.md — project context for RedSec Range
 
-This file is the fast-reload context for any Claude session working on this repo.
-Read it first; it is the "memory dump" of what this project is, how it runs, and
-where everything lives.
+This file is the fast-reload operational context for any Claude session working on
+this repo. Read `intent.md` first for the durable product and architecture decisions,
+then use this file for what currently exists, how it runs, and where everything lives.
 
 ## What this is
 
 **RedSec Range** — an open-source, guided, self-verifying training range for AI &
 MCP security. Deliberately-vulnerable-by-design teaching labs (like DVWA / OWASP
 Juice Shop, but for LLM/agent/MCP attack surfaces). Structured on the OffSec
-**AI-300 / OSAI** syllabus; every challenge is mapped to **OWASP LLM Top 10**,
+**AI-300 / OSAI** syllabus; every built-in challenge is mapped to **OWASP LLM Top 10**,
 **OWASP MCP Top 10**, and **MITRE ATLAS** (ATLAS IDs indicative).
 
 Owner/author context: built for R (GitHub tq05 / rolfh9). Not affiliated with OffSec.
@@ -21,8 +21,8 @@ course + framework — guided by OffSec AI-300 but better/accurate/expandable;
 per-module vulnerable apps you actually exploit; automated proof an exploit worked;
 deployable on Kubernetes; usable as an interactive command centre; pluggable LLM
 assessors (Grok/OpenAI/local); GitHub as the durable store; resumable in Claude Code.
-Full intent, principles, backlog and open questions: **`docs/ROADMAP.md`** — read it
-when resuming or planning next steps. Learner docs: `docs/WORKSHEET.md` (attack paths,
+Full product intent and ruled-out approaches: **`intent.md`**. Backlog and open
+questions: **`docs/ROADMAP.md`**. Learner docs: `docs/WORKSHEET.md` (attack paths,
 no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map),
 `docs/THREAT-LANDSCAPE.md` (current agent attack chains + OWASP Agentic/CSA MAESTRO
 mapping), `docs/DIFFICULTY-TIERS.md` (easy/medium/hard/impossible per module; impossible
@@ -38,7 +38,7 @@ redsec doctor               # expect 11/11 modules OK
 redsec selftest             # expect 43/43 fail->pass  (the correctness gate)
 ./scripts/sandbox-up.sh     # optional: bring the interactive Docker range up (needs Docker)
 ```
-How every challenge is tested end-to-end, where the exploit payloads live, and what
+How every built-in challenge is tested end-to-end, where the exploit payloads live, and what
 flags they hit: **`docs/TESTING.md`** (read it to reproduce the test environments —
 payloads are each module's `solution/solve.py`, flags are in `module.yaml` /
 `docs/SOLUTIONS.md`).
@@ -84,7 +84,7 @@ Kubernetes path too.
    `range status|solve|verify|shell|logs|reset|down`, browser port forwarding, or
    `gh codespace ssh`. See docs/codespaces.md.
 2. **Local processes** (Python only): `pip install -e . && redsec dev <id>` /
-   `redsec up <id>`; `redsec selftest` proves every challenge fail→pass (43/43).
+   `redsec up <id>`; `redsec selftest` proves every built-in challenge fail→pass (43/43).
 3. **Interactive persistent Docker range** (the in-sandbox command centre):
    `./scripts/sandbox-up.sh` then `range status|solve|verify|shell|logs|reset|down`.
    See docs/interactive-sandbox.md.
@@ -99,7 +99,10 @@ Kubernetes path too.
 All Docker-capable paths also support the range catalog. `builtin` is the RedSec
 course; `dvaa`, `mcpgoat`, `dvmcp`, and `appsecco-mcp` are pinned external
 integrations, while `offsec` is a disabled placeholder. Use `redsec ranges list`,
-`enable`, `up`, `status`, and per-ID `update`; see docs/external-ranges.md.
+`challenges`, `enable`, `up`, `status`, and per-ID `update`; see
+`docs/CHALLENGE-CATALOG.md` and `docs/external-ranges.md`. The complete catalog is
+110 challenge concepts / 162 runnable variants: 43 built-in, 22 DVAA, 26 MCPGoat
+(78 level variants), 10 DVMCP, and 9 Appsecco labs.
 
 **Known environment limit**: nested k8s (kind/k3s) can't start pods in a Firecracker
 microVM (`runc … pipe EOF`); Docker works. Use path 3 there. Documented in docs/kubernetes.md
@@ -126,7 +129,7 @@ or *on your own machine* from the repo. Same commands; different host. All need
 
 ## Verification / tests
 
-- `pytest` (39 tests): engine/verifier units, per-module fail→pass integration,
+- `pytest`: engine/verifier units, per-module fail→pass integration, catalog checks,
   and the Codespaces/Fly deployment contracts.
 - `redsec doctor` (all modules load + checks resolve), `redsec selftest` (43/43).
 - `python scripts/validate_manifests.py` (62 K8s objects vs schema offline).
@@ -152,7 +155,8 @@ or *on your own machine* from the repo. Same commands; different host. All need
   environment. Keep it in sync with this file on any change affecting setup/scope
   (new module, new run path, changed acceptance numbers like 43/43 or 40/40, new
   integration): bump its "Last updated"/"State" and the acceptance numbers, commit
-  both. This file is the single source of truth; RECREATE.md references it, no dup.
+  both. `intent.md` is the decision source of truth; this file is the operational
+  source of truth; `RECREATE.md` references both.
 
 ## Git attribution (this session's harness)
 

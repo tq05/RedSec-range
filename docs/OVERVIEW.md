@@ -3,7 +3,9 @@
 A one-page map of the range: the learning path, the AI attack surface each module
 targets, the version-aware MCP matrix, the capstone kill chain, and how the framework fits
 together. Diagrams are Mermaid and render on GitHub. Pair this with
-[WORKSHEET.md](WORKSHEET.md) (no spoilers) and [SOLUTIONS.md](SOLUTIONS.md) (answers).
+[WORKSHEET.md](WORKSHEET.md) (no spoilers), [SOLUTIONS.md](SOLUTIONS.md) (built-in
+answers), and [CHALLENGE-CATALOG.md](CHALLENGE-CATALOG.md) (all built-in and
+external ranges with pinned solution provenance).
 
 ## Learning path
 

@@ -1,8 +1,11 @@
 from pathlib import Path
+import json
 
 import pytest
+from typer.testing import CliRunner
 
 from redsec import ranges
+from redsec.cli import app
 from redsec.range_catalog import load_catalog
 
 
@@ -34,6 +37,48 @@ def test_external_sources_are_immutable_and_host_ports_do_not_overlap():
 
     assert len(ports) == len(set(ports))
     assert catalog.ranges["dvmcp"].runtime.ports[-1].host == 19010
+
+
+def test_every_external_challenge_is_cataloged_with_solution_provenance():
+    catalog = load_catalog()
+    expected = {"dvaa": 22, "mcpgoat": 26, "dvmcp": 10, "appsecco-mcp": 9}
+
+    for range_id, count in expected.items():
+        curriculum = catalog.ranges[range_id].curriculum
+        assert len(curriculum.challenges) == count
+        assert curriculum.solution_status == "upstream"
+        assert curriculum.solution_url
+        assert len({challenge.id for challenge in curriculum.challenges}) == count
+
+    mcpgoat = catalog.ranges["mcpgoat"].curriculum.challenges
+    assert sum(challenge.variants for challenge in mcpgoat) == 78
+
+
+def test_challenge_catalog_cli_lists_all_ranges_as_json():
+    result = CliRunner().invoke(app, ["ranges", "challenges", "--json"])
+
+    assert result.exit_code == 0, result.output
+    rows = json.loads(result.stdout)
+    assert len(rows) == 110
+    assert {row["range"] for row in rows} == {
+        "builtin", "dvaa", "mcpgoat", "dvmcp", "appsecco-mcp"
+    }
+    assert any(
+        row["range"] == "dvaa" and row["id"] == "L4-02"
+        for row in rows
+    )
+
+
+def test_status_marks_local_update_beyond_catalog_as_curriculum_drift(tmp_path, monkeypatch):
+    monkeypatch.setenv("REDSEC_STATE", str(tmp_path))
+    state = ranges.load_state()
+    state["revisions"]["mcpgoat"] = "f" * 40
+    ranges.save_state(state)
+
+    row = next(item for item in ranges.status_rows() if item["id"] == "mcpgoat")
+    assert row["catalog_revision"] == load_catalog().ranges["mcpgoat"].source.revision
+    assert row["revision"] == "f" * 40
+    assert row["curriculum_current"] is False
 
 
 def test_enabled_profile_resolves_aliases_and_rejects_placeholder(tmp_path, monkeypatch):
@@ -89,6 +134,20 @@ def test_appsecco_adapter_packages_network_and_stdio_servers():
     assert "npm ci" in dockerfile
     assert "mcp==1.24.0" in dockerfile
     assert "wikipedia-mcp.py" in dockerfile
+
+
+def test_external_ci_enumerates_challenges_and_runs_native_regression():
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+
+    assert "/api/challenges" in workflow
+    assert "len(x) == 22" in workflow
+    assert "seq 19001 19010" in workflow
+    assert "npm run ci" in workflow
+    assert "REDSEC_STATE: ${{ github.workspace }}/.redsec" in workflow
+    assert 'node-version: "22"' in workflow
+    assert "Initialize every Appsecco stdio MCP server" in workflow
+    assert "protocolVersion" in workflow
+    assert "generate_challenge_catalog.py --check" in workflow
 
 
 def test_external_build_explains_when_docker_is_missing(monkeypatch):
