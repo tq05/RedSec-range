@@ -96,6 +96,23 @@ connector at GitHub does not create a tunnel and does not move tool execution in
 Codespace. GitHub Actions is a CI validation environment, not a persistent interactive
 range; its runners disappear after the workflow.
 
+## Defensive threat-model automation
+
+Maintainers may run `.github/workflows/codex-threat-models.yml` manually to generate
+a defensive design review for every available catalog concept. The workflow uses a
+curated, secret-free inventory rather than exposing flags, hints, solutions, target
+source, or execution tools to the model. Structured output must cover the exact 110
+concept keys before deterministic rendering produces per-range reports and a portfolio
+overview. Generated material enters the repository through a reviewable pull request.
+
+Generation and publishing have separate permissions. The model job can read the
+repository but has no persisted Git credential; the publisher can open a branch and
+pull request but never receives the OpenAI key. Runs are manual because model calls
+can incur cost. The threat models recommend controls, detection, incident response,
+and benign validation before abuse; they do not execute targets or establish runtime
+exploitability. Codex Security is an optional, separately gated review layer rather
+than a substitute for this catalog-wide design assessment.
+
 ## Optional Fly.io journey
 
 Fly.io is for a private, dedicated, ephemeral cloud range when the user explicitly

@@ -1,0 +1,148 @@
+name: Codex defensive threat models
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: OpenAI model used for structured defensive analysis
+        required: true
+        default: gpt-6-sol
+        type: choice
+        options:
+          - gpt-6-sol
+          - gpt-6-astra
+          - gpt-6-luna
+      reasoning_effort:
+        description: Reasoning effort for each catalog batch
+        required: true
+        default: high
+        type: choice
+        options:
+          - medium
+          - high
+      publish_pull_request:
+        description: Commit the reports to a new branch and open a pull request
+        required: true
+        default: true
+        type: boolean
+      request_codex_security_review:
+        description: Ask Codex Security Review to inspect the generated pull request
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: codex-threat-models-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate and validate all threat models
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: codex-threat-models
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install RedSec
+        run: pip install -e .
+      - name: Confirm the sanitized model input covers the full catalog
+        run: |
+          python scripts/codex_threat_models.py inventory --output /tmp/redsec-inventory.json
+          python -c 'import json; rows=json.load(open("/tmp/redsec-inventory.json")); assert len(rows)==110; assert sum(x["variants"] for x in rows)==162'
+          test "$(grep -c 'REDSEC{' /tmp/redsec-inventory.json || true)" -eq 0
+      - name: Generate structured defensive threat models
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          THREAT_MODEL: ${{ inputs.model }}
+          REASONING_EFFORT: ${{ inputs.reasoning_effort }}
+        run: |
+          python scripts/codex_threat_models.py generate \
+            --results-dir /tmp/redsec-threat-results \
+            --model "$THREAT_MODEL" \
+            --reasoning-effort "$REASONING_EFFORT" \
+            --source-revision "$GITHUB_SHA"
+      - name: Render the portfolio and verify exact catalog coverage
+        run: |
+          python scripts/codex_threat_models.py render \
+            --results-dir /tmp/redsec-threat-results \
+            --output-dir docs/threat-models
+          test "$(find docs/threat-models/generated/data -name '*.json' | wc -l | tr -d ' ')" -eq 5
+          test "$(rg -c '^## `[^`]+` — ' docs/threat-models/generated/*.md | awk -F: '{s += $2} END {print s}')" -eq 110
+          rg -F 'Runtime exploitability is **not verified—outside the current scope**' \
+            docs/threat-models/OVERVIEW.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: redsec-codex-threat-models-${{ github.run_id }}
+          path: |
+            docs/threat-models/OVERVIEW.md
+            docs/threat-models/generated
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Open a reviewable documentation pull request
+    if: ${{ inputs.publish_pull_request }}
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: redsec-codex-threat-models-${{ github.run_id }}
+          path: docs/threat-models
+      - name: Commit reports and open a pull request
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          THREAT_MODEL: ${{ inputs.model }}
+          REASONING_EFFORT: ${{ inputs.reasoning_effort }}
+        run: |
+          branch="automation/codex-threat-models-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add docs/threat-models/OVERVIEW.md docs/threat-models/generated
+          if git diff --cached --quiet; then
+            echo "No threat-model changes were produced."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "docs: refresh Codex defensive threat models"
+          git push --set-upstream origin "$branch"
+          body_file="$(mktemp)"
+          cat > "$body_file" <<EOF
+          This pull request refreshes the defensive threat-model portfolio for all 110 catalog concepts and 162 declared variants.
+
+          - Model: \`$THREAT_MODEL\`
+          - Reasoning effort: \`$REASONING_EFFORT\`
+          - Source commit: \`$GITHUB_SHA\`
+          - Input boundary: curated catalog, topology, taxonomy, and provenance metadata
+          - Runtime exploitability: **not verified—outside the current scope**
+
+          The workflow did not run targets, solutions, exploit payloads, or secret extraction. Review the generated controls and evidence before merging.
+          EOF
+          url="$(gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "docs: refresh Codex defensive threat models" \
+            --body-file "$body_file")"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "pull_request_url=$url" >> "$GITHUB_OUTPUT"
+      - name: Request Codex Security Review
+        if: ${{ inputs.request_codex_security_review && steps.publish.outputs.changed == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.publish.outputs.pull_request_url }}
+        run: gh pr comment "$PR_URL" --body '@codex security review'
