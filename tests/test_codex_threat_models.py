@@ -167,6 +167,7 @@ def test_renderer_requires_full_catalog_and_builds_portfolio(tmp_path):
     overview = (output / "OVERVIEW.md").read_text()
     assert "110 challenge concepts" in overview
     assert "162 declared variants" in overview
+    assert "[control-gap matrix](CONTROL-GAP-MATRIX.md)" in overview
     assert overview.count("| `builtin`") == 43 + 1
     assert "Secure before abuse" in (output / "generated" / "builtin.md").read_text()
     assert sum(
@@ -247,3 +248,8 @@ def test_committed_portfolio_matches_catalog_and_integrity_manifest():
     assert "not verified—outside the current scope" in published
     for pattern in BLOCKED_OUTPUT:
         assert not pattern.search(published), pattern.pattern
+
+    matrix = (root / "CONTROL-GAP-MATRIX.md").read_text()
+    assert "| Component | Threat | Who can exploit it | Controls in place | Controls missing |" in matrix
+    assert matrix.count("\n| ") >= 20
+    assert "not verified—outside the current scope" in matrix

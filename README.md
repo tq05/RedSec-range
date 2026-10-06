@@ -17,9 +17,10 @@ worked.
 > concept-level defensive review across every built-in and external range, use the
 > [**learning guide**](docs/training/RedSec-Range-Learning-Guide.pdf) and
 > [**222-slide workshop deck**](docs/training/RedSec-Range-Learning-Deck.pptx).
-> Read the current [**Codex defensive threat-model overview**](docs/threat-models/OVERVIEW.md)
-> for a repository-stored design assessment of all 110 catalog concepts. Maintainers
-> can refresh it with the manual [workflow](docs/threat-models/README.md).
+> Read the [**five-column control-gap matrix**](docs/threat-models/CONTROL-GAP-MATRIX.md)
+> for a concise security view, then use the full [Codex threat-model overview](docs/threat-models/OVERVIEW.md)
+> for all 110 catalog concepts. Maintainers can refresh it with the manual
+> [workflow](docs/threat-models/README.md).
 
 > ⚠️ **Deliberately vulnerable software.** Every target in this repo ships real,
 > exploitable flaws (prompt injection, SSRF, command-injection RCE, insecure
@@ -320,6 +321,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/mcp-attack-matrix.md](docs/mcp-attack-matrix.md) | Version-aware MCP surfaces and attack paths in depth |
 | [docs/THREAT-LANDSCAPE.md](docs/THREAT-LANDSCAPE.md) | Current AI-agent attack chains + threat actors, mapped to OWASP/CSA |
 | [docs/threat-models/README.md](docs/threat-models/README.md) | Run Codex over the sanitized catalog and publish defensive threat models through a PR |
+| [docs/threat-models/CONTROL-GAP-MATRIX.md](docs/threat-models/CONTROL-GAP-MATRIX.md) | Simple component → threat → actor → existing controls → missing controls table |
 | [docs/threat-models/OVERVIEW.md](docs/threat-models/OVERVIEW.md) | Current 110-concept Codex defensive portfolio: repository findings, assets, boundaries, controls, detection, validation, and residual risk |
 | [docs/DIFFICULTY-TIERS.md](docs/DIFFICULTY-TIERS.md) | easy/medium/hard/impossible tiers per module |
 | [intent.md](intent.md) · [docs/ROADMAP.md](docs/ROADMAP.md) | Durable decisions · future work |

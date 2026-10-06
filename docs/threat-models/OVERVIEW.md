@@ -7,6 +7,9 @@ Each report starts with the assets and trust boundaries, describes the abuse pat
 a non-operational level, then lists the controls to implement before abuse, detection
 and response measures, benign validation, residual risk, and supporting repository evidence.
 
+For the fastest review, start with the five-column [control-gap matrix](CONTROL-GAP-MATRIX.md):
+component, threat, likely actor, controls in place, and controls missing.
+
 Runtime exploitability is **not verified—outside the current scope**. This review did not start targets,
 run solutions, recover secrets, or test payloads.
 

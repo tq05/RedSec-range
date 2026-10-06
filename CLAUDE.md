@@ -28,6 +28,7 @@ no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map),
 `docs/training/RedSec-Range-Learning-Deck.pptx` (220 paired concept slides plus two attribution slides),
 `docs/threat-models/README.md` (manual Codex defensive threat-model workflow and
 generated portfolio contract),
+`docs/threat-models/CONTROL-GAP-MATRIX.md` (simple component/actor/control-gap view),
 `docs/THREAT-LANDSCAPE.md` (current agent attack chains + OWASP Agentic/CSA MAESTRO
 mapping), `docs/DIFFICULTY-TIERS.md` (easy/medium/hard/impossible per module; impossible
 answers are sealed in each module's `solution/SEALED.md`, excluded from SOLUTIONS.md). A code
