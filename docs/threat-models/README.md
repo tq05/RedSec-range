@@ -19,6 +19,18 @@ The reports deliberately omit flags, secrets, payloads, commands, target endpoin
 and step-by-step exploitation. Runtime exploitability is **not verified—outside the
 current scope**.
 
+## Current committed assessment
+
+The current [portfolio overview](OVERVIEW.md) and five range reports were produced
+directly by a repository-aware Codex session using the same sanitized 110-concept
+inventory, together with static inspection of the framework and deployment source.
+No challenge, solution, target, or exploit was executed. This is a Codex defensive
+static review, not a scan by the separately gated Codex Security product.
+
+The API-backed workflow remains the reproducible refresh path. It requires the
+`codex-threat-models` GitHub environment and an `OPENAI_API_KEY` environment secret;
+neither credential value is stored in the repository or generated reports.
+
 ## Security design
 
 The workflow has two jobs with separate permissions:

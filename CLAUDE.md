@@ -144,6 +144,8 @@ or *on your own machine* from the repo. Same commands; different host. All need
   sanitized catalog/topology metadata to the OpenAI Responses API, validates strict
   structured results for all 110 concepts, and optionally opens a documentation PR.
   The model job is read-only; the separate publisher job never receives the API key.
+  `docs/threat-models/OVERVIEW.md` contains the current repository-aware Codex static
+  assessment and links all five committed range reports.
 - Evidence log: `docs/proof/verification.log`.
 - Walkthroughs independently red-teamed by a separate model (fresh-context Sonnet).
 

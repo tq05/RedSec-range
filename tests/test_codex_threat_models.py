@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -30,6 +31,8 @@ build_inventory = THREAT_MODELS.build_inventory
 generate = THREAT_MODELS.generate
 render = THREAT_MODELS.render
 validate_batch = THREAT_MODELS.validate_batch
+AVAILABLE_RANGES = THREAT_MODELS.AVAILABLE_RANGES
+BLOCKED_OUTPUT = THREAT_MODELS.BLOCKED_OUTPUT
 
 
 def synthetic_model(record: dict) -> ThreatModel:
@@ -207,3 +210,40 @@ def test_workflow_keeps_model_generation_read_only_and_publish_separate():
                     capture_output=True,
                     check=True,
                 )
+
+
+def test_committed_portfolio_matches_catalog_and_integrity_manifest():
+    root = ROOT / "docs" / "threat-models"
+    generated = root / "generated"
+    manifest = json.loads((generated / "MANIFEST.json").read_text())
+    inventory = build_inventory()
+    expected = {record["key"]: record for record in inventory}
+    seen: dict[str, ThreatModel] = {}
+
+    for range_id in AVAILABLE_RANGES:
+        document = json.loads((generated / "data" / f"{range_id}.json").read_text())
+        assert document["range_id"] == range_id
+        assert document["source_revision"] == manifest["source_revision"]
+        assert document["model"] == manifest["model"]
+        for raw in document["threat_models"]:
+            model = ThreatModel.model_validate(raw)
+            assert model.key not in seen
+            assert model.key in expected
+            assert model.title == expected[model.key]["title"]
+            seen[model.key] = model
+
+    assert list(seen) == [record["key"] for record in inventory]
+    assert manifest["concepts"] == len(seen) == 110
+    assert manifest["declared_variants"] == sum(record["variants"] for record in inventory) == 162
+
+    for relative, expected_hash in manifest["files"].items():
+        content = (root / relative).read_bytes()
+        assert hashlib.sha256(content).hexdigest() == expected_hash
+
+    published = (root / "OVERVIEW.md").read_text() + "".join(
+        (generated / f"{range_id}.md").read_text() for range_id in AVAILABLE_RANGES
+    )
+    assert published.count('<a id="') == 110
+    assert "not verified—outside the current scope" in published
+    for pattern in BLOCKED_OUTPUT:
+        assert not pattern.search(published), pattern.pattern

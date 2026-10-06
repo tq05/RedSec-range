@@ -1,0 +1,1958 @@
+{
+  "schema_version": 1,
+  "source_revision": "67491bee35bf6f3e38da47a094725714eafab2dd",
+  "model": "Codex-GPT-6-static-review",
+  "reasoning_effort": "high",
+  "generated_at": "2026-10-06T11:41:23+00:00",
+  "range_id": "mcpgoat",
+  "threat_models": [
+    {
+      "key": "mcpgoat/A1",
+      "title": "Tool Poisoning",
+      "system_context": "Tool Poisoning is a mcpgoat training concept for MCP-specific. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/A2",
+      "title": "Tool Shadowing / Trusted-Tool Override",
+      "system_context": "Tool Shadowing / Trusted-Tool Override is a mcpgoat training concept for MCP-specific. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/A3",
+      "title": "Rug Pull / Tool Mutation (TOCTOU)",
+      "system_context": "Rug Pull / Tool Mutation (TOCTOU) is a mcpgoat training concept for MCP-specific. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/B1",
+      "title": "Indirect Prompt Injection via Tool Output",
+      "system_context": "Indirect Prompt Injection via Tool Output is a mcpgoat training concept for Prompt/Context. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D1",
+      "title": "Command Injection (RCE)",
+      "system_context": "Command Injection (RCE) is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D2",
+      "title": "Path Traversal / Arbitrary File Read",
+      "system_context": "Path Traversal / Arbitrary File Read is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Improper path canonicalization and root enforcement can expose or modify files outside the authorized workspace.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Workspace files and declared roots",
+        "Host filesystem and credentials",
+        "File-operation audit trail"
+      ],
+      "trust_boundaries": [
+        "Untrusted path or URI to filesystem resolver",
+        "Declared workspace root to host filesystem",
+        "Tool identity to file authorization"
+      ],
+      "threat_actors": [
+        "A remote tool caller",
+        "A prompt-influenced agent using a file tool"
+      ],
+      "abuse_preconditions": [
+        "Path resolution accepts traversal, absolute paths, links, or ambiguous encodings",
+        "The file service runs with access beyond the caller’s allowed root"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller supplies an alternate path representation that resolves beyond the declared root.",
+          "impact": "Sensitive host data is read or modified."
+        },
+        {
+          "scenario": "A symbolic link or race changes the resolved object after validation.",
+          "impact": "A previously safe check authorizes a different filesystem target."
+        }
+      ],
+      "secure_before_abuse": [
+        "Resolve paths against a server-selected root, reject absolute and parent traversal forms, and verify the final opened object remains beneath that root.",
+        "Use descriptor-relative filesystem APIs and avoid check-then-open races and link following for protected operations.",
+        "Run the service as a dedicated non-root identity with a read-only filesystem and only the required workspace mounted.",
+        "Authorize file operations by caller, tenant, action, and object; keep roots server-side rather than trusting client declarations."
+      ],
+      "detection_and_response": [
+        "Log normalized object identifiers and denied root escapes without recording sensitive file content.",
+        "Alert on repeated invalid paths, link-related failures, and access to sensitive filename classes."
+      ],
+      "safe_validation": [
+        "Use a temporary synthetic tree to confirm parent, absolute, encoded, and link-based escape cases fail closed.",
+        "Verify the runtime identity cannot read an unrelated canary file even if application validation is bypassed."
+      ],
+      "security_outcome": "File operations remain inside an authorized root and are constrained by both application checks and operating-system permissions.",
+      "residual_risk": [
+        "Platform-specific path and link semantics require regression coverage.",
+        "Writable shared volumes can reintroduce time-of-check/time-of-use races."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D3",
+      "title": "Server-Side Request Forgery",
+      "system_context": "Server-Side Request Forgery is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A server-side fetch capability can be redirected to metadata or internal services, exposing credentials and enabling lateral movement under the workload identity.",
+      "risk_rating": "critical",
+      "control_families": [
+        "network-boundaries",
+        "identity-access",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Cloud metadata and workload credentials",
+        "Internal services and network topology",
+        "Outbound request identity and response data"
+      ],
+      "trust_boundaries": [
+        "Untrusted URL input to server-side client",
+        "Application network to metadata and internal services",
+        "Fetched response to user or model context"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A prompt-influenced agent controlling a fetch target"
+      ],
+      "abuse_preconditions": [
+        "The service follows caller-controlled destinations or redirects",
+        "Network policy and workload identity permit access to sensitive internal endpoints"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller selects an internal or special-address destination through direct input, redirect, or name resolution.",
+          "impact": "The service returns sensitive internal data."
+        },
+        {
+          "scenario": "Stolen workload credentials are accepted by a second protected service.",
+          "impact": "The compromise expands beyond the original application."
+        }
+      ],
+      "secure_before_abuse": [
+        "Use an allowlist of schemes, hosts, ports, and paths; resolve names once and reject loopback, link-local, private, and otherwise prohibited addresses.",
+        "Revalidate every redirect and connect to the validated address while preserving the expected host and TLS identity.",
+        "Block metadata and unnecessary east-west or internet egress at the network layer, and use short-lived audience-bound workload credentials.",
+        "Limit response size, content type, timeout, and redirect count; never return raw credential-bearing responses."
+      ],
+      "detection_and_response": [
+        "Log normalized destination class, resolved address, redirect chain, caller, and policy decision with credentials redacted.",
+        "Alert on metadata ranges, unusual internal ports, DNS-answer changes, and bursts of failed destination validation."
+      ],
+      "safe_validation": [
+        "Use controlled loopback, private-address, redirect, and rebinding simulations and assert the request is rejected before connection.",
+        "Confirm a synthetic workload identity cannot reach a canary internal service outside its declared dependency set."
+      ],
+      "security_outcome": "Server-side requests reach only explicitly approved destinations and cannot use workload network position to retrieve internal credentials.",
+      "residual_risk": [
+        "Compromise of an allowlisted destination can turn it into a pivot.",
+        "Proxy and resolver differences can create validation-to-connection inconsistencies."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D4",
+      "title": "SQL Injection",
+      "system_context": "SQL Injection is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/C2",
+      "title": "Broken Authorization / Confused Deputy",
+      "system_context": "Broken Authorization / Confused Deputy is a mcpgoat training concept for AuthN/AuthZ. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/C3",
+      "title": "Insecure Direct Object Reference",
+      "system_context": "Insecure Direct Object Reference is a mcpgoat training concept for AuthN/AuthZ. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/E1",
+      "title": "Sensitive Data Exposure",
+      "system_context": "Sensitive Data Exposure is a mcpgoat training concept for Secrets/Exposure. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Secrets or personal data can leak through prompts, errors, logs, completion APIs, metadata, tool chains, or over-broad responses.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "tool-execution"
+      ],
+      "assets": [
+        "API keys, tokens, credentials, and personal data",
+        "System prompts and privileged configuration",
+        "Logs, completions, model cards, and tool outputs"
+      ],
+      "trust_boundaries": [
+        "Secret store to application runtime",
+        "Application or tool output to untrusted caller",
+        "Sensitive telemetry or metadata to operators and models"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A malicious tool, model input, or content source"
+      ],
+      "abuse_preconditions": [
+        "Sensitive values are present in model-readable context, metadata, logs, or broad environment state",
+        "Response or tool policy does not minimize fields by caller and purpose"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller causes a response path to serialize sensitive context or metadata.",
+          "impact": "Credentials or protected data leave their intended trust boundary."
+        },
+        {
+          "scenario": "A tool or model with ambient access forwards data to an unauthorized destination.",
+          "impact": "The leak enables impersonation or lateral movement."
+        }
+      ],
+      "secure_before_abuse": [
+        "Keep credentials outside prompts, model cards, logs, completions, and general environment state; fetch them just in time through a scoped broker.",
+        "Apply response-field allowlists, data classification, tenant authorization, destination policy, and output minimization at the owning service.",
+        "Use short-lived, audience-bound, least-privilege credentials with rotation and revocation.",
+        "Redact sensitive fields before telemetry and prevent tool outputs from being treated as trusted instructions."
+      ],
+      "detection_and_response": [
+        "Deploy secret-pattern and canary detection at response, log, artifact, and egress boundaries with strict access controls.",
+        "Alert on unusual secret reads, completion enumeration, debug-level changes, bulk exports, and new destinations."
+      ],
+      "safe_validation": [
+        "Seed synthetic canaries and confirm unauthorized response, error, log, metadata, and completion paths never return them.",
+        "Exercise credential rotation and incident revocation with a test identity and verify old tokens stop working."
+      ],
+      "security_outcome": "Sensitive values are absent from model-readable and public channels and are released only to authorized, purpose-bound consumers.",
+      "residual_risk": [
+        "Authorized components necessarily handling plaintext remain high-value compromise targets.",
+        "Previously emitted secrets require rotation even after the disclosure path is fixed."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/A9",
+      "title": "Invisible-Text Tool Poisoning",
+      "system_context": "Invisible-Text Tool Poisoning is a mcpgoat training concept for MCP-specific. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/B2",
+      "title": "Indirect Injection via Resource Content",
+      "system_context": "Indirect Injection via Resource Content is a mcpgoat training concept for Prompt/Context. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/B3",
+      "title": "Prompt-Template Injection",
+      "system_context": "Prompt-Template Injection is a mcpgoat training concept for Prompt/Context. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/B5",
+      "title": "Sampling Abuse (server-driven LLM calls)",
+      "system_context": "Sampling Abuse (server-driven LLM calls) is a mcpgoat training concept for MCP-specific. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/C4",
+      "title": "OAuth Token-Audience Confusion",
+      "system_context": "OAuth Token-Audience Confusion is a mcpgoat training concept for AuthN/AuthZ. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D6",
+      "title": "Server-Side Template Injection",
+      "system_context": "Server-Side Template Injection is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/F1",
+      "title": "DNS Rebinding / Missing Origin Validation",
+      "system_context": "DNS Rebinding / Missing Origin Validation is a mcpgoat training concept for Transport. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Protocol parsing, origin, routing, or session inconsistencies can let a request pass one policy check and reach a different protected operation.",
+      "risk_rating": "medium",
+      "control_families": [
+        "protocol-integrity",
+        "identity-access",
+        "network-boundaries",
+        "logging-detection"
+      ],
+      "assets": [
+        "Protocol messages, headers, sessions, and routing decisions",
+        "Authenticated peer and origin identity",
+        "Protected methods and transport endpoints"
+      ],
+      "trust_boundaries": [
+        "Remote origin to protocol gateway",
+        "Gateway-parsed metadata to application-parsed body",
+        "Session identifier to authenticated principal"
+      ],
+      "threat_actors": [
+        "A malicious web origin or protocol client",
+        "A network intermediary able to alter routing metadata"
+      ],
+      "abuse_preconditions": [
+        "Different layers authorize different representations of the same request",
+        "Origin, audience, session, or routing fields are missing, predictable, or weakly bound"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A gateway validates one method or identity while the application dispatches another representation.",
+          "impact": "A protected method executes under an unrelated authorization decision."
+        },
+        {
+          "scenario": "A session or cross-origin channel is accepted without strong binding and replay protection.",
+          "impact": "An attacker attaches to or drives another principal’s session."
+        }
+      ],
+      "secure_before_abuse": [
+        "Canonicalize and parse each request once, then pass an immutable typed representation to both authorization and dispatch.",
+        "Bind method, tool, peer, origin, audience, body, session, and protocol version in one policy decision.",
+        "Use cryptographically random, rotated session identifiers with secure transport, expiry, and replay protection.",
+        "Enforce explicit trusted origins and hosts; keep browser cross-origin policy narrow and deny credentialed wildcard behavior."
+      ],
+      "detection_and_response": [
+        "Log canonical request identity, origin, peer, session, routed operation, and mismatch reason using privacy-safe identifiers.",
+        "Alert on header/body disagreement, invalid origins, session collisions, replay, downgrade, and parser disagreement."
+      ],
+      "safe_validation": [
+        "Generate benign mismatched representations and assert authorization and dispatch always resolve to the same operation.",
+        "Use synthetic origins and sessions to confirm wrong-origin, guessed, replayed, expired, and cross-user requests fail closed."
+      ],
+      "security_outcome": "Authorization and dispatch use the same authenticated, canonical protocol representation and replay-safe session context.",
+      "residual_risk": [
+        "Reverse proxies and SDK upgrades can introduce new normalization differences.",
+        "Compromised valid sessions retain their authorized reach until revocation."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/F2",
+      "title": "CORS Misconfiguration",
+      "system_context": "CORS Misconfiguration is a mcpgoat training concept for Transport. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Protocol parsing, origin, routing, or session inconsistencies can let a request pass one policy check and reach a different protected operation.",
+      "risk_rating": "medium",
+      "control_families": [
+        "protocol-integrity",
+        "identity-access",
+        "network-boundaries",
+        "logging-detection"
+      ],
+      "assets": [
+        "Protocol messages, headers, sessions, and routing decisions",
+        "Authenticated peer and origin identity",
+        "Protected methods and transport endpoints"
+      ],
+      "trust_boundaries": [
+        "Remote origin to protocol gateway",
+        "Gateway-parsed metadata to application-parsed body",
+        "Session identifier to authenticated principal"
+      ],
+      "threat_actors": [
+        "A malicious web origin or protocol client",
+        "A network intermediary able to alter routing metadata"
+      ],
+      "abuse_preconditions": [
+        "Different layers authorize different representations of the same request",
+        "Origin, audience, session, or routing fields are missing, predictable, or weakly bound"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A gateway validates one method or identity while the application dispatches another representation.",
+          "impact": "A protected method executes under an unrelated authorization decision."
+        },
+        {
+          "scenario": "A session or cross-origin channel is accepted without strong binding and replay protection.",
+          "impact": "An attacker attaches to or drives another principal’s session."
+        }
+      ],
+      "secure_before_abuse": [
+        "Canonicalize and parse each request once, then pass an immutable typed representation to both authorization and dispatch.",
+        "Bind method, tool, peer, origin, audience, body, session, and protocol version in one policy decision.",
+        "Use cryptographically random, rotated session identifiers with secure transport, expiry, and replay protection.",
+        "Enforce explicit trusted origins and hosts; keep browser cross-origin policy narrow and deny credentialed wildcard behavior."
+      ],
+      "detection_and_response": [
+        "Log canonical request identity, origin, peer, session, routed operation, and mismatch reason using privacy-safe identifiers.",
+        "Alert on header/body disagreement, invalid origins, session collisions, replay, downgrade, and parser disagreement."
+      ],
+      "safe_validation": [
+        "Generate benign mismatched representations and assert authorization and dispatch always resolve to the same operation.",
+        "Use synthetic origins and sessions to confirm wrong-origin, guessed, replayed, expired, and cross-user requests fail closed."
+      ],
+      "security_outcome": "Authorization and dispatch use the same authenticated, canonical protocol representation and replay-safe session context.",
+      "residual_risk": [
+        "Reverse proxies and SDK upgrades can introduce new normalization differences.",
+        "Compromised valid sessions retain their authorized reach until revocation."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/C6",
+      "title": "Predictable Session IDs (hijack)",
+      "system_context": "Predictable Session IDs (hijack) is a mcpgoat training concept for Transport. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Protocol parsing, origin, routing, or session inconsistencies can let a request pass one policy check and reach a different protected operation.",
+      "risk_rating": "medium",
+      "control_families": [
+        "protocol-integrity",
+        "identity-access",
+        "network-boundaries",
+        "logging-detection"
+      ],
+      "assets": [
+        "Protocol messages, headers, sessions, and routing decisions",
+        "Authenticated peer and origin identity",
+        "Protected methods and transport endpoints"
+      ],
+      "trust_boundaries": [
+        "Remote origin to protocol gateway",
+        "Gateway-parsed metadata to application-parsed body",
+        "Session identifier to authenticated principal"
+      ],
+      "threat_actors": [
+        "A malicious web origin or protocol client",
+        "A network intermediary able to alter routing metadata"
+      ],
+      "abuse_preconditions": [
+        "Different layers authorize different representations of the same request",
+        "Origin, audience, session, or routing fields are missing, predictable, or weakly bound"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A gateway validates one method or identity while the application dispatches another representation.",
+          "impact": "A protected method executes under an unrelated authorization decision."
+        },
+        {
+          "scenario": "A session or cross-origin channel is accepted without strong binding and replay protection.",
+          "impact": "An attacker attaches to or drives another principal’s session."
+        }
+      ],
+      "secure_before_abuse": [
+        "Canonicalize and parse each request once, then pass an immutable typed representation to both authorization and dispatch.",
+        "Bind method, tool, peer, origin, audience, body, session, and protocol version in one policy decision.",
+        "Use cryptographically random, rotated session identifiers with secure transport, expiry, and replay protection.",
+        "Enforce explicit trusted origins and hosts; keep browser cross-origin policy narrow and deny credentialed wildcard behavior."
+      ],
+      "detection_and_response": [
+        "Log canonical request identity, origin, peer, session, routed operation, and mismatch reason using privacy-safe identifiers.",
+        "Alert on header/body disagreement, invalid origins, session collisions, replay, downgrade, and parser disagreement."
+      ],
+      "safe_validation": [
+        "Generate benign mismatched representations and assert authorization and dispatch always resolve to the same operation.",
+        "Use synthetic origins and sessions to confirm wrong-origin, guessed, replayed, expired, and cross-user requests fail closed."
+      ],
+      "security_outcome": "Authorization and dispatch use the same authenticated, canonical protocol representation and replay-safe session context.",
+      "residual_risk": [
+        "Reverse proxies and SDK upgrades can introduce new normalization differences.",
+        "Compromised valid sessions retain their authorized reach until revocation."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/G1",
+      "title": "Unbounded Consumption (cost/DoS)",
+      "system_context": "Unbounded Consumption (cost/DoS) is a mcpgoat training concept for DoS/Cost. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unbounded requests, pathological parsing, or recursive agent activity can exhaust compute, token, memory, or downstream service budgets.",
+      "risk_rating": "medium",
+      "control_families": [
+        "resource-governance",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Model and tool availability",
+        "Compute, token, memory, and downstream API budgets",
+        "Fair capacity across tenants"
+      ],
+      "trust_boundaries": [
+        "Client request to expensive processing",
+        "Tool or parser workload to shared runtime",
+        "Single tenant to shared capacity"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-cost remote caller",
+        "A compromised authorized tenant"
+      ],
+      "abuse_preconditions": [
+        "Work scales nonlinearly or recursively with attacker-controlled input",
+        "Per-identity budgets, concurrency, and cancellation are absent"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller submits inputs that trigger disproportionate processing or expensive downstream calls.",
+          "impact": "Shared service latency, availability, or cost is degraded."
+        },
+        {
+          "scenario": "Agent or tool recursion continues without an execution budget.",
+          "impact": "One workflow consumes capacity intended for other tenants."
+        }
+      ],
+      "secure_before_abuse": [
+        "Enforce authenticated per-tenant quotas for requests, tokens, tool calls, wall time, output size, memory, and downstream spend.",
+        "Use bounded-complexity parsers and regular expressions, strict input limits, timeouts, cancellation, and circuit breakers.",
+        "Cap agent depth and fan-out and require approval before exceptional resource use.",
+        "Isolate queues and capacity by trust tier so one tenant cannot consume the whole service."
+      ],
+      "detection_and_response": [
+        "Monitor cost and saturation by tenant, endpoint, model, tool, and input class; alert on nonlinear latency and retry storms.",
+        "Terminate runaway workflows and preserve bounded diagnostic evidence for incident review."
+      ],
+      "safe_validation": [
+        "Use inert oversized and complexity-edge inputs in a resource-limited test and assert deterministic rejection or timeout.",
+        "Simulate a tenant exhausting its quota and confirm other tenants retain service."
+      ],
+      "security_outcome": "Each identity and workflow has bounded resource use, and pathological work is cancelled before shared availability is affected.",
+      "residual_risk": [
+        "Distributed low-rate consumption can evade per-identity thresholds.",
+        "Upstream model or API price changes can invalidate existing budgets."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/G4",
+      "title": "Regular-Expression DoS (ReDoS)",
+      "system_context": "Regular-Expression DoS (ReDoS) is a mcpgoat training concept for DoS/Cost. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unbounded requests, pathological parsing, or recursive agent activity can exhaust compute, token, memory, or downstream service budgets.",
+      "risk_rating": "medium",
+      "control_families": [
+        "resource-governance",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Model and tool availability",
+        "Compute, token, memory, and downstream API budgets",
+        "Fair capacity across tenants"
+      ],
+      "trust_boundaries": [
+        "Client request to expensive processing",
+        "Tool or parser workload to shared runtime",
+        "Single tenant to shared capacity"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-cost remote caller",
+        "A compromised authorized tenant"
+      ],
+      "abuse_preconditions": [
+        "Work scales nonlinearly or recursively with attacker-controlled input",
+        "Per-identity budgets, concurrency, and cancellation are absent"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller submits inputs that trigger disproportionate processing or expensive downstream calls.",
+          "impact": "Shared service latency, availability, or cost is degraded."
+        },
+        {
+          "scenario": "Agent or tool recursion continues without an execution budget.",
+          "impact": "One workflow consumes capacity intended for other tenants."
+        }
+      ],
+      "secure_before_abuse": [
+        "Enforce authenticated per-tenant quotas for requests, tokens, tool calls, wall time, output size, memory, and downstream spend.",
+        "Use bounded-complexity parsers and regular expressions, strict input limits, timeouts, cancellation, and circuit breakers.",
+        "Cap agent depth and fan-out and require approval before exceptional resource use.",
+        "Isolate queues and capacity by trust tier so one tenant cannot consume the whole service."
+      ],
+      "detection_and_response": [
+        "Monitor cost and saturation by tenant, endpoint, model, tool, and input class; alert on nonlinear latency and retry storms.",
+        "Terminate runaway workflows and preserve bounded diagnostic evidence for incident review."
+      ],
+      "safe_validation": [
+        "Use inert oversized and complexity-edge inputs in a resource-limited test and assert deterministic rejection or timeout.",
+        "Simulate a tenant exhausting its quota and confirm other tenants retain service."
+      ],
+      "security_outcome": "Each identity and workflow has bounded resource use, and pathological work is cancelled before shared availability is affected.",
+      "residual_risk": [
+        "Distributed low-rate consumption can evade per-identity thresholds.",
+        "Upstream model or API price changes can invalidate existing budgets."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D5",
+      "title": "NoSQL Injection",
+      "system_context": "NoSQL Injection is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D7",
+      "title": "XML External Entity (XXE)",
+      "system_context": "XML External Entity (XXE) is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/D8",
+      "title": "Insecure Deserialization (prototype pollution)",
+      "system_context": "Insecure Deserialization (prototype pollution) is a mcpgoat training concept for Injection sink. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "mcpgoat/H1",
+      "title": "Supply Chain (typosquat / unsigned package)",
+      "system_context": "Supply Chain (typosquat / unsigned package) is a mcpgoat training concept for Supply chain. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A poisoned, unsigned, unsafe, or ambiguously resolved dependency can alter model behavior, expose data, or execute code during build or load.",
+      "risk_rating": "critical",
+      "control_families": [
+        "supply-chain",
+        "tool-execution",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Models, adapters, datasets, packages, and build artifacts",
+        "Training and deployment pipeline integrity",
+        "Signing keys and artifact provenance"
+      ],
+      "trust_boundaries": [
+        "External publisher to artifact registry",
+        "Registry artifact to build or model runtime",
+        "Training data contributor to deployed behavior"
+      ],
+      "threat_actors": [
+        "A malicious or compromised supplier",
+        "An attacker publishing a colliding dependency or artifact"
+      ],
+      "abuse_preconditions": [
+        "Artifacts are selected or loaded without verified identity, provenance, and safe format controls",
+        "Training or deployment accepts unreviewed behavior-changing inputs"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A higher-priority, colliding, or compromised artifact is selected as trusted input.",
+          "impact": "Malicious logic or model behavior enters the release."
+        },
+        {
+          "scenario": "An unsafe serialized artifact is interpreted with runtime privileges.",
+          "impact": "Artifact loading becomes code execution with pipeline or service authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Pin dependencies and artifacts by trusted registry, publisher identity, version, and digest; verify signatures and provenance before use.",
+        "Use non-executable formats and isolated conversion for untrusted model artifacts; never deserialize opaque objects in a privileged runtime.",
+        "Apply review, lineage, anomaly analysis, and representative evaluation to datasets, adapters, and models before promotion.",
+        "Separate build, registry, training, and serving identities; remove network and secret access from artifact inspection."
+      ],
+      "detection_and_response": [
+        "Alert on publisher, registry, digest, dependency graph, dataset distribution, or model-behavior drift.",
+        "Retain software and model bills of materials plus provenance so affected releases can be identified and revoked."
+      ],
+      "safe_validation": [
+        "Use signed synthetic artifacts and assert wrong registry, identity, digest, provenance, or format is rejected before loading.",
+        "Run benign trigger and distribution-shift evaluations in an isolated promotion stage and verify rollback and revocation."
+      ],
+      "security_outcome": "Only provenance-verified, safely parsed, reviewed artifacts can enter training, build, or serving environments.",
+      "residual_risk": [
+        "A legitimately signed maintainer can still publish malicious or compromised content.",
+        "Behavioral backdoors may remain dormant outside the evaluation distribution."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "source_revision": "67491bee35bf6f3e38da47a094725714eafab2dd",
+  "model": "Codex-GPT-6-static-review",
+  "reasoning_effort": "high",
+  "generated_at": "2026-10-06T11:41:23+00:00",
+  "concepts": 110,
+  "declared_variants": 162,
+  "files": {
+    "OVERVIEW.md": "959679377d4cd3c0e836f191bae14f55d21d3b1ea27d353806bd90d2b3dda656",
+    "generated/appsecco-mcp.md": "a76ceb4126033ec8ac08bf2b945027776d29b2270faa047b918ff79cc92226a8",
+    "generated/builtin.md": "584b90fed4207d00437bef7282d5768225bf554f14d0d186e1e8c981bfe80248",
+    "generated/data/appsecco-mcp.json": "69744951048d8a9aff21ff8e354875984ddd4c59c5ce60e846d3e8c8cf4430b0",
+    "generated/data/builtin.json": "966827ba01c51329e9a66059ce391662ce4285af12ba848435f6a67d2eeac2c3",
+    "generated/data/dvaa.json": "90effc6c3d18b084a40beda6d210f97a43622372033a480b63f799a8b9f6d902",
+    "generated/data/dvmcp.json": "a519bc635a33b81f4ecd9940eb23ad3de20370cc616b34d2ce4c292b4181587a",
+    "generated/data/mcpgoat.json": "5cda26a3522a2b118d628f44f89b194aff9973dd91640b7ebc4286c9dcb6cb21",
+    "generated/dvaa.md": "d9fc2c9247305c1b8fa0f5171eab17e6aabca2e0767315ee8d34d018e24411cf",
+    "generated/dvmcp.md": "5376dfabd91e34281703d0fa166a0e561db526f666a66a528d025f0769518ce9",
+    "generated/mcpgoat.md": "91bd71761ac38d3fb53252bdefbc3450428c4b213faa8e71143cbdf40a8eb8db"
+  }
+}

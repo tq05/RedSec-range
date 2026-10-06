@@ -1,0 +1,3232 @@
+{
+  "schema_version": 1,
+  "source_revision": "67491bee35bf6f3e38da47a094725714eafab2dd",
+  "model": "Codex-GPT-6-static-review",
+  "reasoning_effort": "high",
+  "generated_at": "2026-10-06T11:41:23+00:00",
+  "range_id": "builtin",
+  "threat_models": [
+    {
+      "key": "builtin/01/first-contact",
+      "title": "First contact -- coax the orientation flag out of the Guide",
+      "system_context": "First contact -- coax the orientation flag out of the Guide is a builtin training concept for direct-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "modules/01-intro/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/02/fingerprint-model",
+      "title": "Fingerprint the backing model/provider",
+      "system_context": "Fingerprint the backing model/provider is a builtin training concept for recon. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Excessive service, model, route, or configuration disclosure can accelerate targeted abuse and expose credentials or internal control assumptions.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Service topology and model/provider metadata",
+        "Configuration and diagnostic data",
+        "Administrative routes and version information"
+      ],
+      "trust_boundaries": [
+        "Unauthenticated caller to public API",
+        "Application error handling to internal configuration",
+        "Documented API surface to internal routes"
+      ],
+      "threat_actors": [
+        "An unauthenticated remote caller",
+        "A low-privilege tenant enumerating shared infrastructure"
+      ],
+      "abuse_preconditions": [
+        "Responses or errors reveal internal metadata beyond operational need",
+        "Route discovery and diagnostics are reachable without appropriate authorization"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller compares normal and exceptional responses to infer implementation and hidden surfaces.",
+          "impact": "The attacker gains a reliable map for later targeted attempts."
+        },
+        {
+          "scenario": "Verbose diagnostics return configuration or secret-bearing state.",
+          "impact": "Sensitive operational data crosses into an untrusted response."
+        }
+      ],
+      "secure_before_abuse": [
+        "Return a minimal, stable public error contract and keep stack, provider, model, build, and configuration details in protected telemetry.",
+        "Require strong authorization for inventory, diagnostics, schema, and administrative routes.",
+        "Apply response-field allowlists and automated secret scanning before serializing configuration or errors.",
+        "Maintain an explicit external API inventory and fail builds when undeclared routes become reachable."
+      ],
+      "detection_and_response": [
+        "Alert on route enumeration, repeated malformed requests, and diagnostic access by unusual identities.",
+        "Correlate disclosure attempts with later access to administrative or model-management surfaces."
+      ],
+      "safe_validation": [
+        "Use inert malformed requests and assert public responses contain only the documented error schema.",
+        "Compare the discovered unauthenticated route set with an approved allowlist in a disposable test deployment."
+      ],
+      "security_outcome": "Untrusted callers receive only the metadata required for the public contract, while sensitive diagnostics remain authorized and auditable.",
+      "residual_risk": [
+        "Timing, capability differences, and necessary protocol metadata can still support limited fingerprinting.",
+        "New framework defaults may add discovery or documentation routes."
+      ],
+      "evidence": [
+        {
+          "path": "modules/02-recon/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/02/enumerate-surfaces",
+      "title": "Discover an undocumented internal endpoint",
+      "system_context": "Discover an undocumented internal endpoint is a builtin training concept for recon. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Excessive service, model, route, or configuration disclosure can accelerate targeted abuse and expose credentials or internal control assumptions.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Service topology and model/provider metadata",
+        "Configuration and diagnostic data",
+        "Administrative routes and version information"
+      ],
+      "trust_boundaries": [
+        "Unauthenticated caller to public API",
+        "Application error handling to internal configuration",
+        "Documented API surface to internal routes"
+      ],
+      "threat_actors": [
+        "An unauthenticated remote caller",
+        "A low-privilege tenant enumerating shared infrastructure"
+      ],
+      "abuse_preconditions": [
+        "Responses or errors reveal internal metadata beyond operational need",
+        "Route discovery and diagnostics are reachable without appropriate authorization"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller compares normal and exceptional responses to infer implementation and hidden surfaces.",
+          "impact": "The attacker gains a reliable map for later targeted attempts."
+        },
+        {
+          "scenario": "Verbose diagnostics return configuration or secret-bearing state.",
+          "impact": "Sensitive operational data crosses into an untrusted response."
+        }
+      ],
+      "secure_before_abuse": [
+        "Return a minimal, stable public error contract and keep stack, provider, model, build, and configuration details in protected telemetry.",
+        "Require strong authorization for inventory, diagnostics, schema, and administrative routes.",
+        "Apply response-field allowlists and automated secret scanning before serializing configuration or errors.",
+        "Maintain an explicit external API inventory and fail builds when undeclared routes become reachable."
+      ],
+      "detection_and_response": [
+        "Alert on route enumeration, repeated malformed requests, and diagnostic access by unusual identities.",
+        "Correlate disclosure attempts with later access to administrative or model-management surfaces."
+      ],
+      "safe_validation": [
+        "Use inert malformed requests and assert public responses contain only the documented error schema.",
+        "Compare the discovered unauthenticated route set with an approved allowlist in a disposable test deployment."
+      ],
+      "security_outcome": "Untrusted callers receive only the metadata required for the public contract, while sensitive diagnostics remain authorized and auditable.",
+      "residual_risk": [
+        "Timing, capability differences, and necessary protocol metadata can still support limited fingerprinting.",
+        "New framework defaults may add discovery or documentation routes."
+      ],
+      "evidence": [
+        {
+          "path": "modules/02-recon/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/02/leak-config",
+      "title": "Dump service config via a verbose error",
+      "system_context": "Dump service config via a verbose error is a builtin training concept for recon. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Excessive service, model, route, or configuration disclosure can accelerate targeted abuse and expose credentials or internal control assumptions.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Service topology and model/provider metadata",
+        "Configuration and diagnostic data",
+        "Administrative routes and version information"
+      ],
+      "trust_boundaries": [
+        "Unauthenticated caller to public API",
+        "Application error handling to internal configuration",
+        "Documented API surface to internal routes"
+      ],
+      "threat_actors": [
+        "An unauthenticated remote caller",
+        "A low-privilege tenant enumerating shared infrastructure"
+      ],
+      "abuse_preconditions": [
+        "Responses or errors reveal internal metadata beyond operational need",
+        "Route discovery and diagnostics are reachable without appropriate authorization"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller compares normal and exceptional responses to infer implementation and hidden surfaces.",
+          "impact": "The attacker gains a reliable map for later targeted attempts."
+        },
+        {
+          "scenario": "Verbose diagnostics return configuration or secret-bearing state.",
+          "impact": "Sensitive operational data crosses into an untrusted response."
+        }
+      ],
+      "secure_before_abuse": [
+        "Return a minimal, stable public error contract and keep stack, provider, model, build, and configuration details in protected telemetry.",
+        "Require strong authorization for inventory, diagnostics, schema, and administrative routes.",
+        "Apply response-field allowlists and automated secret scanning before serializing configuration or errors.",
+        "Maintain an explicit external API inventory and fail builds when undeclared routes become reachable."
+      ],
+      "detection_and_response": [
+        "Alert on route enumeration, repeated malformed requests, and diagnostic access by unusual identities.",
+        "Correlate disclosure attempts with later access to administrative or model-management surfaces."
+      ],
+      "safe_validation": [
+        "Use inert malformed requests and assert public responses contain only the documented error schema.",
+        "Compare the discovered unauthenticated route set with an approved allowlist in a disposable test deployment."
+      ],
+      "security_outcome": "Untrusted callers receive only the metadata required for the public contract, while sensitive diagnostics remain authorized and auditable.",
+      "residual_risk": [
+        "Timing, capability differences, and necessary protocol metadata can still support limited fingerprinting.",
+        "New framework defaults may add discovery or documentation routes."
+      ],
+      "evidence": [
+        {
+          "path": "modules/02-recon/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/03/sys-prompt-leak",
+      "title": "Direct prompt injection -> leak the system prompt",
+      "system_context": "Direct prompt injection -> leak the system prompt is a builtin training concept for direct-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "modules/03-attacking-agents/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/03/indirect-injection",
+      "title": "Indirect prompt injection via auto-retrieved notes",
+      "system_context": "Indirect prompt injection via auto-retrieved notes is a builtin training concept for indirect-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "modules/03-attacking-agents/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/03/tool-exfil",
+      "title": "Excessive agency -> exfiltrate the mail API key",
+      "system_context": "Excessive agency -> exfiltrate the mail API key is a builtin training concept for tool-abuse. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Secrets or personal data can leak through prompts, errors, logs, completion APIs, metadata, tool chains, or over-broad responses.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "tool-execution"
+      ],
+      "assets": [
+        "API keys, tokens, credentials, and personal data",
+        "System prompts and privileged configuration",
+        "Logs, completions, model cards, and tool outputs"
+      ],
+      "trust_boundaries": [
+        "Secret store to application runtime",
+        "Application or tool output to untrusted caller",
+        "Sensitive telemetry or metadata to operators and models"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A malicious tool, model input, or content source"
+      ],
+      "abuse_preconditions": [
+        "Sensitive values are present in model-readable context, metadata, logs, or broad environment state",
+        "Response or tool policy does not minimize fields by caller and purpose"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller causes a response path to serialize sensitive context or metadata.",
+          "impact": "Credentials or protected data leave their intended trust boundary."
+        },
+        {
+          "scenario": "A tool or model with ambient access forwards data to an unauthorized destination.",
+          "impact": "The leak enables impersonation or lateral movement."
+        }
+      ],
+      "secure_before_abuse": [
+        "Keep credentials outside prompts, model cards, logs, completions, and general environment state; fetch them just in time through a scoped broker.",
+        "Apply response-field allowlists, data classification, tenant authorization, destination policy, and output minimization at the owning service.",
+        "Use short-lived, audience-bound, least-privilege credentials with rotation and revocation.",
+        "Redact sensitive fields before telemetry and prevent tool outputs from being treated as trusted instructions."
+      ],
+      "detection_and_response": [
+        "Deploy secret-pattern and canary detection at response, log, artifact, and egress boundaries with strict access controls.",
+        "Alert on unusual secret reads, completion enumeration, debug-level changes, bulk exports, and new destinations."
+      ],
+      "safe_validation": [
+        "Seed synthetic canaries and confirm unauthorized response, error, log, metadata, and completion paths never return them.",
+        "Exercise credential rotation and incident revocation with a test identity and verify old tokens stop working."
+      ],
+      "security_outcome": "Sensitive values are absent from model-readable and public channels and are released only to authorized, purpose-bound consumers.",
+      "residual_risk": [
+        "Authorized components necessarily handling plaintext remain high-value compromise targets.",
+        "Previously emitted secrets require rotation even after the disclosure path is fixed."
+      ],
+      "evidence": [
+        {
+          "path": "modules/03-attacking-agents/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/03/memory-poisoning",
+      "title": "Memory poisoning -> persistence across turns",
+      "system_context": "Memory poisoning -> persistence across turns is a builtin training concept for memory. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned or over-broad memory can persist adversarial instructions, cross identity boundaries, or disclose retained secrets in later sessions.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Long-term agent memory and user preferences",
+        "Tenant-scoped credentials and personal data",
+        "Future conversation decisions"
+      ],
+      "trust_boundaries": [
+        "Current request to persistent memory",
+        "One tenant or session to another",
+        "Stored memory to future model context"
+      ],
+      "threat_actors": [
+        "A user who can write durable memory",
+        "A compromised agent or external content source"
+      ],
+      "abuse_preconditions": [
+        "Untrusted content can be persisted without provenance, scope, or review",
+        "Future turns retrieve memory into an authoritative context position"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A crafted entry is saved and repeatedly reintroduced into future contexts.",
+          "impact": "The attacker gains persistence beyond the initiating conversation."
+        },
+        {
+          "scenario": "Memory retrieval is insufficiently scoped by tenant or purpose.",
+          "impact": "One user’s sensitive state becomes visible or influential elsewhere."
+        }
+      ],
+      "secure_before_abuse": [
+        "Partition memory by tenant, user, agent, purpose, and retention class with server-side authorization on every read and write.",
+        "Store provenance, author, timestamp, and confidence; prevent untrusted entries from becoming policy or tool authority.",
+        "Require review or bounded schemas for durable high-impact memories and support revocation and expiration.",
+        "Encrypt sensitive memory and exclude credentials from model-readable stores."
+      ],
+      "detection_and_response": [
+        "Alert on cross-tenant retrieval attempts, rapid propagation, policy-like entries, and unusual durable-write volume.",
+        "Maintain an audit trail for memory creation, mutation, retrieval, and deletion and support incident-wide purge."
+      ],
+      "safe_validation": [
+        "Use synthetic tenants to confirm writes and retrieval remain isolated across sessions and identities.",
+        "Insert inert policy-shaped text and verify it is labeled as untrusted data and cannot authorize an effect."
+      ],
+      "security_outcome": "Memory remains scoped, attributable, revocable, and unable to grant authority across turns or tenants.",
+      "residual_risk": [
+        "Legitimate but misleading memories can influence model quality without violating access control.",
+        "Backups and derived indexes can delay complete deletion."
+      ],
+      "evidence": [
+        {
+          "path": "modules/03-attacking-agents/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/04/trust-exploitation",
+      "title": "Transitive trust -> reviewer acts on your ticket",
+      "system_context": "Transitive trust -> reviewer acts on your ticket is a builtin training concept for a2a-trust. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Weak identity, message integrity, or delegation scoping can let an agent impersonate a trusted peer, smuggle session state, or exercise transitive authority.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "tool-execution",
+        "logging-detection"
+      ],
+      "assets": [
+        "Agent identities, cards, and delegated authority",
+        "A2A messages, tasks, and context state",
+        "Protected actions reached through agent delegation"
+      ],
+      "trust_boundaries": [
+        "Remote agent to receiving agent",
+        "Agent Card discovery to runtime identity",
+        "Delegated task to protected tool or data"
+      ],
+      "threat_actors": [
+        "A malicious or impersonated peer agent",
+        "A compromised trusted agent in a delegation chain"
+      ],
+      "abuse_preconditions": [
+        "Messages or context identifiers are accepted without strong peer and task binding",
+        "Transitive trust grants a downstream agent more authority than the originating principal"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A forged or replayed message is associated with a trusted agent or task.",
+          "impact": "The receiver performs an unauthorized workflow step."
+        },
+        {
+          "scenario": "A valid agent delegates ambient authority without preserving the originating principal and constraints.",
+          "impact": "A downstream action exceeds the user’s intended scope."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate peers cryptographically and bind Agent Cards, keys, audience, issuer, and service endpoints through trusted discovery.",
+        "Sign messages and bind task, context, sender, recipient, nonce, expiry, and replay state before processing.",
+        "Propagate the originating principal and attenuated capability through every delegation; re-authorize each protected effect.",
+        "Partition task state by tenant and peer, and require approval for sensitive cross-agent actions."
+      ],
+      "detection_and_response": [
+        "Record peer identity, card/key version, task and context identifiers, delegation chain, policy decision, and final effect.",
+        "Alert on replay, identity-card drift, impossible task transitions, context reuse across tenants, and unusual delegation depth."
+      ],
+      "safe_validation": [
+        "Use synthetic peers to confirm unsigned, expired, replayed, wrong-audience, and cross-context messages fail closed.",
+        "Exercise a benign multi-agent workflow and verify the least-privileged originating identity is preserved at the final effect."
+      ],
+      "security_outcome": "Every A2A message and delegated effect is bound to an authenticated peer, scoped task, originating principal, and replay-safe context.",
+      "residual_risk": [
+        "A fully compromised authorized peer can issue valid but malicious requests within its remaining scope.",
+        "Federated key rotation and trust-store drift can create temporary acceptance gaps."
+      ],
+      "evidence": [
+        {
+          "path": "modules/04-multi-agent-a2a/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/04/message-manipulation",
+      "title": "Send an unsigned A2A JSON-RPC message",
+      "system_context": "Send an unsigned A2A JSON-RPC message is a builtin training concept for a2a-message/send. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Weak identity, message integrity, or delegation scoping can let an agent impersonate a trusted peer, smuggle session state, or exercise transitive authority.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "tool-execution",
+        "logging-detection"
+      ],
+      "assets": [
+        "Agent identities, cards, and delegated authority",
+        "A2A messages, tasks, and context state",
+        "Protected actions reached through agent delegation"
+      ],
+      "trust_boundaries": [
+        "Remote agent to receiving agent",
+        "Agent Card discovery to runtime identity",
+        "Delegated task to protected tool or data"
+      ],
+      "threat_actors": [
+        "A malicious or impersonated peer agent",
+        "A compromised trusted agent in a delegation chain"
+      ],
+      "abuse_preconditions": [
+        "Messages or context identifiers are accepted without strong peer and task binding",
+        "Transitive trust grants a downstream agent more authority than the originating principal"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A forged or replayed message is associated with a trusted agent or task.",
+          "impact": "The receiver performs an unauthorized workflow step."
+        },
+        {
+          "scenario": "A valid agent delegates ambient authority without preserving the originating principal and constraints.",
+          "impact": "A downstream action exceeds the user’s intended scope."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate peers cryptographically and bind Agent Cards, keys, audience, issuer, and service endpoints through trusted discovery.",
+        "Sign messages and bind task, context, sender, recipient, nonce, expiry, and replay state before processing.",
+        "Propagate the originating principal and attenuated capability through every delegation; re-authorize each protected effect.",
+        "Partition task state by tenant and peer, and require approval for sensitive cross-agent actions."
+      ],
+      "detection_and_response": [
+        "Record peer identity, card/key version, task and context identifiers, delegation chain, policy decision, and final effect.",
+        "Alert on replay, identity-card drift, impossible task transitions, context reuse across tenants, and unusual delegation depth."
+      ],
+      "safe_validation": [
+        "Use synthetic peers to confirm unsigned, expired, replayed, wrong-audience, and cross-context messages fail closed.",
+        "Exercise a benign multi-agent workflow and verify the least-privileged originating identity is preserved at the final effect."
+      ],
+      "security_outcome": "Every A2A message and delegated effect is bound to an authenticated peer, scoped task, originating principal, and replay-safe context.",
+      "residual_risk": [
+        "A fully compromised authorized peer can issue valid but malicious requests within its remaining scope.",
+        "Federated key rotation and trust-store drift can create temporary acceptance gaps."
+      ],
+      "evidence": [
+        {
+          "path": "modules/04-multi-agent-a2a/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/04/agent-impersonation",
+      "title": "Impersonate a trusted approver",
+      "system_context": "Impersonate a trusted approver is a builtin training concept for a2a-message-identity. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Weak identity, message integrity, or delegation scoping can let an agent impersonate a trusted peer, smuggle session state, or exercise transitive authority.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "tool-execution",
+        "logging-detection"
+      ],
+      "assets": [
+        "Agent identities, cards, and delegated authority",
+        "A2A messages, tasks, and context state",
+        "Protected actions reached through agent delegation"
+      ],
+      "trust_boundaries": [
+        "Remote agent to receiving agent",
+        "Agent Card discovery to runtime identity",
+        "Delegated task to protected tool or data"
+      ],
+      "threat_actors": [
+        "A malicious or impersonated peer agent",
+        "A compromised trusted agent in a delegation chain"
+      ],
+      "abuse_preconditions": [
+        "Messages or context identifiers are accepted without strong peer and task binding",
+        "Transitive trust grants a downstream agent more authority than the originating principal"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A forged or replayed message is associated with a trusted agent or task.",
+          "impact": "The receiver performs an unauthorized workflow step."
+        },
+        {
+          "scenario": "A valid agent delegates ambient authority without preserving the originating principal and constraints.",
+          "impact": "A downstream action exceeds the user’s intended scope."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate peers cryptographically and bind Agent Cards, keys, audience, issuer, and service endpoints through trusted discovery.",
+        "Sign messages and bind task, context, sender, recipient, nonce, expiry, and replay state before processing.",
+        "Propagate the originating principal and attenuated capability through every delegation; re-authorize each protected effect.",
+        "Partition task state by tenant and peer, and require approval for sensitive cross-agent actions."
+      ],
+      "detection_and_response": [
+        "Record peer identity, card/key version, task and context identifiers, delegation chain, policy decision, and final effect.",
+        "Alert on replay, identity-card drift, impossible task transitions, context reuse across tenants, and unusual delegation depth."
+      ],
+      "safe_validation": [
+        "Use synthetic peers to confirm unsigned, expired, replayed, wrong-audience, and cross-context messages fail closed.",
+        "Exercise a benign multi-agent workflow and verify the least-privileged originating identity is preserved at the final effect."
+      ],
+      "security_outcome": "Every A2A message and delegated effect is bound to an authenticated peer, scoped task, originating principal, and replay-safe context.",
+      "residual_risk": [
+        "A fully compromised authorized peer can issue valid but malicious requests within its remaining scope.",
+        "Federated key rotation and trust-store drift can create temporary acceptance gaps."
+      ],
+      "evidence": [
+        {
+          "path": "modules/04-multi-agent-a2a/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/04/session-smuggling",
+      "title": "Agent session smuggling across a stateful A2A session",
+      "system_context": "Agent session smuggling across a stateful A2A session is a builtin training concept for a2a-context. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Weak identity, message integrity, or delegation scoping can let an agent impersonate a trusted peer, smuggle session state, or exercise transitive authority.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "tool-execution",
+        "logging-detection"
+      ],
+      "assets": [
+        "Agent identities, cards, and delegated authority",
+        "A2A messages, tasks, and context state",
+        "Protected actions reached through agent delegation"
+      ],
+      "trust_boundaries": [
+        "Remote agent to receiving agent",
+        "Agent Card discovery to runtime identity",
+        "Delegated task to protected tool or data"
+      ],
+      "threat_actors": [
+        "A malicious or impersonated peer agent",
+        "A compromised trusted agent in a delegation chain"
+      ],
+      "abuse_preconditions": [
+        "Messages or context identifiers are accepted without strong peer and task binding",
+        "Transitive trust grants a downstream agent more authority than the originating principal"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A forged or replayed message is associated with a trusted agent or task.",
+          "impact": "The receiver performs an unauthorized workflow step."
+        },
+        {
+          "scenario": "A valid agent delegates ambient authority without preserving the originating principal and constraints.",
+          "impact": "A downstream action exceeds the user’s intended scope."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate peers cryptographically and bind Agent Cards, keys, audience, issuer, and service endpoints through trusted discovery.",
+        "Sign messages and bind task, context, sender, recipient, nonce, expiry, and replay state before processing.",
+        "Propagate the originating principal and attenuated capability through every delegation; re-authorize each protected effect.",
+        "Partition task state by tenant and peer, and require approval for sensitive cross-agent actions."
+      ],
+      "detection_and_response": [
+        "Record peer identity, card/key version, task and context identifiers, delegation chain, policy decision, and final effect.",
+        "Alert on replay, identity-card drift, impossible task transitions, context reuse across tenants, and unusual delegation depth."
+      ],
+      "safe_validation": [
+        "Use synthetic peers to confirm unsigned, expired, replayed, wrong-audience, and cross-context messages fail closed.",
+        "Exercise a benign multi-agent workflow and verify the least-privileged originating identity is preserved at the final effect."
+      ],
+      "security_outcome": "Every A2A message and delegated effect is bound to an authenticated peer, scoped task, originating principal, and replay-safe context.",
+      "residual_risk": [
+        "A fully compromised authorized peer can issue valid but malicious requests within its remaining scope.",
+        "Federated key rotation and trust-store drift can create temporary acceptance gaps."
+      ],
+      "evidence": [
+        {
+          "path": "modules/04-multi-agent-a2a/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/05/knowledge-poisoning",
+      "title": "Poison the knowledge base",
+      "system_context": "Poison the knowledge base is a builtin training concept for rag-source. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned, manipulated, or falsely attributed retrieval results can steer model decisions and make untrusted content appear authoritative.",
+      "risk_rating": "medium",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Knowledge corpus and ingestion pipeline",
+        "Retrieval ranking and citation provenance",
+        "Answers and decisions grounded in retrieved content"
+      ],
+      "trust_boundaries": [
+        "Content contributor to indexed corpus",
+        "Retriever results to model context",
+        "Citation metadata to user trust decision"
+      ],
+      "threat_actors": [
+        "A malicious document contributor",
+        "A tenant attempting to influence another tenant’s retrieval"
+      ],
+      "abuse_preconditions": [
+        "Content can enter the corpus without provenance, authorization, or quality gates",
+        "Ranking or citation display is trusted without object-level validation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "An attacker introduces or optimizes content so it dominates a target query.",
+          "impact": "The model is grounded in attacker-controlled claims or instructions."
+        },
+        {
+          "scenario": "Citation metadata is accepted independently of the retrieved object’s verified provenance.",
+          "impact": "Users attribute malicious output to a trusted source."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authorize ingestion by tenant and source, verify provenance, scan content, and preserve immutable origin metadata through chunking and indexing.",
+        "Separate retrieved data from instructions and apply effect-layer authorization to any model-proposed action.",
+        "Use ranking diversity, source reputation, freshness limits, and anomaly controls rather than similarity alone.",
+        "Render citations from server-verified document identifiers and enforce tenant filtering before retrieval."
+      ],
+      "detection_and_response": [
+        "Monitor ingestion changes, source concentration, ranking shifts, duplicate clusters, and cross-tenant filter failures.",
+        "Support rapid quarantine and re-indexing of a compromised source while preserving audit evidence."
+      ],
+      "safe_validation": [
+        "Add benign canary documents from untrusted and trusted sources and assert provenance and tenant filters survive retrieval.",
+        "Perturb synthetic ranking inputs and verify one low-trust source cannot monopolize results or forge citation identity."
+      ],
+      "security_outcome": "Retrieved content remains attributable and tenant-scoped, and cannot acquire policy authority or a trusted citation through ranking alone.",
+      "residual_risk": [
+        "Factually plausible poisoning can evade automated content review.",
+        "Embedding and ranking changes can alter exposure without an obvious code change."
+      ],
+      "evidence": [
+        {
+          "path": "modules/05-rag-pipelines/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/05/retrieval-manipulation",
+      "title": "Out-rank the real documents for a victim query",
+      "system_context": "Out-rank the real documents for a victim query is a builtin training concept for rag-retrieval. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned, manipulated, or falsely attributed retrieval results can steer model decisions and make untrusted content appear authoritative.",
+      "risk_rating": "medium",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Knowledge corpus and ingestion pipeline",
+        "Retrieval ranking and citation provenance",
+        "Answers and decisions grounded in retrieved content"
+      ],
+      "trust_boundaries": [
+        "Content contributor to indexed corpus",
+        "Retriever results to model context",
+        "Citation metadata to user trust decision"
+      ],
+      "threat_actors": [
+        "A malicious document contributor",
+        "A tenant attempting to influence another tenant’s retrieval"
+      ],
+      "abuse_preconditions": [
+        "Content can enter the corpus without provenance, authorization, or quality gates",
+        "Ranking or citation display is trusted without object-level validation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "An attacker introduces or optimizes content so it dominates a target query.",
+          "impact": "The model is grounded in attacker-controlled claims or instructions."
+        },
+        {
+          "scenario": "Citation metadata is accepted independently of the retrieved object’s verified provenance.",
+          "impact": "Users attribute malicious output to a trusted source."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authorize ingestion by tenant and source, verify provenance, scan content, and preserve immutable origin metadata through chunking and indexing.",
+        "Separate retrieved data from instructions and apply effect-layer authorization to any model-proposed action.",
+        "Use ranking diversity, source reputation, freshness limits, and anomaly controls rather than similarity alone.",
+        "Render citations from server-verified document identifiers and enforce tenant filtering before retrieval."
+      ],
+      "detection_and_response": [
+        "Monitor ingestion changes, source concentration, ranking shifts, duplicate clusters, and cross-tenant filter failures.",
+        "Support rapid quarantine and re-indexing of a compromised source while preserving audit evidence."
+      ],
+      "safe_validation": [
+        "Add benign canary documents from untrusted and trusted sources and assert provenance and tenant filters survive retrieval.",
+        "Perturb synthetic ranking inputs and verify one low-trust source cannot monopolize results or forge citation identity."
+      ],
+      "security_outcome": "Retrieved content remains attributable and tenant-scoped, and cannot acquire policy authority or a trusted citation through ranking alone.",
+      "residual_risk": [
+        "Factually plausible poisoning can evade automated content review.",
+        "Embedding and ranking changes can alter exposure without an obvious code change."
+      ],
+      "evidence": [
+        {
+          "path": "modules/05-rag-pipelines/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/05/citation-spoofing",
+      "title": "Spoof a trusted citation",
+      "system_context": "Spoof a trusted citation is a builtin training concept for rag-trust. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned, manipulated, or falsely attributed retrieval results can steer model decisions and make untrusted content appear authoritative.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Knowledge corpus and ingestion pipeline",
+        "Retrieval ranking and citation provenance",
+        "Answers and decisions grounded in retrieved content"
+      ],
+      "trust_boundaries": [
+        "Content contributor to indexed corpus",
+        "Retriever results to model context",
+        "Citation metadata to user trust decision"
+      ],
+      "threat_actors": [
+        "A malicious document contributor",
+        "A tenant attempting to influence another tenant’s retrieval"
+      ],
+      "abuse_preconditions": [
+        "Content can enter the corpus without provenance, authorization, or quality gates",
+        "Ranking or citation display is trusted without object-level validation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "An attacker introduces or optimizes content so it dominates a target query.",
+          "impact": "The model is grounded in attacker-controlled claims or instructions."
+        },
+        {
+          "scenario": "Citation metadata is accepted independently of the retrieved object’s verified provenance.",
+          "impact": "Users attribute malicious output to a trusted source."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authorize ingestion by tenant and source, verify provenance, scan content, and preserve immutable origin metadata through chunking and indexing.",
+        "Separate retrieved data from instructions and apply effect-layer authorization to any model-proposed action.",
+        "Use ranking diversity, source reputation, freshness limits, and anomaly controls rather than similarity alone.",
+        "Render citations from server-verified document identifiers and enforce tenant filtering before retrieval."
+      ],
+      "detection_and_response": [
+        "Monitor ingestion changes, source concentration, ranking shifts, duplicate clusters, and cross-tenant filter failures.",
+        "Support rapid quarantine and re-indexing of a compromised source while preserving audit evidence."
+      ],
+      "safe_validation": [
+        "Add benign canary documents from untrusted and trusted sources and assert provenance and tenant filters survive retrieval.",
+        "Perturb synthetic ranking inputs and verify one low-trust source cannot monopolize results or forge citation identity."
+      ],
+      "security_outcome": "Retrieved content remains attributable and tenant-scoped, and cannot acquire policy authority or a trusted citation through ranking alone.",
+      "residual_risk": [
+        "Factually plausible poisoning can evade automated content review.",
+        "Embedding and ranking changes can alter exposure without an obvious code change."
+      ],
+      "evidence": [
+        {
+          "path": "modules/05-rag-pipelines/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/06/embedding-inversion",
+      "title": "Reconstruct source text with a reference corpus",
+      "system_context": "Reconstruct source text with a reference corpus is a builtin training concept for embedding-inversion. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adaptive vector queries can reveal source content or membership, while embedding collisions can bypass controls that treat semantic similarity as authorization.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "resource-governance",
+        "logging-detection"
+      ],
+      "assets": [
+        "Embedding vectors and source records",
+        "Membership and tenant privacy",
+        "Similarity-based security decisions"
+      ],
+      "trust_boundaries": [
+        "Query client to embedding service",
+        "Vector index to source text",
+        "Similarity score to authorization or filtering decision"
+      ],
+      "threat_actors": [
+        "A curious or malicious query client",
+        "A tenant probing a shared vector index"
+      ],
+      "abuse_preconditions": [
+        "The service exposes precise vectors, scores, or unrestricted adaptive queries",
+        "Similarity or text checks are used as a security boundary"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller makes correlated queries and compares detailed outputs against reference data.",
+          "impact": "Sensitive source content or membership is inferred."
+        },
+        {
+          "scenario": "A crafted input is semantically close while evading a text-layer check.",
+          "impact": "A similarity-based gate admits content the policy intended to block."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authorize vector and source access by tenant and purpose; avoid exposing raw vectors or unnecessary score precision.",
+        "Rate-limit and budget adaptive queries, and add privacy-preserving aggregation where the use case permits.",
+        "Never use embeddings as the sole authentication, authorization, or safety control; validate protected properties deterministically.",
+        "Separate tenant indexes or enforce mandatory pre-retrieval filters with audited object identifiers."
+      ],
+      "detection_and_response": [
+        "Detect repeated near-neighbor probes, systematic score sweeps, and cross-tenant query patterns.",
+        "Record model/index versions so privacy or collision incidents can be scoped and reproduced."
+      ],
+      "safe_validation": [
+        "Use synthetic private records to measure whether an unauthorized client receives vectors, membership signals, or source text.",
+        "Create benign paraphrase and collision cases and assert deterministic policy checks remain authoritative."
+      ],
+      "security_outcome": "Vector interfaces reveal only purpose-limited results, and semantic similarity never substitutes for a security decision.",
+      "residual_risk": [
+        "Useful similarity responses retain some statistical leakage.",
+        "Model updates can change inversion, membership, and collision behavior."
+      ],
+      "evidence": [
+        {
+          "path": "modules/06-embeddings/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/06/membership-inference",
+      "title": "Confirm a record is present in the store",
+      "system_context": "Confirm a record is present in the store is a builtin training concept for embedding-mia. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adaptive vector queries can reveal source content or membership, while embedding collisions can bypass controls that treat semantic similarity as authorization.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "resource-governance",
+        "logging-detection"
+      ],
+      "assets": [
+        "Embedding vectors and source records",
+        "Membership and tenant privacy",
+        "Similarity-based security decisions"
+      ],
+      "trust_boundaries": [
+        "Query client to embedding service",
+        "Vector index to source text",
+        "Similarity score to authorization or filtering decision"
+      ],
+      "threat_actors": [
+        "A curious or malicious query client",
+        "A tenant probing a shared vector index"
+      ],
+      "abuse_preconditions": [
+        "The service exposes precise vectors, scores, or unrestricted adaptive queries",
+        "Similarity or text checks are used as a security boundary"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller makes correlated queries and compares detailed outputs against reference data.",
+          "impact": "Sensitive source content or membership is inferred."
+        },
+        {
+          "scenario": "A crafted input is semantically close while evading a text-layer check.",
+          "impact": "A similarity-based gate admits content the policy intended to block."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authorize vector and source access by tenant and purpose; avoid exposing raw vectors or unnecessary score precision.",
+        "Rate-limit and budget adaptive queries, and add privacy-preserving aggregation where the use case permits.",
+        "Never use embeddings as the sole authentication, authorization, or safety control; validate protected properties deterministically.",
+        "Separate tenant indexes or enforce mandatory pre-retrieval filters with audited object identifiers."
+      ],
+      "detection_and_response": [
+        "Detect repeated near-neighbor probes, systematic score sweeps, and cross-tenant query patterns.",
+        "Record model/index versions so privacy or collision incidents can be scoped and reproduced."
+      ],
+      "safe_validation": [
+        "Use synthetic private records to measure whether an unauthorized client receives vectors, membership signals, or source text.",
+        "Create benign paraphrase and collision cases and assert deterministic policy checks remain authoritative."
+      ],
+      "security_outcome": "Vector interfaces reveal only purpose-limited results, and semantic similarity never substitutes for a security decision.",
+      "residual_risk": [
+        "Useful similarity responses retain some statistical leakage.",
+        "Model updates can change inversion, membership, and collision behavior."
+      ],
+      "evidence": [
+        {
+          "path": "modules/06-embeddings/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/06/embedding-collision",
+      "title": "Bypass a text check via an embedding collision",
+      "system_context": "Bypass a text check via an embedding collision is a builtin training concept for embedding-collision. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adaptive vector queries can reveal source content or membership, while embedding collisions can bypass controls that treat semantic similarity as authorization.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "resource-governance",
+        "logging-detection"
+      ],
+      "assets": [
+        "Embedding vectors and source records",
+        "Membership and tenant privacy",
+        "Similarity-based security decisions"
+      ],
+      "trust_boundaries": [
+        "Query client to embedding service",
+        "Vector index to source text",
+        "Similarity score to authorization or filtering decision"
+      ],
+      "threat_actors": [
+        "A curious or malicious query client",
+        "A tenant probing a shared vector index"
+      ],
+      "abuse_preconditions": [
+        "The service exposes precise vectors, scores, or unrestricted adaptive queries",
+        "Similarity or text checks are used as a security boundary"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller makes correlated queries and compares detailed outputs against reference data.",
+          "impact": "Sensitive source content or membership is inferred."
+        },
+        {
+          "scenario": "A crafted input is semantically close while evading a text-layer check.",
+          "impact": "A similarity-based gate admits content the policy intended to block."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authorize vector and source access by tenant and purpose; avoid exposing raw vectors or unnecessary score precision.",
+        "Rate-limit and budget adaptive queries, and add privacy-preserving aggregation where the use case permits.",
+        "Never use embeddings as the sole authentication, authorization, or safety control; validate protected properties deterministically.",
+        "Separate tenant indexes or enforce mandatory pre-retrieval filters with audited object identifiers."
+      ],
+      "detection_and_response": [
+        "Detect repeated near-neighbor probes, systematic score sweeps, and cross-tenant query patterns.",
+        "Record model/index versions so privacy or collision incidents can be scoped and reproduced."
+      ],
+      "safe_validation": [
+        "Use synthetic private records to measure whether an unauthorized client receives vectors, membership signals, or source text.",
+        "Create benign paraphrase and collision cases and assert deterministic policy checks remain authoritative."
+      ],
+      "security_outcome": "Vector interfaces reveal only purpose-limited results, and semantic similarity never substitutes for a security decision.",
+      "residual_risk": [
+        "Useful similarity responses retain some statistical leakage.",
+        "Model updates can change inversion, membership, and collision behavior."
+      ],
+      "evidence": [
+        {
+          "path": "modules/06-embeddings/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/tool-poisoning",
+      "title": "tools: tool-description poisoning hijacks the host",
+      "system_context": "tools: tool-description poisoning hijacks the host is a builtin training concept for tools. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/resource-traversal",
+      "title": "resources: path traversal in resources/read",
+      "system_context": "resources: path traversal in resources/read is a builtin training concept for resources. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Improper path canonicalization and root enforcement can expose or modify files outside the authorized workspace.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Workspace files and declared roots",
+        "Host filesystem and credentials",
+        "File-operation audit trail"
+      ],
+      "trust_boundaries": [
+        "Untrusted path or URI to filesystem resolver",
+        "Declared workspace root to host filesystem",
+        "Tool identity to file authorization"
+      ],
+      "threat_actors": [
+        "A remote tool caller",
+        "A prompt-influenced agent using a file tool"
+      ],
+      "abuse_preconditions": [
+        "Path resolution accepts traversal, absolute paths, links, or ambiguous encodings",
+        "The file service runs with access beyond the caller’s allowed root"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller supplies an alternate path representation that resolves beyond the declared root.",
+          "impact": "Sensitive host data is read or modified."
+        },
+        {
+          "scenario": "A symbolic link or race changes the resolved object after validation.",
+          "impact": "A previously safe check authorizes a different filesystem target."
+        }
+      ],
+      "secure_before_abuse": [
+        "Resolve paths against a server-selected root, reject absolute and parent traversal forms, and verify the final opened object remains beneath that root.",
+        "Use descriptor-relative filesystem APIs and avoid check-then-open races and link following for protected operations.",
+        "Run the service as a dedicated non-root identity with a read-only filesystem and only the required workspace mounted.",
+        "Authorize file operations by caller, tenant, action, and object; keep roots server-side rather than trusting client declarations."
+      ],
+      "detection_and_response": [
+        "Log normalized object identifiers and denied root escapes without recording sensitive file content.",
+        "Alert on repeated invalid paths, link-related failures, and access to sensitive filename classes."
+      ],
+      "safe_validation": [
+        "Use a temporary synthetic tree to confirm parent, absolute, encoded, and link-based escape cases fail closed.",
+        "Verify the runtime identity cannot read an unrelated canary file even if application validation is bypassed."
+      ],
+      "security_outcome": "File operations remain inside an authorized root and are constrained by both application checks and operating-system permissions.",
+      "residual_risk": [
+        "Platform-specific path and link semantics require regression coverage.",
+        "Writable shared volumes can reintroduce time-of-check/time-of-use races."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/prompt-injection",
+      "title": "prompts: argument injection discloses a privileged template block",
+      "system_context": "prompts: argument injection discloses a privileged template block is a builtin training concept for prompts. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/sampling-abuse",
+      "title": "sampling: server-initiated sampling exfiltrates host context",
+      "system_context": "sampling: server-initiated sampling exfiltrates host context is a builtin training concept for sampling. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/roots-bypass",
+      "title": "roots: declared client roots are not enforced",
+      "system_context": "roots: declared client roots are not enforced is a builtin training concept for roots. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Improper path canonicalization and root enforcement can expose or modify files outside the authorized workspace.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Workspace files and declared roots",
+        "Host filesystem and credentials",
+        "File-operation audit trail"
+      ],
+      "trust_boundaries": [
+        "Untrusted path or URI to filesystem resolver",
+        "Declared workspace root to host filesystem",
+        "Tool identity to file authorization"
+      ],
+      "threat_actors": [
+        "A remote tool caller",
+        "A prompt-influenced agent using a file tool"
+      ],
+      "abuse_preconditions": [
+        "Path resolution accepts traversal, absolute paths, links, or ambiguous encodings",
+        "The file service runs with access beyond the caller’s allowed root"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller supplies an alternate path representation that resolves beyond the declared root.",
+          "impact": "Sensitive host data is read or modified."
+        },
+        {
+          "scenario": "A symbolic link or race changes the resolved object after validation.",
+          "impact": "A previously safe check authorizes a different filesystem target."
+        }
+      ],
+      "secure_before_abuse": [
+        "Resolve paths against a server-selected root, reject absolute and parent traversal forms, and verify the final opened object remains beneath that root.",
+        "Use descriptor-relative filesystem APIs and avoid check-then-open races and link following for protected operations.",
+        "Run the service as a dedicated non-root identity with a read-only filesystem and only the required workspace mounted.",
+        "Authorize file operations by caller, tenant, action, and object; keep roots server-side rather than trusting client declarations."
+      ],
+      "detection_and_response": [
+        "Log normalized object identifiers and denied root escapes without recording sensitive file content.",
+        "Alert on repeated invalid paths, link-related failures, and access to sensitive filename classes."
+      ],
+      "safe_validation": [
+        "Use a temporary synthetic tree to confirm parent, absolute, encoded, and link-based escape cases fail closed.",
+        "Verify the runtime identity cannot read an unrelated canary file even if application validation is bypassed."
+      ],
+      "security_outcome": "File operations remain inside an authorized root and are constrained by both application checks and operating-system permissions.",
+      "residual_risk": [
+        "Platform-specific path and link semantics require regression coverage.",
+        "Writable shared volumes can reintroduce time-of-check/time-of-use races."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/elicitation-phishing",
+      "title": "elicitation: server elicits credentials the host auto-answers",
+      "system_context": "elicitation: server elicits credentials the host auto-answers is a builtin training concept for elicitation. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/logging-leak",
+      "title": "logging: debug log notifications leak a session token",
+      "system_context": "logging: debug log notifications leak a session token is a builtin training concept for logging. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Secrets or personal data can leak through prompts, errors, logs, completion APIs, metadata, tool chains, or over-broad responses.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "tool-execution"
+      ],
+      "assets": [
+        "API keys, tokens, credentials, and personal data",
+        "System prompts and privileged configuration",
+        "Logs, completions, model cards, and tool outputs"
+      ],
+      "trust_boundaries": [
+        "Secret store to application runtime",
+        "Application or tool output to untrusted caller",
+        "Sensitive telemetry or metadata to operators and models"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A malicious tool, model input, or content source"
+      ],
+      "abuse_preconditions": [
+        "Sensitive values are present in model-readable context, metadata, logs, or broad environment state",
+        "Response or tool policy does not minimize fields by caller and purpose"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller causes a response path to serialize sensitive context or metadata.",
+          "impact": "Credentials or protected data leave their intended trust boundary."
+        },
+        {
+          "scenario": "A tool or model with ambient access forwards data to an unauthorized destination.",
+          "impact": "The leak enables impersonation or lateral movement."
+        }
+      ],
+      "secure_before_abuse": [
+        "Keep credentials outside prompts, model cards, logs, completions, and general environment state; fetch them just in time through a scoped broker.",
+        "Apply response-field allowlists, data classification, tenant authorization, destination policy, and output minimization at the owning service.",
+        "Use short-lived, audience-bound, least-privilege credentials with rotation and revocation.",
+        "Redact sensitive fields before telemetry and prevent tool outputs from being treated as trusted instructions."
+      ],
+      "detection_and_response": [
+        "Deploy secret-pattern and canary detection at response, log, artifact, and egress boundaries with strict access controls.",
+        "Alert on unusual secret reads, completion enumeration, debug-level changes, bulk exports, and new destinations."
+      ],
+      "safe_validation": [
+        "Seed synthetic canaries and confirm unauthorized response, error, log, metadata, and completion paths never return them.",
+        "Exercise credential rotation and incident revocation with a test identity and verify old tokens stop working."
+      ],
+      "security_outcome": "Sensitive values are absent from model-readable and public channels and are released only to authorized, purpose-bound consumers.",
+      "residual_risk": [
+        "Authorized components necessarily handling plaintext remain high-value compromise targets.",
+        "Previously emitted secrets require rotation even after the disclosure path is fixed."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/completion-leak",
+      "title": "completion: autocompletion enumerates secret values",
+      "system_context": "completion: autocompletion enumerates secret values is a builtin training concept for completion. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Secrets or personal data can leak through prompts, errors, logs, completion APIs, metadata, tool chains, or over-broad responses.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "tool-execution"
+      ],
+      "assets": [
+        "API keys, tokens, credentials, and personal data",
+        "System prompts and privileged configuration",
+        "Logs, completions, model cards, and tool outputs"
+      ],
+      "trust_boundaries": [
+        "Secret store to application runtime",
+        "Application or tool output to untrusted caller",
+        "Sensitive telemetry or metadata to operators and models"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A malicious tool, model input, or content source"
+      ],
+      "abuse_preconditions": [
+        "Sensitive values are present in model-readable context, metadata, logs, or broad environment state",
+        "Response or tool policy does not minimize fields by caller and purpose"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller causes a response path to serialize sensitive context or metadata.",
+          "impact": "Credentials or protected data leave their intended trust boundary."
+        },
+        {
+          "scenario": "A tool or model with ambient access forwards data to an unauthorized destination.",
+          "impact": "The leak enables impersonation or lateral movement."
+        }
+      ],
+      "secure_before_abuse": [
+        "Keep credentials outside prompts, model cards, logs, completions, and general environment state; fetch them just in time through a scoped broker.",
+        "Apply response-field allowlists, data classification, tenant authorization, destination policy, and output minimization at the owning service.",
+        "Use short-lived, audience-bound, least-privilege credentials with rotation and revocation.",
+        "Redact sensitive fields before telemetry and prevent tool outputs from being treated as trusted instructions."
+      ],
+      "detection_and_response": [
+        "Deploy secret-pattern and canary detection at response, log, artifact, and egress boundaries with strict access controls.",
+        "Alert on unusual secret reads, completion enumeration, debug-level changes, bulk exports, and new destinations."
+      ],
+      "safe_validation": [
+        "Seed synthetic canaries and confirm unauthorized response, error, log, metadata, and completion paths never return them.",
+        "Exercise credential rotation and incident revocation with a test identity and verify old tokens stop working."
+      ],
+      "security_outcome": "Sensitive values are absent from model-readable and public channels and are released only to authorized, purpose-bound consumers.",
+      "residual_risk": [
+        "Authorized components necessarily handling plaintext remain high-value compromise targets.",
+        "Previously emitted secrets require rotation even after the disclosure path is fixed."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/rug-pull",
+      "title": "tools: rug-pull -- tool behaviour changes after approval",
+      "system_context": "tools: rug-pull -- tool behaviour changes after approval is a builtin training concept for tools (rug-pull). The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/command-injection",
+      "title": "tools: command injection -> remote code execution",
+      "system_context": "tools: command injection -> remote code execution is a builtin training concept for tools (rce). The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Unsafe interpretation of tool input can alter a command, query, template, document parser, or object graph and execute unauthorized operations.",
+      "risk_rating": "critical",
+      "control_families": [
+        "tool-execution",
+        "input-content",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Application process and runtime identity",
+        "Database, template, XML, or command interpreter",
+        "Host files, credentials, and downstream services"
+      ],
+      "trust_boundaries": [
+        "Untrusted tool argument to interpreter",
+        "Application process to operating system or data engine",
+        "Runtime identity to protected resources"
+      ],
+      "threat_actors": [
+        "A caller controlling a tool parameter",
+        "A prompt-influenced agent invoking an unsafe sink"
+      ],
+      "abuse_preconditions": [
+        "Untrusted data is concatenated into an executable language or unsafe deserializer",
+        "The runtime identity has authority beyond the intended operation"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Attacker-controlled data crosses into an interpreter without parameterization or a safe grammar.",
+          "impact": "The operation escapes its intended data context."
+        },
+        {
+          "scenario": "The compromised component uses ambient filesystem, network, or credential access.",
+          "impact": "Code execution or data access expands to the host or adjacent services."
+        }
+      ],
+      "secure_before_abuse": [
+        "Remove interpreter boundaries where possible; otherwise use parameterized APIs, fixed operations, strict schemas, and context-appropriate encoding.",
+        "Disable dangerous parser and deserializer features, enforce type allowlists, and reject unexpected structures before processing.",
+        "Run the operation in a non-root, read-only, capability-dropped sandbox with no unnecessary secrets or egress.",
+        "Authorize the requested object and effect independently of model or tool input."
+      ],
+      "detection_and_response": [
+        "Record operation type, caller, validated object identifier, policy decision, and bounded failure category without sensitive payloads.",
+        "Alert on parser errors, rejected metacharacter or structure patterns, unexpected child processes, and unusual outbound connections."
+      ],
+      "safe_validation": [
+        "Exercise inert boundary characters and malformed structures and assert they remain data or are rejected without side effects.",
+        "Use a sandbox canary to confirm the runtime cannot create child processes, access unrelated files, or contact undeclared services."
+      ],
+      "security_outcome": "Untrusted values remain data, and any parser failure is contained by a least-privileged runtime boundary.",
+      "residual_risk": [
+        "Complex parsers and native dependencies can retain memory-safety or logic defects.",
+        "A legitimate high-impact operation may still be abused by a compromised authorized identity."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/header-routing-confusion",
+      "title": "2026 routing: header/body policy desynchronization",
+      "system_context": "2026 routing: header/body policy desynchronization is a builtin training concept for streamable-http-routing. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Protocol parsing, origin, routing, or session inconsistencies can let a request pass one policy check and reach a different protected operation.",
+      "risk_rating": "high",
+      "control_families": [
+        "protocol-integrity",
+        "identity-access",
+        "network-boundaries",
+        "logging-detection"
+      ],
+      "assets": [
+        "Protocol messages, headers, sessions, and routing decisions",
+        "Authenticated peer and origin identity",
+        "Protected methods and transport endpoints"
+      ],
+      "trust_boundaries": [
+        "Remote origin to protocol gateway",
+        "Gateway-parsed metadata to application-parsed body",
+        "Session identifier to authenticated principal"
+      ],
+      "threat_actors": [
+        "A malicious web origin or protocol client",
+        "A network intermediary able to alter routing metadata"
+      ],
+      "abuse_preconditions": [
+        "Different layers authorize different representations of the same request",
+        "Origin, audience, session, or routing fields are missing, predictable, or weakly bound"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A gateway validates one method or identity while the application dispatches another representation.",
+          "impact": "A protected method executes under an unrelated authorization decision."
+        },
+        {
+          "scenario": "A session or cross-origin channel is accepted without strong binding and replay protection.",
+          "impact": "An attacker attaches to or drives another principal’s session."
+        }
+      ],
+      "secure_before_abuse": [
+        "Canonicalize and parse each request once, then pass an immutable typed representation to both authorization and dispatch.",
+        "Bind method, tool, peer, origin, audience, body, session, and protocol version in one policy decision.",
+        "Use cryptographically random, rotated session identifiers with secure transport, expiry, and replay protection.",
+        "Enforce explicit trusted origins and hosts; keep browser cross-origin policy narrow and deny credentialed wildcard behavior."
+      ],
+      "detection_and_response": [
+        "Log canonical request identity, origin, peer, session, routed operation, and mismatch reason using privacy-safe identifiers.",
+        "Alert on header/body disagreement, invalid origins, session collisions, replay, downgrade, and parser disagreement."
+      ],
+      "safe_validation": [
+        "Generate benign mismatched representations and assert authorization and dispatch always resolve to the same operation.",
+        "Use synthetic origins and sessions to confirm wrong-origin, guessed, replayed, expired, and cross-user requests fail closed."
+      ],
+      "security_outcome": "Authorization and dispatch use the same authenticated, canonical protocol representation and replay-safe session context.",
+      "residual_risk": [
+        "Reverse proxies and SDK upgrades can introduce new normalization differences.",
+        "Compromised valid sessions retain their authorized reach until revocation."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/07/unicode-tool-poisoning",
+      "title": "tools: Unicode-concealed tool-description poisoning past the scanner",
+      "system_context": "tools: Unicode-concealed tool-description poisoning past the scanner is a builtin training concept for tools (concealment). The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "modules/07-mcp-tool-surfaces/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/08/malicious-weights",
+      "title": "RCE via unsafe model deserialization",
+      "system_context": "RCE via unsafe model deserialization is a builtin training concept for supply-weights. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A poisoned, unsigned, unsafe, or ambiguously resolved dependency can alter model behavior, expose data, or execute code during build or load.",
+      "risk_rating": "critical",
+      "control_families": [
+        "supply-chain",
+        "tool-execution",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Models, adapters, datasets, packages, and build artifacts",
+        "Training and deployment pipeline integrity",
+        "Signing keys and artifact provenance"
+      ],
+      "trust_boundaries": [
+        "External publisher to artifact registry",
+        "Registry artifact to build or model runtime",
+        "Training data contributor to deployed behavior"
+      ],
+      "threat_actors": [
+        "A malicious or compromised supplier",
+        "An attacker publishing a colliding dependency or artifact"
+      ],
+      "abuse_preconditions": [
+        "Artifacts are selected or loaded without verified identity, provenance, and safe format controls",
+        "Training or deployment accepts unreviewed behavior-changing inputs"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A higher-priority, colliding, or compromised artifact is selected as trusted input.",
+          "impact": "Malicious logic or model behavior enters the release."
+        },
+        {
+          "scenario": "An unsafe serialized artifact is interpreted with runtime privileges.",
+          "impact": "Artifact loading becomes code execution with pipeline or service authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Pin dependencies and artifacts by trusted registry, publisher identity, version, and digest; verify signatures and provenance before use.",
+        "Use non-executable formats and isolated conversion for untrusted model artifacts; never deserialize opaque objects in a privileged runtime.",
+        "Apply review, lineage, anomaly analysis, and representative evaluation to datasets, adapters, and models before promotion.",
+        "Separate build, registry, training, and serving identities; remove network and secret access from artifact inspection."
+      ],
+      "detection_and_response": [
+        "Alert on publisher, registry, digest, dependency graph, dataset distribution, or model-behavior drift.",
+        "Retain software and model bills of materials plus provenance so affected releases can be identified and revoked."
+      ],
+      "safe_validation": [
+        "Use signed synthetic artifacts and assert wrong registry, identity, digest, provenance, or format is rejected before loading.",
+        "Run benign trigger and distribution-shift evaluations in an isolated promotion stage and verify rollback and revocation."
+      ],
+      "security_outcome": "Only provenance-verified, safely parsed, reviewed artifacts can enter training, build, or serving environments.",
+      "residual_risk": [
+        "A legitimately signed maintainer can still publish malicious or compromised content.",
+        "Behavioral backdoors may remain dormant outside the evaluation distribution."
+      ],
+      "evidence": [
+        {
+          "path": "modules/08-supply-chain/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/08/poisoned-dataset",
+      "title": "Backdoor the model via dataset poisoning",
+      "system_context": "Backdoor the model via dataset poisoning is a builtin training concept for supply-data. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A poisoned, unsigned, unsafe, or ambiguously resolved dependency can alter model behavior, expose data, or execute code during build or load.",
+      "risk_rating": "medium",
+      "control_families": [
+        "supply-chain",
+        "tool-execution",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Models, adapters, datasets, packages, and build artifacts",
+        "Training and deployment pipeline integrity",
+        "Signing keys and artifact provenance"
+      ],
+      "trust_boundaries": [
+        "External publisher to artifact registry",
+        "Registry artifact to build or model runtime",
+        "Training data contributor to deployed behavior"
+      ],
+      "threat_actors": [
+        "A malicious or compromised supplier",
+        "An attacker publishing a colliding dependency or artifact"
+      ],
+      "abuse_preconditions": [
+        "Artifacts are selected or loaded without verified identity, provenance, and safe format controls",
+        "Training or deployment accepts unreviewed behavior-changing inputs"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A higher-priority, colliding, or compromised artifact is selected as trusted input.",
+          "impact": "Malicious logic or model behavior enters the release."
+        },
+        {
+          "scenario": "An unsafe serialized artifact is interpreted with runtime privileges.",
+          "impact": "Artifact loading becomes code execution with pipeline or service authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Pin dependencies and artifacts by trusted registry, publisher identity, version, and digest; verify signatures and provenance before use.",
+        "Use non-executable formats and isolated conversion for untrusted model artifacts; never deserialize opaque objects in a privileged runtime.",
+        "Apply review, lineage, anomaly analysis, and representative evaluation to datasets, adapters, and models before promotion.",
+        "Separate build, registry, training, and serving identities; remove network and secret access from artifact inspection."
+      ],
+      "detection_and_response": [
+        "Alert on publisher, registry, digest, dependency graph, dataset distribution, or model-behavior drift.",
+        "Retain software and model bills of materials plus provenance so affected releases can be identified and revoked."
+      ],
+      "safe_validation": [
+        "Use signed synthetic artifacts and assert wrong registry, identity, digest, provenance, or format is rejected before loading.",
+        "Run benign trigger and distribution-shift evaluations in an isolated promotion stage and verify rollback and revocation."
+      ],
+      "security_outcome": "Only provenance-verified, safely parsed, reviewed artifacts can enter training, build, or serving environments.",
+      "residual_risk": [
+        "A legitimately signed maintainer can still publish malicious or compromised content.",
+        "Behavioral backdoors may remain dormant outside the evaluation distribution."
+      ],
+      "evidence": [
+        {
+          "path": "modules/08-supply-chain/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/08/backdoored-adapter",
+      "title": "Inject behaviour via a backdoored adapter",
+      "system_context": "Inject behaviour via a backdoored adapter is a builtin training concept for supply-adapter. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A poisoned, unsigned, unsafe, or ambiguously resolved dependency can alter model behavior, expose data, or execute code during build or load.",
+      "risk_rating": "medium",
+      "control_families": [
+        "supply-chain",
+        "tool-execution",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Models, adapters, datasets, packages, and build artifacts",
+        "Training and deployment pipeline integrity",
+        "Signing keys and artifact provenance"
+      ],
+      "trust_boundaries": [
+        "External publisher to artifact registry",
+        "Registry artifact to build or model runtime",
+        "Training data contributor to deployed behavior"
+      ],
+      "threat_actors": [
+        "A malicious or compromised supplier",
+        "An attacker publishing a colliding dependency or artifact"
+      ],
+      "abuse_preconditions": [
+        "Artifacts are selected or loaded without verified identity, provenance, and safe format controls",
+        "Training or deployment accepts unreviewed behavior-changing inputs"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A higher-priority, colliding, or compromised artifact is selected as trusted input.",
+          "impact": "Malicious logic or model behavior enters the release."
+        },
+        {
+          "scenario": "An unsafe serialized artifact is interpreted with runtime privileges.",
+          "impact": "Artifact loading becomes code execution with pipeline or service authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Pin dependencies and artifacts by trusted registry, publisher identity, version, and digest; verify signatures and provenance before use.",
+        "Use non-executable formats and isolated conversion for untrusted model artifacts; never deserialize opaque objects in a privileged runtime.",
+        "Apply review, lineage, anomaly analysis, and representative evaluation to datasets, adapters, and models before promotion.",
+        "Separate build, registry, training, and serving identities; remove network and secret access from artifact inspection."
+      ],
+      "detection_and_response": [
+        "Alert on publisher, registry, digest, dependency graph, dataset distribution, or model-behavior drift.",
+        "Retain software and model bills of materials plus provenance so affected releases can be identified and revoked."
+      ],
+      "safe_validation": [
+        "Use signed synthetic artifacts and assert wrong registry, identity, digest, provenance, or format is rejected before loading.",
+        "Run benign trigger and distribution-shift evaluations in an isolated promotion stage and verify rollback and revocation."
+      ],
+      "security_outcome": "Only provenance-verified, safely parsed, reviewed artifacts can enter training, build, or serving environments.",
+      "residual_risk": [
+        "A legitimately signed maintainer can still publish malicious or compromised content.",
+        "Behavioral backdoors may remain dormant outside the evaluation distribution."
+      ],
+      "evidence": [
+        {
+          "path": "modules/08-supply-chain/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/08/dependency-confusion",
+      "title": "Win dependency confusion",
+      "system_context": "Win dependency confusion is a builtin training concept for supply-deps. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A poisoned, unsigned, unsafe, or ambiguously resolved dependency can alter model behavior, expose data, or execute code during build or load.",
+      "risk_rating": "critical",
+      "control_families": [
+        "supply-chain",
+        "tool-execution",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Models, adapters, datasets, packages, and build artifacts",
+        "Training and deployment pipeline integrity",
+        "Signing keys and artifact provenance"
+      ],
+      "trust_boundaries": [
+        "External publisher to artifact registry",
+        "Registry artifact to build or model runtime",
+        "Training data contributor to deployed behavior"
+      ],
+      "threat_actors": [
+        "A malicious or compromised supplier",
+        "An attacker publishing a colliding dependency or artifact"
+      ],
+      "abuse_preconditions": [
+        "Artifacts are selected or loaded without verified identity, provenance, and safe format controls",
+        "Training or deployment accepts unreviewed behavior-changing inputs"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A higher-priority, colliding, or compromised artifact is selected as trusted input.",
+          "impact": "Malicious logic or model behavior enters the release."
+        },
+        {
+          "scenario": "An unsafe serialized artifact is interpreted with runtime privileges.",
+          "impact": "Artifact loading becomes code execution with pipeline or service authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Pin dependencies and artifacts by trusted registry, publisher identity, version, and digest; verify signatures and provenance before use.",
+        "Use non-executable formats and isolated conversion for untrusted model artifacts; never deserialize opaque objects in a privileged runtime.",
+        "Apply review, lineage, anomaly analysis, and representative evaluation to datasets, adapters, and models before promotion.",
+        "Separate build, registry, training, and serving identities; remove network and secret access from artifact inspection."
+      ],
+      "detection_and_response": [
+        "Alert on publisher, registry, digest, dependency graph, dataset distribution, or model-behavior drift.",
+        "Retain software and model bills of materials plus provenance so affected releases can be identified and revoked."
+      ],
+      "safe_validation": [
+        "Use signed synthetic artifacts and assert wrong registry, identity, digest, provenance, or format is rejected before loading.",
+        "Run benign trigger and distribution-shift evaluations in an isolated promotion stage and verify rollback and revocation."
+      ],
+      "security_outcome": "Only provenance-verified, safely parsed, reviewed artifacts can enter training, build, or serving environments.",
+      "residual_risk": [
+        "A legitimately signed maintainer can still publish malicious or compromised content.",
+        "Behavioral backdoors may remain dormant outside the evaluation distribution."
+      ],
+      "evidence": [
+        {
+          "path": "modules/08-supply-chain/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/09/metadata-ssrf",
+      "title": "SSRF to cloud metadata -> steal role credentials",
+      "system_context": "SSRF to cloud metadata -> steal role credentials is a builtin training concept for infra-ssrf. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A server-side fetch capability can be redirected to metadata or internal services, exposing credentials and enabling lateral movement under the workload identity.",
+      "risk_rating": "critical",
+      "control_families": [
+        "network-boundaries",
+        "identity-access",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Cloud metadata and workload credentials",
+        "Internal services and network topology",
+        "Outbound request identity and response data"
+      ],
+      "trust_boundaries": [
+        "Untrusted URL input to server-side client",
+        "Application network to metadata and internal services",
+        "Fetched response to user or model context"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A prompt-influenced agent controlling a fetch target"
+      ],
+      "abuse_preconditions": [
+        "The service follows caller-controlled destinations or redirects",
+        "Network policy and workload identity permit access to sensitive internal endpoints"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller selects an internal or special-address destination through direct input, redirect, or name resolution.",
+          "impact": "The service returns sensitive internal data."
+        },
+        {
+          "scenario": "Stolen workload credentials are accepted by a second protected service.",
+          "impact": "The compromise expands beyond the original application."
+        }
+      ],
+      "secure_before_abuse": [
+        "Use an allowlist of schemes, hosts, ports, and paths; resolve names once and reject loopback, link-local, private, and otherwise prohibited addresses.",
+        "Revalidate every redirect and connect to the validated address while preserving the expected host and TLS identity.",
+        "Block metadata and unnecessary east-west or internet egress at the network layer, and use short-lived audience-bound workload credentials.",
+        "Limit response size, content type, timeout, and redirect count; never return raw credential-bearing responses."
+      ],
+      "detection_and_response": [
+        "Log normalized destination class, resolved address, redirect chain, caller, and policy decision with credentials redacted.",
+        "Alert on metadata ranges, unusual internal ports, DNS-answer changes, and bursts of failed destination validation."
+      ],
+      "safe_validation": [
+        "Use controlled loopback, private-address, redirect, and rebinding simulations and assert the request is rejected before connection.",
+        "Confirm a synthetic workload identity cannot reach a canary internal service outside its declared dependency set."
+      ],
+      "security_outcome": "Server-side requests reach only explicitly approved destinations and cannot use workload network position to retrieve internal credentials.",
+      "residual_risk": [
+        "Compromise of an allowlisted destination can turn it into a pivot.",
+        "Proxy and resolver differences can create validation-to-connection inconsistencies."
+      ],
+      "evidence": [
+        {
+          "path": "modules/09-infra-deployment/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/09/open-inference-api",
+      "title": "Abuse an unauthenticated admin inference route",
+      "system_context": "Abuse an unauthenticated admin inference route is a builtin training concept for infra-api. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Missing object- and action-level authorization can let a caller or delegated agent access another tenant’s data or perform a privileged effect.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Protected objects and administrative operations",
+        "User, agent, and service identities",
+        "Delegation scopes and approval state"
+      ],
+      "trust_boundaries": [
+        "Caller identity to service authorization",
+        "Agent or tool delegation to protected resource",
+        "Object identifier to tenant ownership"
+      ],
+      "threat_actors": [
+        "An authenticated low-privilege caller",
+        "A confused deputy acting with ambient authority"
+      ],
+      "abuse_preconditions": [
+        "The service trusts a caller-supplied object, role, scope, or audience",
+        "Authorization is checked only at an upstream agent rather than the owning service"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A valid identity substitutes an object identifier or action outside its grant.",
+          "impact": "Protected data or operations cross a tenant or role boundary."
+        },
+        {
+          "scenario": "A deputy receives a broad token and acts without preserving the originating principal and purpose.",
+          "impact": "The caller gains the deputy’s ambient authority."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate at each service and authorize subject, tenant, object, action, purpose, and current state at the resource owner.",
+        "Use short-lived audience-bound tokens and attenuated capabilities; never pass broad upstream credentials through to tools.",
+        "Derive ownership and role from trusted server state rather than caller-controlled fields or model output.",
+        "Require explicit, bound approval for high-impact actions and invalidate it when inputs, tool identity, or scope changes."
+      ],
+      "detection_and_response": [
+        "Audit allow and deny decisions with subject, originating principal, audience, object, action, and policy version.",
+        "Alert on cross-tenant identifiers, repeated denied objects, audience mismatch, and privileged actions from unusual delegation chains."
+      ],
+      "safe_validation": [
+        "Use synthetic users, tenants, roles, and audiences to confirm horizontal and vertical access attempts fail closed.",
+        "Exercise a benign delegated workflow and assert the final service sees and enforces the original principal’s reduced scope."
+      ],
+      "security_outcome": "Every protected object and effect is authorized by its owning service for the originating principal and exact delegated scope.",
+      "residual_risk": [
+        "Compromised authorized identities can act within their valid grants.",
+        "Policy and identity-provider drift can temporarily create inconsistent decisions."
+      ],
+      "evidence": [
+        {
+          "path": "modules/09-infra-deployment/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/09/registry-secrets",
+      "title": "Recover a secret from a model card",
+      "system_context": "Recover a secret from a model card is a builtin training concept for infra-secrets. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Secrets or personal data can leak through prompts, errors, logs, completion APIs, metadata, tool chains, or over-broad responses.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "tool-execution"
+      ],
+      "assets": [
+        "API keys, tokens, credentials, and personal data",
+        "System prompts and privileged configuration",
+        "Logs, completions, model cards, and tool outputs"
+      ],
+      "trust_boundaries": [
+        "Secret store to application runtime",
+        "Application or tool output to untrusted caller",
+        "Sensitive telemetry or metadata to operators and models"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A malicious tool, model input, or content source"
+      ],
+      "abuse_preconditions": [
+        "Sensitive values are present in model-readable context, metadata, logs, or broad environment state",
+        "Response or tool policy does not minimize fields by caller and purpose"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller causes a response path to serialize sensitive context or metadata.",
+          "impact": "Credentials or protected data leave their intended trust boundary."
+        },
+        {
+          "scenario": "A tool or model with ambient access forwards data to an unauthorized destination.",
+          "impact": "The leak enables impersonation or lateral movement."
+        }
+      ],
+      "secure_before_abuse": [
+        "Keep credentials outside prompts, model cards, logs, completions, and general environment state; fetch them just in time through a scoped broker.",
+        "Apply response-field allowlists, data classification, tenant authorization, destination policy, and output minimization at the owning service.",
+        "Use short-lived, audience-bound, least-privilege credentials with rotation and revocation.",
+        "Redact sensitive fields before telemetry and prevent tool outputs from being treated as trusted instructions."
+      ],
+      "detection_and_response": [
+        "Deploy secret-pattern and canary detection at response, log, artifact, and egress boundaries with strict access controls.",
+        "Alert on unusual secret reads, completion enumeration, debug-level changes, bulk exports, and new destinations."
+      ],
+      "safe_validation": [
+        "Seed synthetic canaries and confirm unauthorized response, error, log, metadata, and completion paths never return them.",
+        "Exercise credential rotation and incident revocation with a test identity and verify old tokens stop working."
+      ],
+      "security_outcome": "Sensitive values are absent from model-readable and public channels and are released only to authorized, purpose-bound consumers.",
+      "residual_risk": [
+        "Authorized components necessarily handling plaintext remain high-value compromise targets.",
+        "Previously emitted secrets require rotation even after the disclosure path is fixed."
+      ],
+      "evidence": [
+        {
+          "path": "modules/09-infra-deployment/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/10/asset-inventory",
+      "title": "Inventory the high-value AI assets",
+      "system_context": "Inventory the high-value AI assets is a builtin training concept for tm-assets. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "An incomplete or stale threat model can omit a high-value asset, trust boundary, or chained abuse path and leave the corresponding control unowned.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Complete AI asset and data-flow inventory",
+        "Ownership and classification records",
+        "Threat-model decisions and accepted risks"
+      ],
+      "trust_boundaries": [
+        "Engineering evidence to the threat model",
+        "Untrusted inputs to AI processing",
+        "AI services to tools and protected data"
+      ],
+      "threat_actors": [
+        "A design reviewer working from incomplete evidence",
+        "A system owner who overlooks a transitive dependency"
+      ],
+      "abuse_preconditions": [
+        "The architecture inventory or data-flow map is incomplete",
+        "Risk decisions lack an accountable owner or validation evidence"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A component, identity, or data flow is absent from the inventory and receives no explicit protection.",
+          "impact": "A material exposure persists because it is outside review and monitoring scope."
+        },
+        {
+          "scenario": "Individual weaknesses are assessed in isolation and their combined authority is missed.",
+          "impact": "A multi-stage compromise crosses several apparently low-risk boundaries."
+        }
+      ],
+      "secure_before_abuse": [
+        "Generate the asset and data-flow inventory from deployable configuration where possible, then require named owners to attest the result.",
+        "Record identities, data classifications, tool effects, model inputs, external dependencies, and trust boundaries in one versioned model.",
+        "Rank end-to-end abuse paths by impact and reachability, and link each treatment to an engineering control and test.",
+        "Require security review when architecture, permissions, models, data sources, or external integrations change."
+      ],
+      "detection_and_response": [
+        "Track threat-model age, unresolved risks, missing owners, and architecture changes that lack review.",
+        "Escalate material drift between deployment manifests and documented boundaries."
+      ],
+      "safe_validation": [
+        "Compare a synthetic deployment inventory with the model and assert every service, identity, and data store is represented.",
+        "Run a tabletop exercise using inert scenarios and confirm the documented boundaries and owners support containment."
+      ],
+      "security_outcome": "Material assets, authority crossings, and chained risks have explicit controls, owners, evidence, and review triggers before deployment.",
+      "residual_risk": [
+        "Undocumented runtime behavior and third-party dependencies can still create unknown boundaries.",
+        "A threat model can become stale between reviews without automated drift detection."
+      ],
+      "evidence": [
+        {
+          "path": "modules/10-threat-modeling/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/10/trust-boundaries",
+      "title": "Map trust boundaries & data flows",
+      "system_context": "Map trust boundaries & data flows is a builtin training concept for tm-boundaries. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "An incomplete or stale threat model can omit a high-value asset, trust boundary, or chained abuse path and leave the corresponding control unowned.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Complete AI asset and data-flow inventory",
+        "Ownership and classification records",
+        "Threat-model decisions and accepted risks"
+      ],
+      "trust_boundaries": [
+        "Engineering evidence to the threat model",
+        "Untrusted inputs to AI processing",
+        "AI services to tools and protected data"
+      ],
+      "threat_actors": [
+        "A design reviewer working from incomplete evidence",
+        "A system owner who overlooks a transitive dependency"
+      ],
+      "abuse_preconditions": [
+        "The architecture inventory or data-flow map is incomplete",
+        "Risk decisions lack an accountable owner or validation evidence"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A component, identity, or data flow is absent from the inventory and receives no explicit protection.",
+          "impact": "A material exposure persists because it is outside review and monitoring scope."
+        },
+        {
+          "scenario": "Individual weaknesses are assessed in isolation and their combined authority is missed.",
+          "impact": "A multi-stage compromise crosses several apparently low-risk boundaries."
+        }
+      ],
+      "secure_before_abuse": [
+        "Generate the asset and data-flow inventory from deployable configuration where possible, then require named owners to attest the result.",
+        "Record identities, data classifications, tool effects, model inputs, external dependencies, and trust boundaries in one versioned model.",
+        "Rank end-to-end abuse paths by impact and reachability, and link each treatment to an engineering control and test.",
+        "Require security review when architecture, permissions, models, data sources, or external integrations change."
+      ],
+      "detection_and_response": [
+        "Track threat-model age, unresolved risks, missing owners, and architecture changes that lack review.",
+        "Escalate material drift between deployment manifests and documented boundaries."
+      ],
+      "safe_validation": [
+        "Compare a synthetic deployment inventory with the model and assert every service, identity, and data store is represented.",
+        "Run a tabletop exercise using inert scenarios and confirm the documented boundaries and owners support containment."
+      ],
+      "security_outcome": "Material assets, authority crossings, and chained risks have explicit controls, owners, evidence, and review triggers before deployment.",
+      "residual_risk": [
+        "Undocumented runtime behavior and third-party dependencies can still create unknown boundaries.",
+        "A threat model can become stale between reviews without automated drift detection."
+      ],
+      "evidence": [
+        {
+          "path": "modules/10-threat-modeling/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/10/attack-paths",
+      "title": "Enumerate end-to-end attack paths",
+      "system_context": "Enumerate end-to-end attack paths is a builtin training concept for tm-paths. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "An incomplete or stale threat model can omit a high-value asset, trust boundary, or chained abuse path and leave the corresponding control unowned.",
+      "risk_rating": "medium",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "human-approval"
+      ],
+      "assets": [
+        "Complete AI asset and data-flow inventory",
+        "Ownership and classification records",
+        "Threat-model decisions and accepted risks"
+      ],
+      "trust_boundaries": [
+        "Engineering evidence to the threat model",
+        "Untrusted inputs to AI processing",
+        "AI services to tools and protected data"
+      ],
+      "threat_actors": [
+        "A design reviewer working from incomplete evidence",
+        "A system owner who overlooks a transitive dependency"
+      ],
+      "abuse_preconditions": [
+        "The architecture inventory or data-flow map is incomplete",
+        "Risk decisions lack an accountable owner or validation evidence"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A component, identity, or data flow is absent from the inventory and receives no explicit protection.",
+          "impact": "A material exposure persists because it is outside review and monitoring scope."
+        },
+        {
+          "scenario": "Individual weaknesses are assessed in isolation and their combined authority is missed.",
+          "impact": "A multi-stage compromise crosses several apparently low-risk boundaries."
+        }
+      ],
+      "secure_before_abuse": [
+        "Generate the asset and data-flow inventory from deployable configuration where possible, then require named owners to attest the result.",
+        "Record identities, data classifications, tool effects, model inputs, external dependencies, and trust boundaries in one versioned model.",
+        "Rank end-to-end abuse paths by impact and reachability, and link each treatment to an engineering control and test.",
+        "Require security review when architecture, permissions, models, data sources, or external integrations change."
+      ],
+      "detection_and_response": [
+        "Track threat-model age, unresolved risks, missing owners, and architecture changes that lack review.",
+        "Escalate material drift between deployment manifests and documented boundaries."
+      ],
+      "safe_validation": [
+        "Compare a synthetic deployment inventory with the model and assert every service, identity, and data store is represented.",
+        "Run a tabletop exercise using inert scenarios and confirm the documented boundaries and owners support containment."
+      ],
+      "security_outcome": "Material assets, authority crossings, and chained risks have explicit controls, owners, evidence, and review triggers before deployment.",
+      "residual_risk": [
+        "Undocumented runtime behavior and third-party dependencies can still create unknown boundaries.",
+        "A threat model can become stale between reviews without automated drift detection."
+      ],
+      "evidence": [
+        {
+          "path": "modules/10-threat-modeling/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/11/initial-access",
+      "title": "Initial access via indirect injection",
+      "system_context": "Initial access via indirect injection is a builtin training concept for chain-access. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Prompt, identity, tool, and network weaknesses can compose into an end-to-end path from untrusted input to protected data and external impact.",
+      "risk_rating": "critical",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "network-boundaries"
+      ],
+      "assets": [
+        "End-to-end agent workflow and user intent",
+        "Internal vaults, tools, credentials, and delegated access",
+        "Containment and incident-response boundaries"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to agent context",
+        "Agent authority to internal tool or service",
+        "Protected result to external destination"
+      ],
+      "threat_actors": [
+        "An external actor controlling indirect content",
+        "A compromised agent, tool, or trusted data source"
+      ],
+      "abuse_preconditions": [
+        "Several individually permissive boundaries compose into an unreviewed path",
+        "The agent holds ambient authority and can externalize protected results"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted content steers an agent to use an internal capability under ambient authority.",
+          "impact": "The attacker reaches a protected object indirectly."
+        },
+        {
+          "scenario": "The protected result is passed through another tool or output channel without purpose and destination checks.",
+          "impact": "Sensitive data leaves the trusted environment."
+        }
+      ],
+      "secure_before_abuse": [
+        "Model the complete path from every untrusted input to every high-impact effect and break it with independent controls at multiple boundaries.",
+        "Propagate the originating principal and content provenance; authorize object, action, purpose, and destination at each service.",
+        "Remove ambient credentials, use attenuated short-lived capabilities, and require human approval for high-impact or novel multi-step plans.",
+        "Constrain east-west and outbound network paths and apply data-loss controls at the final egress boundary."
+      ],
+      "detection_and_response": [
+        "Correlate content ingestion, agent planning, tool calls, internal access, approvals, and egress in one trace.",
+        "Alert on unusual cross-service sequences, sensitive-object reads followed by outbound actions, and privilege changes within a workflow."
+      ],
+      "safe_validation": [
+        "Run an inert end-to-end scenario with recording doubles and confirm at least two independent controls stop the protected effect.",
+        "Tabletop containment of a synthetic compromised agent and verify credential revocation, session termination, and evidence preservation."
+      ],
+      "security_outcome": "No single model, content, identity, tool, or network failure can complete a path from untrusted input to protected impact.",
+      "residual_risk": [
+        "Authorized multi-step workflows can resemble abuse and require contextual monitoring.",
+        "Unknown dependencies may introduce alternate paths outside the documented graph."
+      ],
+      "evidence": [
+        {
+          "path": "modules/11-capstone/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/11/pivot-vault",
+      "title": "Pivot through ambient authority to the vault",
+      "system_context": "Pivot through ambient authority to the vault is a builtin training concept for chain-pivot. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Prompt, identity, tool, and network weaknesses can compose into an end-to-end path from untrusted input to protected data and external impact.",
+      "risk_rating": "critical",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "network-boundaries"
+      ],
+      "assets": [
+        "End-to-end agent workflow and user intent",
+        "Internal vaults, tools, credentials, and delegated access",
+        "Containment and incident-response boundaries"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to agent context",
+        "Agent authority to internal tool or service",
+        "Protected result to external destination"
+      ],
+      "threat_actors": [
+        "An external actor controlling indirect content",
+        "A compromised agent, tool, or trusted data source"
+      ],
+      "abuse_preconditions": [
+        "Several individually permissive boundaries compose into an unreviewed path",
+        "The agent holds ambient authority and can externalize protected results"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted content steers an agent to use an internal capability under ambient authority.",
+          "impact": "The attacker reaches a protected object indirectly."
+        },
+        {
+          "scenario": "The protected result is passed through another tool or output channel without purpose and destination checks.",
+          "impact": "Sensitive data leaves the trusted environment."
+        }
+      ],
+      "secure_before_abuse": [
+        "Model the complete path from every untrusted input to every high-impact effect and break it with independent controls at multiple boundaries.",
+        "Propagate the originating principal and content provenance; authorize object, action, purpose, and destination at each service.",
+        "Remove ambient credentials, use attenuated short-lived capabilities, and require human approval for high-impact or novel multi-step plans.",
+        "Constrain east-west and outbound network paths and apply data-loss controls at the final egress boundary."
+      ],
+      "detection_and_response": [
+        "Correlate content ingestion, agent planning, tool calls, internal access, approvals, and egress in one trace.",
+        "Alert on unusual cross-service sequences, sensitive-object reads followed by outbound actions, and privilege changes within a workflow."
+      ],
+      "safe_validation": [
+        "Run an inert end-to-end scenario with recording doubles and confirm at least two independent controls stop the protected effect.",
+        "Tabletop containment of a synthetic compromised agent and verify credential revocation, session termination, and evidence preservation."
+      ],
+      "security_outcome": "No single model, content, identity, tool, or network failure can complete a path from untrusted input to protected impact.",
+      "residual_risk": [
+        "Authorized multi-step workflows can resemble abuse and require contextual monitoring.",
+        "Unknown dependencies may introduce alternate paths outside the documented graph."
+      ],
+      "evidence": [
+        {
+          "path": "modules/11-capstone/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    },
+    {
+      "key": "builtin/11/exfil-crown-jewel",
+      "title": "Exfiltrate the crown-jewel secret",
+      "system_context": "Exfiltrate the crown-jewel secret is a builtin training concept for chain-exfil. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Prompt, identity, tool, and network weaknesses can compose into an end-to-end path from untrusted input to protected data and external impact.",
+      "risk_rating": "critical",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "network-boundaries"
+      ],
+      "assets": [
+        "End-to-end agent workflow and user intent",
+        "Internal vaults, tools, credentials, and delegated access",
+        "Containment and incident-response boundaries"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to agent context",
+        "Agent authority to internal tool or service",
+        "Protected result to external destination"
+      ],
+      "threat_actors": [
+        "An external actor controlling indirect content",
+        "A compromised agent, tool, or trusted data source"
+      ],
+      "abuse_preconditions": [
+        "Several individually permissive boundaries compose into an unreviewed path",
+        "The agent holds ambient authority and can externalize protected results"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted content steers an agent to use an internal capability under ambient authority.",
+          "impact": "The attacker reaches a protected object indirectly."
+        },
+        {
+          "scenario": "The protected result is passed through another tool or output channel without purpose and destination checks.",
+          "impact": "Sensitive data leaves the trusted environment."
+        }
+      ],
+      "secure_before_abuse": [
+        "Model the complete path from every untrusted input to every high-impact effect and break it with independent controls at multiple boundaries.",
+        "Propagate the originating principal and content provenance; authorize object, action, purpose, and destination at each service.",
+        "Remove ambient credentials, use attenuated short-lived capabilities, and require human approval for high-impact or novel multi-step plans.",
+        "Constrain east-west and outbound network paths and apply data-loss controls at the final egress boundary."
+      ],
+      "detection_and_response": [
+        "Correlate content ingestion, agent planning, tool calls, internal access, approvals, and egress in one trace.",
+        "Alert on unusual cross-service sequences, sensitive-object reads followed by outbound actions, and privilege changes within a workflow."
+      ],
+      "safe_validation": [
+        "Run an inert end-to-end scenario with recording doubles and confirm at least two independent controls stop the protected effect.",
+        "Tabletop containment of a synthetic compromised agent and verify credential revocation, session termination, and evidence preservation."
+      ],
+      "security_outcome": "No single model, content, identity, tool, or network failure can complete a path from untrusted input to protected impact.",
+      "residual_risk": [
+        "Authorized multi-step workflows can resemble abuse and require contextual monitoring.",
+        "Unknown dependencies may introduce alternate paths outside the documented graph."
+      ],
+      "evidence": [
+        {
+          "path": "modules/11-capstone/module.yaml",
+          "reason": "Defines this challenge identity, objective, target topology, and declared verification or adapter metadata."
+        },
+        {
+          "path": "SECURITY.md",
+          "reason": "Defines the repository isolation model, deliberately vulnerable status, and known runtime safety limits."
+        }
+      ],
+      "confidence": "high",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The model describes the production-safe pattern; this teaching target intentionally omits controls so the weakness remains observable."
+      ]
+    }
+  ]
+}
