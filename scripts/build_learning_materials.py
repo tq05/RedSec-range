@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Build the RedSec learning-guide PDF and PowerPoint deck."""
+"""Build the defensive RedSec learning-guide PDF and PowerPoint deck."""
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import shutil
@@ -28,6 +29,7 @@ DECK_MD = TRAINING / "LEARNING-DECK.md"
 GUIDE_PDF = TRAINING / "RedSec-Range-Learning-Guide.pdf"
 DECK_PPTX = TRAINING / "RedSec-Range-Learning-Deck.pptx"
 THEME = TRAINING / "learning-theme.css"
+MANIFEST = TRAINING / "ARTIFACTS.sha256"
 
 NAVY = RGBColor(7, 24, 39)
 NAVY_2 = RGBColor(13, 39, 58)
@@ -38,7 +40,6 @@ RED = RGBColor(238, 83, 105)
 ORANGE = RGBColor(241, 155, 78)
 PURPLE = RGBColor(151, 121, 224)
 FONT = "Avenir Next"
-MONO = "SFMono-Regular"
 
 
 def run(command: list[str]) -> None:
@@ -59,6 +60,7 @@ def build_pdf() -> None:
             "--from=gfm+attributes",
             "--to=html5",
             "--standalone",
+            "--section-divs",
             "--toc",
             "--toc-depth=2",
             "--number-sections",
@@ -66,7 +68,19 @@ def build_pdf() -> None:
             "--metadata=lang:en-GB",
             f"--output={html}",
         ])
+        fingerprint = f"source-sha256:{sha256(GUIDE_MD)}"
+        html_text = html.read_text()
+        html_text = html_text.replace(
+            "</head>",
+            f'<meta name="keywords" content="{fingerprint}">\n</head>',
+        )
+        html.write_text(html_text)
         HTML(filename=str(html), base_url=str(html.parent)).write_pdf(str(GUIDE_PDF))
+
+
+def _comment(block: str, name: str) -> str:
+    match = re.search(rf"^<!--\s*{re.escape(name)}:\s*(.+?)\s*-->$", block, re.M)
+    return match.group(1).strip() if match else ""
 
 
 def parse_deck() -> list[dict[str, object]]:
@@ -77,14 +91,21 @@ def parse_deck() -> list[dict[str, object]]:
         if not title_match:
             continue
         takeaway_match = re.search(r"^>\s*(.+)$", block, re.M)
-        bullets = [
-            re.sub(r"\*\*(.+?)\*\*", r"\1", match).strip()
-            for match in re.findall(r"^-\s+(.+)$", block, re.M)
-        ]
+        rows = []
+        for bullet in re.findall(r"^-\s+(.+)$", block, re.M):
+            labelled = re.match(r"\*\*([^*]+?):\*\*\s*(.+)", bullet.strip())
+            if labelled:
+                rows.append({"label": labelled.group(1), "text": labelled.group(2)})
+            else:
+                rows.append({"label": "NOTE", "text": bullet.strip()})
         slides.append({
             "title": title_match.group(1).strip(),
             "takeaway": takeaway_match.group(1).strip() if takeaway_match else "",
-            "bullets": bullets,
+            "kind": _comment(block, "kind"),
+            "key": _comment(block, "key"),
+            "range": _comment(block, "range"),
+            "pair": _comment(block, "pair"),
+            "rows": rows,
         })
     return slides
 
@@ -117,7 +138,8 @@ def add_text(slide, text: str, x: float, y: float, w: float, h: float,
     return box
 
 
-def add_background(slide, accent: RGBColor, index: int, total: int) -> None:
+def add_background(slide, accent: RGBColor, index: int, total: int,
+                   slide_data: dict[str, object]) -> None:
     bg = slide.background.fill
     bg.solid()
     bg.fore_color.rgb = NAVY
@@ -137,10 +159,15 @@ def add_background(slide, accent: RGBColor, index: int, total: int) -> None:
         )
         set_fill(line, RGBColor(27, 55, 72))
 
-    add_text(slide, "REDSEC RANGE  //  LEARNING EDITION", .55, .25, 5.8, .3,
+    kind = str(slide_data["kind"]).upper()
+    add_text(slide, "REDSEC RANGE  //  DEFENSIVE LEARNING EDITION", .55, .25, 6.5, .3,
              8.5, MUTED, bold=True)
-    add_text(slide, f"{index:02d}", 11.95, .22, .65, .35, 9, accent,
+    add_text(slide, f"{index:03d} / {total}", 11.55, .22, 1.05, .35, 8.5, accent,
              bold=True, align=PP_ALIGN.RIGHT)
+    add_text(slide, f"{slide_data['range']}  •  {kind}", .55, 6.76, 4.2, .28,
+             7.5, accent, bold=True)
+    add_text(slide, f"PAIR {slide_data['pair']}", 10.85, 6.76, 1.8, .28,
+             7.5, MUTED, bold=True, align=PP_ALIGN.RIGHT)
 
     progress_bg = slide.shapes.add_shape(
         MSO_SHAPE.RECTANGLE, Inches(.55), Inches(7.17), Inches(12.1), Inches(.035)
@@ -153,128 +180,99 @@ def add_background(slide, accent: RGBColor, index: int, total: int) -> None:
     set_fill(progress, accent)
 
 
-def accent_for(index: int) -> RGBColor:
-    if index <= 7:
-        return CYAN
-    if index <= 11:
-        return RED
-    if index <= 19:
-        return RGBColor(55, 211, 176)
-    if index <= 23:
-        return ORANGE
-    if index <= 29:
-        return PURPLE
-    return CYAN
+def accent_for(range_id: str) -> RGBColor:
+    return {
+        "builtin": CYAN,
+        "dvaa": PURPLE,
+        "mcpgoat": ORANGE,
+        "dvmcp": RGBColor(55, 211, 176),
+        "appsecco-mcp": RED,
+    }.get(range_id, CYAN)
 
 
-def add_title_slide(prs: Presentation, slide_data: dict[str, object], total: int) -> None:
+def add_content_slide(
+    prs: Presentation,
+    slide_data: dict[str, object],
+    index: int,
+    total: int,
+) -> None:
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    bg = slide.background.fill
-    bg.solid()
-    bg.fore_color.rgb = NAVY
-
-    accent = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, Inches(.62), Inches(.72), Inches(.12), Inches(5.95)
-    )
-    set_fill(accent, CYAN)
-
-    add_text(slide, "REDSEC RANGE", 1.08, .74, 4.2, .35, 11, CYAN, bold=True)
-    add_text(slide, str(slide_data["title"]), 1.05, 1.35, 7.7, 1.3,
-             42, WHITE, bold=True)
-    add_text(slide, str(slide_data["takeaway"]), 1.08, 2.76, 7.5, .9,
-             22, RGBColor(140, 224, 220))
-    add_text(slide, "A guided learning deck", 1.08, 5.95, 4.6, .35,
-             10, MUTED, bold=True)
-    add_text(slide, "2026 EDITION", 1.08, 6.33, 2.0, .28, 8.5, WHITE, bold=True)
-
-    stats = [("110", "CONCEPTS"), ("162", "VARIANTS"), ("5", "RANGES")]
-    for i, (value, label) in enumerate(stats):
-        y = 1.32 + i * 1.55
-        card = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(9.2), Inches(y), Inches(2.8), Inches(1.2)
-        )
-        set_fill(card, NAVY_2)
-        card.line.color.rgb = RGBColor(39, 75, 91)
-        add_text(slide, value, 9.45, y + .12, 1.1, .54, 28, CYAN, bold=True)
-        add_text(slide, label, 10.55, y + .28, 1.15, .3, 9, MUTED, bold=True)
-
-    add_text(slide, f"{total} slides • one takeaway per slide", 9.2, 6.45, 2.8, .3,
-             8.5, MUTED, align=PP_ALIGN.RIGHT)
-
-
-def add_content_slide(prs: Presentation, slide_data: dict[str, object], index: int,
-                      total: int) -> None:
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
-    accent = accent_for(index)
-    add_background(slide, accent, index, total)
+    accent = accent_for(str(slide_data["range"]))
+    add_background(slide, accent, index, total, slide_data)
 
     title = str(slide_data["title"])
-    title_size = 28 if len(title) < 62 else 24
+    title_size = 27 if len(title) < 62 else 23
     add_text(slide, title, .72, .76, 11.35, .92, title_size, WHITE, bold=True)
 
     takeaway = str(slide_data["takeaway"])
     box = slide.shapes.add_shape(
-        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(.72), Inches(1.82), Inches(10.9), Inches(.88)
+        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(.72), Inches(1.78), Inches(11.9), Inches(.82)
     )
     set_fill(box, NAVY_2)
     box.line.color.rgb = accent
-    add_text(slide, takeaway, 1.0, 2.00, 10.25, .5, 18, accent, bold=True,
+    add_text(slide, takeaway, 1.0, 1.94, 11.35, .48, 15.5, accent, bold=True,
              valign=MSO_ANCHOR.MIDDLE)
 
-    bullets = list(slide_data["bullets"])
-    for position, bullet in enumerate(bullets[:4]):
-        y = 3.05 + position * .83
-        marker = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(.78), Inches(y + .05),
-            Inches(.34), Inches(.34)
+    rows = list(slide_data["rows"])
+    for position, row in enumerate(rows[:4]):
+        y = 2.84 + position * .91
+        panel = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(.72), Inches(y),
+            Inches(11.9), Inches(.76)
         )
-        set_fill(marker, accent)
-        add_text(slide, str(position + 1), .78, y + .045, .34, .34, 9, NAVY,
-                 bold=True, align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
-        add_text(slide, bullet, 1.35, y, 9.65, .62, 16.2, WHITE)
-
-    # visual anchor: three connected authority nodes
-    nodes = [(11.45, 3.38), (12.18, 4.18), (11.28, 5.0)]
-    for n, (x, y) in enumerate(nodes):
-        circle = slide.shapes.add_shape(
-            MSO_SHAPE.OVAL, Inches(x), Inches(y), Inches(.42), Inches(.42)
-        )
-        set_fill(circle, accent if n == 1 else RGBColor(46, 78, 94))
-    for x, y, w, rotation in ((11.7, 3.78, .85, 45), (11.52, 4.72, .9, -42)):
-        connector = slide.shapes.add_shape(
-            MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(.025)
-        )
-        set_fill(connector, RGBColor(76, 105, 118))
-        connector.rotation = rotation
-
-    add_text(slide, "TRUST / DATA / AUTHORITY", 10.65, 5.65, 2.2, .32,
-             7.5, MUTED, bold=True, align=PP_ALIGN.CENTER)
+        set_fill(panel, RGBColor(10, 31, 47))
+        panel.line.color.rgb = RGBColor(31, 64, 80)
+        label = str(row["label"])
+        body = str(row["text"])
+        add_text(slide, label, .93, y + .20, 1.34, .30, 8.5, accent, bold=True,
+                 valign=MSO_ANCHOR.MIDDLE)
+        size = 14.0 if len(body) < 150 else 12.4 if len(body) < 230 else 10.8
+        add_text(slide, body, 2.28, y + .10, 10.02, .56, size, WHITE,
+                 valign=MSO_ANCHOR.MIDDLE)
 
 
 def build_deck() -> None:
     slides = parse_deck()
-    if len(slides) < 25:
-        raise SystemExit(f"deck source unexpectedly short: {len(slides)} slides")
+    if len(slides) != 220:
+        raise SystemExit(f"expected 220 paired challenge slides, found {len(slides)}")
+    for index in range(0, len(slides), 2):
+        challenge, resolution = slides[index:index + 2]
+        if challenge["kind"] != "challenge" or resolution["kind"] != "resolution":
+            raise SystemExit(f"invalid pair order at slides {index + 1}-{index + 2}")
+        if challenge["key"] != resolution["key"]:
+            raise SystemExit(f"pair key mismatch at slides {index + 1}-{index + 2}")
     prs = Presentation()
     prs.slide_width = Inches(13.333333)
     prs.slide_height = Inches(7.5)
-    prs.core_properties.title = "RedSec Range — Learning Deck"
-    prs.core_properties.subject = "AI, A2A, MCP, supply-chain, and infrastructure security labs"
+    prs.core_properties.title = "RedSec Range — Defensive Challenge Learning Deck"
+    prs.core_properties.subject = "Defensive review and remediation for AI, A2A, and MCP challenge concepts"
     prs.core_properties.author = "RedSec Range"
-    prs.core_properties.keywords = "AI security, MCP, A2A, red teaming, training"
+    prs.core_properties.keywords = "AI security, MCP, A2A, defensive review, training"
+    prs.core_properties.comments = f"source-sha256:{sha256(DECK_MD)}"
 
-    add_title_slide(prs, slides[0], len(slides))
-    for index, slide_data in enumerate(slides[1:], start=2):
+    for index, slide_data in enumerate(slides, start=1):
         add_content_slide(prs, slide_data, index, len(slides))
     prs.save(DECK_PPTX)
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write_manifest() -> None:
+    paths = (GUIDE_MD, DECK_MD, THEME, GUIDE_PDF, DECK_PPTX)
+    lines = ["# sha256  path", *[f"{sha256(path)}  {path.relative_to(ROOT)}" for path in paths]]
+    MANIFEST.write_text("\n".join(lines) + "\n")
 
 
 def main() -> int:
     TRAINING.mkdir(parents=True, exist_ok=True)
     build_pdf()
     build_deck()
+    write_manifest()
     print(f"wrote {GUIDE_PDF}")
     print(f"wrote {DECK_PPTX}")
+    print(f"wrote {MANIFEST}")
     return 0
 
 

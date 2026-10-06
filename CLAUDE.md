@@ -24,8 +24,8 @@ assessors (Grok/OpenAI/local); GitHub as the durable store; resumable in Claude 
 Full product intent and ruled-out approaches: **`intent.md`**. Backlog and open
 questions: **`docs/ROADMAP.md`**. Learner docs: `docs/WORKSHEET.md` (attack paths,
 no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map),
-`docs/training/RedSec-Range-Learning-Guide.pdf` (complete instructor workbook),
-`docs/training/RedSec-Range-Learning-Deck.pptx` (34-slide guided workshop),
+`docs/training/RedSec-Range-Learning-Guide.pdf` (defensive review workbook),
+`docs/training/RedSec-Range-Learning-Deck.pptx` (220-slide paired challenge workshop),
 `docs/THREAT-LANDSCAPE.md` (current agent attack chains + OWASP Agentic/CSA MAESTRO
 mapping), `docs/DIFFICULTY-TIERS.md` (easy/medium/hard/impossible per module; impossible
 answers are sealed in each module's `solution/SEALED.md`, excluded from SOLUTIONS.md). A code
