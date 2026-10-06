@@ -31,6 +31,9 @@ Use the [control-gap matrix](CONTROL-GAP-MATRIX.md) when you need the simple vie
 component, threat, likely actor, controls in place, and controls missing. Follow its
 range links for the complete per-challenge models.
 
+Use [CHALLENGE-LINKS.md](CHALLENGE-LINKS.md) when you want one complete GitHub URL
+for every individual challenge threat model.
+
 The API-backed workflow remains the reproducible refresh path. It requires the
 `codex-threat-models` GitHub environment and an `OPENAI_API_KEY` environment secret;
 neither credential value is stored in the repository or generated reports.
@@ -83,6 +86,8 @@ When `publish_pull_request` is enabled, the workflow opens a pull request contai
 
 - `docs/threat-models/OVERVIEW.md` — coverage, portfolio priorities, usage sequence,
   and one indexed row per challenge.
+- `docs/threat-models/CHALLENGE-LINKS.md` — one complete GitHub URL for every
+  challenge's full threat model.
 - `docs/threat-models/generated/<range>.md` — the full defensive reviews.
 - `docs/threat-models/generated/data/<range>.json` — validated structured results.
 - `docs/threat-models/generated/MANIFEST.json` — model, source revision, schema

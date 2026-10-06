@@ -30,9 +30,11 @@ batches = THREAT_MODELS.batches
 build_inventory = THREAT_MODELS.build_inventory
 generate = THREAT_MODELS.generate
 render = THREAT_MODELS.render
+render_challenge_links = THREAT_MODELS.render_challenge_links
 validate_batch = THREAT_MODELS.validate_batch
 AVAILABLE_RANGES = THREAT_MODELS.AVAILABLE_RANGES
 BLOCKED_OUTPUT = THREAT_MODELS.BLOCKED_OUTPUT
+GITHUB_REPORT_BASE = THREAT_MODELS.GITHUB_REPORT_BASE
 
 
 def synthetic_model(record: dict) -> ThreatModel:
@@ -168,6 +170,8 @@ def test_renderer_requires_full_catalog_and_builds_portfolio(tmp_path):
     assert "110 challenge concepts" in overview
     assert "162 declared variants" in overview
     assert "[control-gap matrix](CONTROL-GAP-MATRIX.md)" in overview
+    links = (output / "CHALLENGE-LINKS.md").read_text()
+    assert links.count(f"<{GITHUB_REPORT_BASE}/") == 110
     assert overview.count("| `builtin`") == 43 + 1
     assert "Secure before abuse" in (output / "generated" / "builtin.md").read_text()
     assert sum(
@@ -177,7 +181,7 @@ def test_renderer_requires_full_catalog_and_builds_portfolio(tmp_path):
     manifest = json.loads((output / "generated" / "MANIFEST.json").read_text())
     assert manifest["concepts"] == 110
     assert manifest["declared_variants"] == 162
-    assert len(manifest["files"]) == 11
+    assert len(manifest["files"]) == 12
 
     one_batch = next(results.glob("*.json"))
     one_batch.unlink()
@@ -253,3 +257,10 @@ def test_committed_portfolio_matches_catalog_and_integrity_manifest():
     assert "| Component | Threat | Who can exploit it | Controls in place | Controls missing |" in matrix
     assert matrix.count("\n| ") >= 20
     assert "not verified—outside the current scope" in matrix
+
+    links = (root / "CHALLENGE-LINKS.md").read_text()
+    assert links == render_challenge_links(inventory)
+    assert links.count(f"<{GITHUB_REPORT_BASE}/") == 110
+    for record in inventory:
+        report = (generated / f"{record['range_id']}.md").read_text()
+        assert f'<a id="{THREAT_MODELS.anchor(record["key"])}"></a>' in report
