@@ -30,7 +30,7 @@
 html { font-size: 10.3pt; }
 body {
   color: var(--ink);
-  font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  font-family: Arial, "Liberation Sans", sans-serif;
   line-height: 1.5;
   max-width: none;
   margin: 0;
@@ -58,7 +58,7 @@ blockquote {
   color: #173b47;
   break-inside: avoid;
 }
-code { font-family: "SFMono-Regular", Menlo, monospace; color: #8f2840; font-size: 8.8pt; }
+code { font-family: "Liberation Mono", "DejaVu Sans Mono", monospace; color: #8f2840; font-size: 8.8pt; }
 pre {
   background: var(--navy);
   color: #edf8f7;
