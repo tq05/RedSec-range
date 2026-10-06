@@ -2,27 +2,34 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
-from scripts.codex_threat_models import (
-    AbusePath,
-    Evidence,
-    ThreatBatch,
-    ThreatModel,
-    batches,
-    build_inventory,
-    generate,
-    render,
-    validate_batch,
-)
-
-
 ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location(
+    "redsec_codex_threat_models",
+    ROOT / "scripts" / "codex_threat_models.py",
+)
+assert SPEC and SPEC.loader
+THREAT_MODELS = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = THREAT_MODELS
+SPEC.loader.exec_module(THREAT_MODELS)
+
+AbusePath = THREAT_MODELS.AbusePath
+Evidence = THREAT_MODELS.Evidence
+ThreatBatch = THREAT_MODELS.ThreatBatch
+ThreatModel = THREAT_MODELS.ThreatModel
+batches = THREAT_MODELS.batches
+build_inventory = THREAT_MODELS.build_inventory
+generate = THREAT_MODELS.generate
+render = THREAT_MODELS.render
+validate_batch = THREAT_MODELS.validate_batch
 
 
 def synthetic_model(record: dict) -> ThreatModel:
