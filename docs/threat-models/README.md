@@ -27,6 +27,10 @@ inventory, together with static inspection of the framework and deployment sourc
 No challenge, solution, target, or exploit was executed. This is a Codex defensive
 static review, not a scan by the separately gated Codex Security product.
 
+Use the [control-gap matrix](CONTROL-GAP-MATRIX.md) when you need the simple view:
+component, threat, likely actor, controls in place, and controls missing. Follow its
+range links for the complete per-challenge models.
+
 The API-backed workflow remains the reproducible refresh path. It requires the
 `codex-threat-models` GitHub environment and an `OPENAI_API_KEY` environment secret;
 neither credential value is stored in the repository or generated reports.
