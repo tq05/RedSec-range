@@ -26,6 +26,8 @@ questions: **`docs/ROADMAP.md`**. Learner docs: `docs/WORKSHEET.md` (attack path
 no spoilers), `docs/SOLUTIONS.md` (answers), `docs/OVERVIEW.md` (visual map),
 `docs/training/RedSec-Range-Learning-Guide.pdf` (defensive review workbook),
 `docs/training/RedSec-Range-Learning-Deck.pptx` (220 paired concept slides plus two attribution slides),
+`docs/threat-models/README.md` (manual Codex defensive threat-model workflow and
+generated portfolio contract),
 `docs/THREAT-LANDSCAPE.md` (current agent attack chains + OWASP Agentic/CSA MAESTRO
 mapping), `docs/DIFFICULTY-TIERS.md` (easy/medium/hard/impossible per module; impossible
 answers are sealed in each module's `solution/SEALED.md`, excluded from SOLUTIONS.md). A code
@@ -138,6 +140,10 @@ or *on your own machine* from the repo. Same commands; different host. All need
 - CI: `.github/workflows/ci.yml` — tests, selftest, helm+kubeconform, container run,
   kind, a Codespaces devcontainer boot/solve test, every external adapter running
   concurrently, and a local boot/solve smoke test of the Fly Docker-in-Docker image.
+- Manual defensive analysis: `.github/workflows/codex-threat-models.yml` sends only
+  sanitized catalog/topology metadata to the OpenAI Responses API, validates strict
+  structured results for all 110 concepts, and optionally opens a documentation PR.
+  The model job is read-only; the separate publisher job never receives the API key.
 - Evidence log: `docs/proof/verification.log`.
 - Walkthroughs independently red-teamed by a separate model (fresh-context Sonnet).
 

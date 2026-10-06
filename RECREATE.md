@@ -11,7 +11,7 @@ and runs the bootstrap; the embedded spec is only a fallback for rebuilding if t
 repo is ever unavailable. This file is kept in sync with `intent.md` (decisions) and
 `CLAUDE.md` (current operational state) — update them together.
 
-- **Last updated:** 2026-10-05 (multi-range catalog, external adapters, Codespaces and Fly)
+- **Last updated:** 2026-10-06 (catalog-wide Codex defensive threat-model workflow)
 - **Repo:** https://github.com/tq05/RedSec-range
 - **State at last update:** 43 built-in verified challenges; 110 cataloged concepts / 162 runnable variants across five available ranges.
 
@@ -65,6 +65,12 @@ PRIMARY PATH (deterministic — do this first):
    The built-in course remains `builtin`; `offsec` is a non-deployable placeholder.
    See docs/CHALLENGE-CATALOG.md and docs/external-ranges.md. External adapter health
    checks do not replace the built-in fail-before/pass-after guarantee.
+
+8. Optional defensive threat-model portfolio (manual and billable): configure the
+   `codex-threat-models` GitHub environment with `OPENAI_API_KEY`, then run
+   `.github/workflows/codex-threat-models.yml`. It covers all 110 concepts using
+   sanitized metadata, validates structured output, and opens a documentation PR.
+   See `docs/threat-models/README.md`. It does not execute challenge solutions.
 
 ACCEPTANCE CHECKS (must all pass):
 - redsec doctor           -> 11/11 modules OK

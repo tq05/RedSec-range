@@ -54,6 +54,10 @@ External implementation and solution provenance remain upstream; see
 ## Backlog / next steps (suggestions, not commitments — confirm with R)
 
 Near-term:
+- [x] Add a manual Codex defensive threat-model workflow covering all 110 catalog
+      concepts. It validates strict structured output, renders a repository overview,
+      keeps model credentials separate from PR publishing, and can optionally request
+      Codex Security Review when that product is connected.
 - [x] Deepen external CI with MCPGoat's native 78-flag regression, DVAA's 22
       challenge/solution inventory, all ten DVMCP TCP services, and both Appsecco
       network services.
