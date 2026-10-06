@@ -7,7 +7,8 @@
   "concepts": 110,
   "declared_variants": 162,
   "files": {
-    "OVERVIEW.md": "1018fdb80156f8686b2c02a7fe9fe80c8477e639015698b8dbe0ffffc395e563",
+    "CHALLENGE-LINKS.md": "acb062c117467155287e797b184545e1462f57035a5307a3307dc0f5fc2c68e2",
+    "OVERVIEW.md": "9c1fa09e4eb3b554f7292a756771e391b469c4a304fae002b54348840d113c51",
     "generated/appsecco-mcp.md": "a76ceb4126033ec8ac08bf2b945027776d29b2270faa047b918ff79cc92226a8",
     "generated/builtin.md": "584b90fed4207d00437bef7282d5768225bf554f14d0d186e1e8c981bfe80248",
     "generated/data/appsecco-mcp.json": "69744951048d8a9aff21ff8e354875984ddd4c59c5ce60e846d3e8c8cf4430b0",

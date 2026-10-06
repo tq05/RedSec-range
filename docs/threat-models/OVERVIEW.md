@@ -9,6 +9,8 @@ and response measures, benign validation, residual risk, and supporting reposito
 
 For the fastest review, start with the five-column [control-gap matrix](CONTROL-GAP-MATRIX.md):
 component, threat, likely actor, controls in place, and controls missing.
+Use the [full per-challenge link index](CHALLENGE-LINKS.md) to open any
+individual threat model directly on GitHub.
 
 Runtime exploitability is **not verified—outside the current scope**. This review did not start targets,
 run solutions, recover secrets, or test payloads.

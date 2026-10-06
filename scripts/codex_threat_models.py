@@ -32,6 +32,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_VERSION = 1
 OUTSIDE_SCOPE = "not verified—outside the current scope"
 AVAILABLE_RANGES = ("builtin", "dvaa", "mcpgoat", "dvmcp", "appsecco-mcp")
+GITHUB_REPORT_BASE = (
+    "https://github.com/tq05/RedSec-range/blob/main/docs/threat-models/generated"
+)
 COMMON_EVIDENCE = (
     "intent.md",
     "SECURITY.md",
@@ -730,6 +733,8 @@ def render(args: argparse.Namespace) -> int:
         "",
         "For the fastest review, start with the five-column [control-gap matrix](CONTROL-GAP-MATRIX.md):",
         "component, threat, likely actor, controls in place, and controls missing.",
+        "Use the [full per-challenge link index](CHALLENGE-LINKS.md) to open any",
+        "individual threat model directly on GitHub.",
         "",
         f"Runtime exploitability is **{OUTSIDE_SCOPE}**. The workflow does not start targets,",
         "run solutions, recover secrets, or test payloads.",
@@ -788,6 +793,10 @@ def render(args: argparse.Namespace) -> int:
     overview_path.write_text("\n".join(overview).rstrip() + "\n")
     written.append(overview_path)
 
+    links_path = args.output_dir / "CHALLENGE-LINKS.md"
+    links_path.write_text(render_challenge_links(inventory))
+    written.append(links_path)
+
     manifest = {
         "schema_version": SCHEMA_VERSION,
         **metadata,
@@ -812,6 +821,34 @@ def relative_to_output(path: Path, output_dir: Path) -> str:
 def anchor(value: str) -> str:
     value = re.sub(r"[^a-z0-9]+", "-", value.lower())
     return value.strip("-")
+
+
+def render_challenge_links(inventory: list[dict[str, Any]]) -> str:
+    lines = [
+        "# Full links to every challenge threat model",
+        "",
+        "This index links directly to the complete defensive threat model for each of",
+        "the **110 challenge concepts** and **162 declared variants** in the RedSec catalog.",
+        "",
+        "| Range | Challenge | Title | Full GitHub link |",
+        "|---|---|---|---|",
+    ]
+    for record in inventory:
+        target = (
+            f"{GITHUB_REPORT_BASE}/{record['range_id']}.md"
+            f"#{anchor(record['key'])}"
+        )
+        lines.append(
+            f"| `{record['range_id']}` | `{record['key']}` | "
+            f"{table_text(record['title'])} | <{target}> |"
+        )
+    lines.extend(
+        [
+            "",
+            f"Runtime exploitability is **{OUTSIDE_SCOPE}**.",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def inventory_command(args: argparse.Namespace) -> int:
