@@ -1,0 +1,1660 @@
+{
+  "schema_version": 1,
+  "source_revision": "67491bee35bf6f3e38da47a094725714eafab2dd",
+  "model": "Codex-GPT-6-static-review",
+  "reasoning_effort": "high",
+  "generated_at": "2026-10-06T11:41:23+00:00",
+  "range_id": "dvaa",
+  "threat_models": [
+    {
+      "key": "dvaa/L1-01",
+      "title": "Extract the System Prompt",
+      "system_context": "Extract the System Prompt is a dvaa training concept for data-exfiltration. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L1-02",
+      "title": "API Key Leak",
+      "system_context": "API Key Leak is a dvaa training concept for data-exfiltration. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Secrets or personal data can leak through prompts, errors, logs, completion APIs, metadata, tool chains, or over-broad responses.",
+      "risk_rating": "high",
+      "control_families": [
+        "data-protection",
+        "identity-access",
+        "logging-detection",
+        "tool-execution"
+      ],
+      "assets": [
+        "API keys, tokens, credentials, and personal data",
+        "System prompts and privileged configuration",
+        "Logs, completions, model cards, and tool outputs"
+      ],
+      "trust_boundaries": [
+        "Secret store to application runtime",
+        "Application or tool output to untrusted caller",
+        "Sensitive telemetry or metadata to operators and models"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A malicious tool, model input, or content source"
+      ],
+      "abuse_preconditions": [
+        "Sensitive values are present in model-readable context, metadata, logs, or broad environment state",
+        "Response or tool policy does not minimize fields by caller and purpose"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller causes a response path to serialize sensitive context or metadata.",
+          "impact": "Credentials or protected data leave their intended trust boundary."
+        },
+        {
+          "scenario": "A tool or model with ambient access forwards data to an unauthorized destination.",
+          "impact": "The leak enables impersonation or lateral movement."
+        }
+      ],
+      "secure_before_abuse": [
+        "Keep credentials outside prompts, model cards, logs, completions, and general environment state; fetch them just in time through a scoped broker.",
+        "Apply response-field allowlists, data classification, tenant authorization, destination policy, and output minimization at the owning service.",
+        "Use short-lived, audience-bound, least-privilege credentials with rotation and revocation.",
+        "Redact sensitive fields before telemetry and prevent tool outputs from being treated as trusted instructions."
+      ],
+      "detection_and_response": [
+        "Deploy secret-pattern and canary detection at response, log, artifact, and egress boundaries with strict access controls.",
+        "Alert on unusual secret reads, completion enumeration, debug-level changes, bulk exports, and new destinations."
+      ],
+      "safe_validation": [
+        "Seed synthetic canaries and confirm unauthorized response, error, log, metadata, and completion paths never return them.",
+        "Exercise credential rotation and incident revocation with a test identity and verify old tokens stop working."
+      ],
+      "security_outcome": "Sensitive values are absent from model-readable and public channels and are released only to authorized, purpose-bound consumers.",
+      "residual_risk": [
+        "Authorized components necessarily handling plaintext remain high-value compromise targets.",
+        "Previously emitted secrets require rotation even after the disclosure path is fixed."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L1-03",
+      "title": "Basic Prompt Injection",
+      "system_context": "Basic Prompt Injection is a dvaa training concept for prompt-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-01",
+      "title": "Jailbreak via Roleplay",
+      "system_context": "Jailbreak via Roleplay is a dvaa training concept for jailbreak. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-02",
+      "title": "Context Window Manipulation",
+      "system_context": "Context Window Manipulation is a dvaa training concept for context-manipulation. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-03",
+      "title": "MCP Path Traversal",
+      "system_context": "MCP Path Traversal is a dvaa training concept for mcp-exploitation. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Improper path canonicalization and root enforcement can expose or modify files outside the authorized workspace.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Workspace files and declared roots",
+        "Host filesystem and credentials",
+        "File-operation audit trail"
+      ],
+      "trust_boundaries": [
+        "Untrusted path or URI to filesystem resolver",
+        "Declared workspace root to host filesystem",
+        "Tool identity to file authorization"
+      ],
+      "threat_actors": [
+        "A remote tool caller",
+        "A prompt-influenced agent using a file tool"
+      ],
+      "abuse_preconditions": [
+        "Path resolution accepts traversal, absolute paths, links, or ambiguous encodings",
+        "The file service runs with access beyond the caller’s allowed root"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller supplies an alternate path representation that resolves beyond the declared root.",
+          "impact": "Sensitive host data is read or modified."
+        },
+        {
+          "scenario": "A symbolic link or race changes the resolved object after validation.",
+          "impact": "A previously safe check authorizes a different filesystem target."
+        }
+      ],
+      "secure_before_abuse": [
+        "Resolve paths against a server-selected root, reject absolute and parent traversal forms, and verify the final opened object remains beneath that root.",
+        "Use descriptor-relative filesystem APIs and avoid check-then-open races and link following for protected operations.",
+        "Run the service as a dedicated non-root identity with a read-only filesystem and only the required workspace mounted.",
+        "Authorize file operations by caller, tenant, action, and object; keep roots server-side rather than trusting client declarations."
+      ],
+      "detection_and_response": [
+        "Log normalized object identifiers and denied root escapes without recording sensitive file content.",
+        "Alert on repeated invalid paths, link-related failures, and access to sensitive filename classes."
+      ],
+      "safe_validation": [
+        "Use a temporary synthetic tree to confirm parent, absolute, encoded, and link-based escape cases fail closed.",
+        "Verify the runtime identity cannot read an unrelated canary file even if application validation is bypassed."
+      ],
+      "security_outcome": "File operations remain inside an authorized root and are constrained by both application checks and operating-system permissions.",
+      "residual_risk": [
+        "Platform-specific path and link semantics require regression coverage.",
+        "Writable shared volumes can reintroduce time-of-check/time-of-use races."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-04",
+      "title": "Persistent Memory Injection",
+      "system_context": "Persistent Memory Injection is a dvaa training concept for memory-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned or over-broad memory can persist adversarial instructions, cross identity boundaries, or disclose retained secrets in later sessions.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Long-term agent memory and user preferences",
+        "Tenant-scoped credentials and personal data",
+        "Future conversation decisions"
+      ],
+      "trust_boundaries": [
+        "Current request to persistent memory",
+        "One tenant or session to another",
+        "Stored memory to future model context"
+      ],
+      "threat_actors": [
+        "A user who can write durable memory",
+        "A compromised agent or external content source"
+      ],
+      "abuse_preconditions": [
+        "Untrusted content can be persisted without provenance, scope, or review",
+        "Future turns retrieve memory into an authoritative context position"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A crafted entry is saved and repeatedly reintroduced into future contexts.",
+          "impact": "The attacker gains persistence beyond the initiating conversation."
+        },
+        {
+          "scenario": "Memory retrieval is insufficiently scoped by tenant or purpose.",
+          "impact": "One user’s sensitive state becomes visible or influential elsewhere."
+        }
+      ],
+      "secure_before_abuse": [
+        "Partition memory by tenant, user, agent, purpose, and retention class with server-side authorization on every read and write.",
+        "Store provenance, author, timestamp, and confidence; prevent untrusted entries from becoming policy or tool authority.",
+        "Require review or bounded schemas for durable high-impact memories and support revocation and expiration.",
+        "Encrypt sensitive memory and exclude credentials from model-readable stores."
+      ],
+      "detection_and_response": [
+        "Alert on cross-tenant retrieval attempts, rapid propagation, policy-like entries, and unusual durable-write volume.",
+        "Maintain an audit trail for memory creation, mutation, retrieval, and deletion and support incident-wide purge."
+      ],
+      "safe_validation": [
+        "Use synthetic tenants to confirm writes and retrieval remain isolated across sessions and identities.",
+        "Insert inert policy-shaped text and verify it is labeled as untrusted data and cannot authorize an effect."
+      ],
+      "security_outcome": "Memory remains scoped, attributable, revocable, and unable to grant authority across turns or tenants.",
+      "residual_risk": [
+        "Legitimate but misleading memories can influence model quality without violating access control.",
+        "Backups and derived indexes can delay complete deletion."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-05",
+      "title": "Memory Credential Extraction",
+      "system_context": "Memory Credential Extraction is a dvaa training concept for memory-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned or over-broad memory can persist adversarial instructions, cross identity boundaries, or disclose retained secrets in later sessions.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Long-term agent memory and user preferences",
+        "Tenant-scoped credentials and personal data",
+        "Future conversation decisions"
+      ],
+      "trust_boundaries": [
+        "Current request to persistent memory",
+        "One tenant or session to another",
+        "Stored memory to future model context"
+      ],
+      "threat_actors": [
+        "A user who can write durable memory",
+        "A compromised agent or external content source"
+      ],
+      "abuse_preconditions": [
+        "Untrusted content can be persisted without provenance, scope, or review",
+        "Future turns retrieve memory into an authoritative context position"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A crafted entry is saved and repeatedly reintroduced into future contexts.",
+          "impact": "The attacker gains persistence beyond the initiating conversation."
+        },
+        {
+          "scenario": "Memory retrieval is insufficiently scoped by tenant or purpose.",
+          "impact": "One user’s sensitive state becomes visible or influential elsewhere."
+        }
+      ],
+      "secure_before_abuse": [
+        "Partition memory by tenant, user, agent, purpose, and retention class with server-side authorization on every read and write.",
+        "Store provenance, author, timestamp, and confidence; prevent untrusted entries from becoming policy or tool authority.",
+        "Require review or bounded schemas for durable high-impact memories and support revocation and expiration.",
+        "Encrypt sensitive memory and exclude credentials from model-readable stores."
+      ],
+      "detection_and_response": [
+        "Alert on cross-tenant retrieval attempts, rapid propagation, policy-like entries, and unusual durable-write volume.",
+        "Maintain an audit trail for memory creation, mutation, retrieval, and deletion and support incident-wide purge."
+      ],
+      "safe_validation": [
+        "Use synthetic tenants to confirm writes and retrieval remain isolated across sessions and identities.",
+        "Insert inert policy-shaped text and verify it is labeled as untrusted data and cannot authorize an effect."
+      ],
+      "security_outcome": "Memory remains scoped, attributable, revocable, and unable to grant authority across turns or tenants.",
+      "residual_risk": [
+        "Legitimate but misleading memories can influence model quality without violating access control.",
+        "Backups and derived indexes can delay complete deletion."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-06",
+      "title": "Context Padding Attack",
+      "system_context": "Context Padding Attack is a dvaa training concept for context-overflow. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-07",
+      "title": "Safety Instruction Displacement",
+      "system_context": "Safety Instruction Displacement is a dvaa training concept for context-overflow. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-08",
+      "title": "Malicious Tool Registration",
+      "system_context": "Malicious Tool Registration is a dvaa training concept for tool-registry-poisoning. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L2-09",
+      "title": "Tool Call MITM",
+      "system_context": "Tool Call MITM is a dvaa training concept for tool-mitm. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-01",
+      "title": "Chained Prompt Injection",
+      "system_context": "Chained Prompt Injection is a dvaa training concept for prompt-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-02",
+      "title": "SSRF via MCP",
+      "system_context": "SSRF via MCP is a dvaa training concept for mcp-exploitation. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A server-side fetch capability can be redirected to metadata or internal services, exposing credentials and enabling lateral movement under the workload identity.",
+      "risk_rating": "critical",
+      "control_families": [
+        "network-boundaries",
+        "identity-access",
+        "data-protection",
+        "logging-detection"
+      ],
+      "assets": [
+        "Cloud metadata and workload credentials",
+        "Internal services and network topology",
+        "Outbound request identity and response data"
+      ],
+      "trust_boundaries": [
+        "Untrusted URL input to server-side client",
+        "Application network to metadata and internal services",
+        "Fetched response to user or model context"
+      ],
+      "threat_actors": [
+        "An unauthenticated or low-privilege caller",
+        "A prompt-influenced agent controlling a fetch target"
+      ],
+      "abuse_preconditions": [
+        "The service follows caller-controlled destinations or redirects",
+        "Network policy and workload identity permit access to sensitive internal endpoints"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A caller selects an internal or special-address destination through direct input, redirect, or name resolution.",
+          "impact": "The service returns sensitive internal data."
+        },
+        {
+          "scenario": "Stolen workload credentials are accepted by a second protected service.",
+          "impact": "The compromise expands beyond the original application."
+        }
+      ],
+      "secure_before_abuse": [
+        "Use an allowlist of schemes, hosts, ports, and paths; resolve names once and reject loopback, link-local, private, and otherwise prohibited addresses.",
+        "Revalidate every redirect and connect to the validated address while preserving the expected host and TLS identity.",
+        "Block metadata and unnecessary east-west or internet egress at the network layer, and use short-lived audience-bound workload credentials.",
+        "Limit response size, content type, timeout, and redirect count; never return raw credential-bearing responses."
+      ],
+      "detection_and_response": [
+        "Log normalized destination class, resolved address, redirect chain, caller, and policy decision with credentials redacted.",
+        "Alert on metadata ranges, unusual internal ports, DNS-answer changes, and bursts of failed destination validation."
+      ],
+      "safe_validation": [
+        "Use controlled loopback, private-address, redirect, and rebinding simulations and assert the request is rejected before connection.",
+        "Confirm a synthetic workload identity cannot reach a canary internal service outside its declared dependency set."
+      ],
+      "security_outcome": "Server-side requests reach only explicitly approved destinations and cannot use workload network position to retrieve internal credentials.",
+      "residual_risk": [
+        "Compromise of an allowlisted destination can turn it into a pivot.",
+        "Proxy and resolver differences can create validation-to-connection inconsistencies."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-03",
+      "title": "Self-Replicating Memory Entry",
+      "system_context": "Self-Replicating Memory Entry is a dvaa training concept for memory-injection. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Poisoned or over-broad memory can persist adversarial instructions, cross identity boundaries, or disclose retained secrets in later sessions.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "data-protection",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "Long-term agent memory and user preferences",
+        "Tenant-scoped credentials and personal data",
+        "Future conversation decisions"
+      ],
+      "trust_boundaries": [
+        "Current request to persistent memory",
+        "One tenant or session to another",
+        "Stored memory to future model context"
+      ],
+      "threat_actors": [
+        "A user who can write durable memory",
+        "A compromised agent or external content source"
+      ],
+      "abuse_preconditions": [
+        "Untrusted content can be persisted without provenance, scope, or review",
+        "Future turns retrieve memory into an authoritative context position"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A crafted entry is saved and repeatedly reintroduced into future contexts.",
+          "impact": "The attacker gains persistence beyond the initiating conversation."
+        },
+        {
+          "scenario": "Memory retrieval is insufficiently scoped by tenant or purpose.",
+          "impact": "One user’s sensitive state becomes visible or influential elsewhere."
+        }
+      ],
+      "secure_before_abuse": [
+        "Partition memory by tenant, user, agent, purpose, and retention class with server-side authorization on every read and write.",
+        "Store provenance, author, timestamp, and confidence; prevent untrusted entries from becoming policy or tool authority.",
+        "Require review or bounded schemas for durable high-impact memories and support revocation and expiration.",
+        "Encrypt sensitive memory and exclude credentials from model-readable stores."
+      ],
+      "detection_and_response": [
+        "Alert on cross-tenant retrieval attempts, rapid propagation, policy-like entries, and unusual durable-write volume.",
+        "Maintain an audit trail for memory creation, mutation, retrieval, and deletion and support incident-wide purge."
+      ],
+      "safe_validation": [
+        "Use synthetic tenants to confirm writes and retrieval remain isolated across sessions and identities.",
+        "Insert inert policy-shaped text and verify it is labeled as untrusted data and cannot authorize an effect."
+      ],
+      "security_outcome": "Memory remains scoped, attributable, revocable, and unable to grant authority across turns or tenants.",
+      "residual_risk": [
+        "Legitimate but misleading memories can influence model quality without violating access control.",
+        "Backups and derived indexes can delay complete deletion."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-04",
+      "title": "System Prompt Extraction via Context Pressure",
+      "system_context": "System Prompt Extraction via Context Pressure is a dvaa training concept for context-overflow. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Adversarial instructions can be treated as authority, displace intended policy, or steer downstream tools and disclosures.",
+      "risk_rating": "high",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "logging-detection"
+      ],
+      "assets": [
+        "System instructions and policy context",
+        "Conversation integrity and safety decisions",
+        "Downstream tools, secrets, and protected data"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to model context",
+        "Model output to application policy",
+        "Model recommendation to effectful tool"
+      ],
+      "threat_actors": [
+        "A user supplying adversarial instructions",
+        "A contributor controlling retrieved or remote content"
+      ],
+      "abuse_preconditions": [
+        "The application mixes untrusted content with authoritative instructions without provenance",
+        "A model decision can trigger disclosure or effects without an independent policy check"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted text is incorporated into model context and interpreted as an instruction.",
+          "impact": "The model may reveal protected context or recommend an unauthorized action."
+        },
+        {
+          "scenario": "A model-influenced action reaches a tool under ambient authority.",
+          "impact": "The system performs an effect the originating actor could not directly authorize."
+        }
+      ],
+      "secure_before_abuse": [
+        "Label content by provenance and keep untrusted data structurally separate from system policy and tool instructions.",
+        "Authorize every sensitive disclosure and tool effect in deterministic application code using the originating identity and object.",
+        "Constrain tools with narrow schemas, allowlisted destinations, least-privilege credentials, and explicit approval for high-impact effects.",
+        "Treat system prompts as non-secret policy hints and keep credentials and enforcement logic outside model context."
+      ],
+      "detection_and_response": [
+        "Log content provenance, policy decisions, tool proposals, approvals, and effects with a shared trace identifier.",
+        "Alert on instruction-like content from data channels and unusual sequences of denied or high-impact tool requests."
+      ],
+      "safe_validation": [
+        "Submit inert conflicting instructions through each supported content channel and assert protected actions remain denied.",
+        "Replace sensitive tools with recording doubles and confirm the policy layer blocks unauthorized proposals independent of model wording."
+      ],
+      "security_outcome": "Untrusted instructions may influence text generation but cannot independently authorize disclosure, identity changes, or protected effects.",
+      "residual_risk": [
+        "Models may still produce misleading content that requires user-interface provenance and review.",
+        "Novel encodings and cross-channel context can evade content classifiers, so effect-layer enforcement remains essential."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-05",
+      "title": "Tool Typosquatting",
+      "system_context": "Tool Typosquatting is a dvaa training concept for tool-registry-poisoning. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-06",
+      "title": "Tool Chain Data Exfiltration",
+      "system_context": "Tool Chain Data Exfiltration is a dvaa training concept for tool-registry-poisoning. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-07",
+      "title": "Tool Shadowing",
+      "system_context": "Tool Shadowing is a dvaa training concept for tool-mitm. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L3-08",
+      "title": "Traffic Redirection Attack",
+      "system_context": "Traffic Redirection Attack is a dvaa training concept for tool-mitm. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "A malicious, shadowed, mutated, or intercepted tool can acquire trusted identity and steer the host toward unauthorized disclosure or effects.",
+      "risk_rating": "high",
+      "control_families": [
+        "tool-execution",
+        "protocol-integrity",
+        "identity-access",
+        "supply-chain"
+      ],
+      "assets": [
+        "Tool registry, definitions, and routing metadata",
+        "Host approval and tool-selection integrity",
+        "Credentials and side effects available to tools"
+      ],
+      "trust_boundaries": [
+        "Tool publisher or server to agent host",
+        "Tool metadata and output to model context",
+        "Selected tool to protected effect"
+      ],
+      "threat_actors": [
+        "A malicious tool publisher or MCP server",
+        "A compromised registry, proxy, or trusted tool"
+      ],
+      "abuse_preconditions": [
+        "Tool identity or behavior can change after approval or collide with a trusted name",
+        "The host treats tool metadata or output as policy and grants ambient credentials"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A tool is approved under benign metadata and later changes behavior, identity, or instructions.",
+          "impact": "Existing trust is reused for a malicious operation."
+        },
+        {
+          "scenario": "A colliding or redirected tool is selected in place of the intended trusted implementation.",
+          "impact": "Sensitive inputs or credentials reach an attacker-controlled component."
+        }
+      ],
+      "secure_before_abuse": [
+        "Bind approvals to a signed publisher identity and immutable digest of tool schema, description, endpoint, and version; require reapproval on change.",
+        "Use server-qualified tool identifiers and deterministic routing; reject ambiguous names, redirects, and untrusted registry precedence.",
+        "Treat descriptions and outputs as untrusted data, and authorize every effect against the originating identity in host code.",
+        "Give each tool a narrow credential, destination allowlist, input schema, output limit, and isolated execution boundary."
+      ],
+      "detection_and_response": [
+        "Alert on tool digest drift, registry changes, name collisions, endpoint redirection, reapproval bypass, and unusual tool sequences.",
+        "Trace registry resolution, selected tool identity, input provenance, policy decision, and effect without logging secrets."
+      ],
+      "safe_validation": [
+        "Register inert colliding and changed tool definitions in a disposable registry and assert selection fails or requires explicit reapproval.",
+        "Use a recording tool double to confirm untrusted metadata and output cannot authorize a protected effect."
+      ],
+      "security_outcome": "Hosts execute only the exact approved tool identity and version, with least privilege and independent authorization at the effect boundary.",
+      "residual_risk": [
+        "A signed and approved publisher can still ship malicious logic within its granted scope.",
+        "Semantic changes may evade schema-level comparison and require behavior review."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L4-01",
+      "title": "Compromise SecureBot",
+      "system_context": "Compromise SecureBot is a dvaa training concept for mixed. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Prompt, identity, tool, and network weaknesses can compose into an end-to-end path from untrusted input to protected data and external impact.",
+      "risk_rating": "critical",
+      "control_families": [
+        "input-content",
+        "tool-execution",
+        "identity-access",
+        "network-boundaries"
+      ],
+      "assets": [
+        "End-to-end agent workflow and user intent",
+        "Internal vaults, tools, credentials, and delegated access",
+        "Containment and incident-response boundaries"
+      ],
+      "trust_boundaries": [
+        "Untrusted content to agent context",
+        "Agent authority to internal tool or service",
+        "Protected result to external destination"
+      ],
+      "threat_actors": [
+        "An external actor controlling indirect content",
+        "A compromised agent, tool, or trusted data source"
+      ],
+      "abuse_preconditions": [
+        "Several individually permissive boundaries compose into an unreviewed path",
+        "The agent holds ambient authority and can externalize protected results"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "Untrusted content steers an agent to use an internal capability under ambient authority.",
+          "impact": "The attacker reaches a protected object indirectly."
+        },
+        {
+          "scenario": "The protected result is passed through another tool or output channel without purpose and destination checks.",
+          "impact": "Sensitive data leaves the trusted environment."
+        }
+      ],
+      "secure_before_abuse": [
+        "Model the complete path from every untrusted input to every high-impact effect and break it with independent controls at multiple boundaries.",
+        "Propagate the originating principal and content provenance; authorize object, action, purpose, and destination at each service.",
+        "Remove ambient credentials, use attenuated short-lived capabilities, and require human approval for high-impact or novel multi-step plans.",
+        "Constrain east-west and outbound network paths and apply data-loss controls at the final egress boundary."
+      ],
+      "detection_and_response": [
+        "Correlate content ingestion, agent planning, tool calls, internal access, approvals, and egress in one trace.",
+        "Alert on unusual cross-service sequences, sensitive-object reads followed by outbound actions, and privilege changes within a workflow."
+      ],
+      "safe_validation": [
+        "Run an inert end-to-end scenario with recording doubles and confirm at least two independent controls stop the protected effect.",
+        "Tabletop containment of a synthetic compromised agent and verify credential revocation, session termination, and evidence preservation."
+      ],
+      "security_outcome": "No single model, content, identity, tool, or network failure can complete a path from untrusted input to protected impact.",
+      "residual_risk": [
+        "Authorized multi-step workflows can resemble abuse and require contextual monitoring.",
+        "Unknown dependencies may introduce alternate paths outside the documented graph."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    },
+    {
+      "key": "dvaa/L4-02",
+      "title": "Agent-to-Agent Attack Chain",
+      "system_context": "Agent-to-Agent Attack Chain is a dvaa training concept for agent-to-agent. The defensive model assumes deployment inside the private, isolated range topology described by the catalog.",
+      "primary_risk": "Weak identity, message integrity, or delegation scoping can let an agent impersonate a trusted peer, smuggle session state, or exercise transitive authority.",
+      "risk_rating": "high",
+      "control_families": [
+        "identity-access",
+        "protocol-integrity",
+        "tool-execution",
+        "logging-detection"
+      ],
+      "assets": [
+        "Agent identities, cards, and delegated authority",
+        "A2A messages, tasks, and context state",
+        "Protected actions reached through agent delegation"
+      ],
+      "trust_boundaries": [
+        "Remote agent to receiving agent",
+        "Agent Card discovery to runtime identity",
+        "Delegated task to protected tool or data"
+      ],
+      "threat_actors": [
+        "A malicious or impersonated peer agent",
+        "A compromised trusted agent in a delegation chain"
+      ],
+      "abuse_preconditions": [
+        "Messages or context identifiers are accepted without strong peer and task binding",
+        "Transitive trust grants a downstream agent more authority than the originating principal"
+      ],
+      "abuse_paths": [
+        {
+          "scenario": "A forged or replayed message is associated with a trusted agent or task.",
+          "impact": "The receiver performs an unauthorized workflow step."
+        },
+        {
+          "scenario": "A valid agent delegates ambient authority without preserving the originating principal and constraints.",
+          "impact": "A downstream action exceeds the user’s intended scope."
+        }
+      ],
+      "secure_before_abuse": [
+        "Authenticate peers cryptographically and bind Agent Cards, keys, audience, issuer, and service endpoints through trusted discovery.",
+        "Sign messages and bind task, context, sender, recipient, nonce, expiry, and replay state before processing.",
+        "Propagate the originating principal and attenuated capability through every delegation; re-authorize each protected effect.",
+        "Partition task state by tenant and peer, and require approval for sensitive cross-agent actions."
+      ],
+      "detection_and_response": [
+        "Record peer identity, card/key version, task and context identifiers, delegation chain, policy decision, and final effect.",
+        "Alert on replay, identity-card drift, impossible task transitions, context reuse across tenants, and unusual delegation depth."
+      ],
+      "safe_validation": [
+        "Use synthetic peers to confirm unsigned, expired, replayed, wrong-audience, and cross-context messages fail closed.",
+        "Exercise a benign multi-agent workflow and verify the least-privileged originating identity is preserved at the final effect."
+      ],
+      "security_outcome": "Every A2A message and delegated effect is bound to an authenticated peer, scoped task, originating principal, and replay-safe context.",
+      "residual_risk": [
+        "A fully compromised authorized peer can issue valid but malicious requests within its remaining scope.",
+        "Federated key rotation and trust-store drift can create temporary acceptance gaps."
+      ],
+      "evidence": [
+        {
+          "path": "ranges/catalog.yaml",
+          "reason": "Defines the pinned upstream source, challenge identity, adapter, ports, and ownership boundary."
+        },
+        {
+          "path": "docs/external-ranges.md",
+          "reason": "Defines external-container isolation, gateway behavior, update policy, and adapter assurance limits."
+        }
+      ],
+      "confidence": "medium",
+      "limitations": [
+        "Static design review only; runtime exploitability is not verified—outside the current scope.",
+        "The pinned upstream implementation is not present in this repository, so implementation-specific controls require upstream verification."
+      ]
+    }
+  ]
+}
