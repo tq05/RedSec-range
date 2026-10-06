@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import zipfile
 from pathlib import Path
 
 # Homebrew installs Pango/GLib outside the default macOS dynamic-loader path.
@@ -30,6 +31,8 @@ GUIDE_PDF = TRAINING / "RedSec-Range-Learning-Guide.pdf"
 DECK_PPTX = TRAINING / "RedSec-Range-Learning-Deck.pptx"
 THEME = TRAINING / "learning-theme.css"
 MANIFEST = TRAINING / "ARTIFACTS.sha256"
+ASSEMBLER = ROOT / "scripts" / "assemble_learning_materials.py"
+BUILDER = Path(__file__).resolve()
 
 NAVY = RGBColor(7, 24, 39)
 NAVY_2 = RGBColor(13, 39, 58)
@@ -39,7 +42,8 @@ CYAN = RGBColor(0, 196, 190)
 RED = RGBColor(238, 83, 105)
 ORANGE = RGBColor(241, 155, 78)
 PURPLE = RGBColor(151, 121, 224)
-FONT = "Avenir Next"
+FONT = "Arial"
+OOXML_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 
 def run(command: list[str]) -> None:
@@ -68,7 +72,7 @@ def build_pdf() -> None:
             "--metadata=lang:en-GB",
             f"--output={html}",
         ])
-        fingerprint = f"source-sha256:{sha256(GUIDE_MD)}"
+        fingerprint = f"input-sha256:{input_fingerprint(GUIDE_MD, THEME, BUILDER)}"
         html_text = html.read_text()
         html_text = html_text.replace(
             "</head>",
@@ -233,14 +237,17 @@ def add_content_slide(
 
 def build_deck() -> None:
     slides = parse_deck()
-    if len(slides) != 220:
-        raise SystemExit(f"expected 220 paired challenge slides, found {len(slides)}")
-    for index in range(0, len(slides), 2):
+    if len(slides) != 222:
+        raise SystemExit(f"expected 220 challenge slides plus 2 attribution slides, found {len(slides)}")
+    for index in range(0, 220, 2):
         challenge, resolution = slides[index:index + 2]
         if challenge["kind"] != "challenge" or resolution["kind"] != "resolution":
             raise SystemExit(f"invalid pair order at slides {index + 1}-{index + 2}")
         if challenge["key"] != resolution["key"]:
             raise SystemExit(f"pair key mismatch at slides {index + 1}-{index + 2}")
+    for index, appendix in enumerate(slides[220:], 1):
+        if appendix["kind"] != "attribution" or appendix["key"] != f"attribution/{index}":
+            raise SystemExit(f"invalid attribution slide at position {220 + index}")
     prs = Presentation()
     prs.slide_width = Inches(13.333333)
     prs.slide_height = Inches(7.5)
@@ -248,19 +255,52 @@ def build_deck() -> None:
     prs.core_properties.subject = "Defensive review and remediation for AI, A2A, and MCP challenge concepts"
     prs.core_properties.author = "RedSec Range"
     prs.core_properties.keywords = "AI security, MCP, A2A, defensive review, training"
-    prs.core_properties.comments = f"source-sha256:{sha256(DECK_MD)}"
+    prs.core_properties.comments = f"input-sha256:{input_fingerprint(DECK_MD, BUILDER)}"
 
     for index, slide_data in enumerate(slides, start=1):
         add_content_slide(prs, slide_data, index, len(slides))
     prs.save(DECK_PPTX)
+    normalize_ooxml_archive(DECK_PPTX)
+
+
+def normalize_ooxml_archive(path: Path) -> None:
+    """Remove ZIP wall-clock timestamps so identical OOXML content hashes equally."""
+    temporary = path.with_suffix(path.suffix + ".normalized")
+    with zipfile.ZipFile(path) as source, zipfile.ZipFile(temporary, "w") as target:
+        for original in source.infolist():
+            member = zipfile.ZipInfo(original.filename, OOXML_TIMESTAMP)
+            member.compress_type = original.compress_type
+            member.external_attr = original.external_attr
+            member.internal_attr = original.internal_attr
+            member.create_system = 0
+            target.writestr(member, source.read(original.filename), compresslevel=9)
+    temporary.replace(path)
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def input_fingerprint(*paths: Path) -> str:
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(str(path.relative_to(ROOT)).encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def write_manifest() -> None:
-    paths = (GUIDE_MD, DECK_MD, THEME, GUIDE_PDF, DECK_PPTX)
+    paths = (
+        ASSEMBLER,
+        BUILDER,
+        GUIDE_MD,
+        DECK_MD,
+        THEME,
+        GUIDE_PDF,
+        DECK_PPTX,
+    )
     lines = ["# sha256  path", *[f"{sha256(path)}  {path.relative_to(ROOT)}" for path in paths]]
     MANIFEST.write_text("\n".join(lines) + "\n")
 

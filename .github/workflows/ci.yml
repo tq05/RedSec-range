@@ -31,6 +31,46 @@ jobs:
       - name: Offline Kubernetes manifest validation
         run: python scripts/validate_manifests.py
 
+  learning-materials:
+    # Defensive-only generation, integrity, reproducibility, and render checks.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install document toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fonts-liberation libharfbuzz-subset0 libpango-1.0-0 \
+            libpangoft2-1.0-0 libreoffice-impress pandoc poppler-utils
+          pip install -e ".[dev,training]"
+      - name: Check committed sources and artifacts
+        run: |
+          python scripts/assemble_learning_materials.py --check
+          pytest -q tests/test_learning_materials.py
+      - name: Rebuild twice and prove deterministic output
+        run: |
+          python scripts/build_learning_materials.py
+          sha256sum \
+            docs/training/RedSec-Range-Learning-Guide.pdf \
+            docs/training/RedSec-Range-Learning-Deck.pptx > /tmp/redsec-learning.sha256
+          python scripts/build_learning_materials.py
+          sha256sum --check /tmp/redsec-learning.sha256
+          pytest -q tests/test_learning_materials.py
+      - name: Render every slide with LibreOffice
+        run: |
+          mkdir -p /tmp/redsec-slides
+          libreoffice --headless --convert-to pdf --outdir /tmp/redsec-slides \
+            docs/training/RedSec-Range-Learning-Deck.pptx
+          pdfinfo /tmp/redsec-slides/RedSec-Range-Learning-Deck.pdf \
+            | grep -Eq '^Pages:[[:space:]]+222$'
+          pdftotext /tmp/redsec-slides/RedSec-Range-Learning-Deck.pdf \
+            /tmp/redsec-slides/deck.txt
+          grep -Fq 'First contact' /tmp/redsec-slides/deck.txt
+          grep -Fq 'Sources and licences' /tmp/redsec-slides/deck.txt
+
   helm:
     runs-on: ubuntu-latest
     steps:

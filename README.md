@@ -13,10 +13,10 @@ worked.
 >
 > **Want to play?** Work the [**worksheet**](docs/WORKSHEET.md) (attack paths, no
 > spoilers) → check yourself against the [**solutions**](docs/SOLUTIONS.md) → see the
-> [**visual overview**](docs/OVERVIEW.md) for the whole map. For a complete guided
-> defensive review across every built-in and external range, use the [**learning
-> guide**](docs/training/RedSec-Range-Learning-Guide.pdf) and [**220-slide paired
-> challenge deck**](docs/training/RedSec-Range-Learning-Deck.pptx).
+> [**visual overview**](docs/OVERVIEW.md) for the whole map. For a guided,
+> concept-level defensive review across every built-in and external range, use the
+> [**learning guide**](docs/training/RedSec-Range-Learning-Guide.pdf) and
+> [**222-slide workshop deck**](docs/training/RedSec-Range-Learning-Deck.pptx).
 
 > ⚠️ **Deliberately vulnerable software.** Every target in this repo ships real,
 > exploitable flaws (prompt injection, SSRF, command-injection RCE, insecure
@@ -300,8 +300,8 @@ Details: [docs/architecture.md](docs/architecture.md).
 |-----|---------------|
 | [docs/WORKSHEET.md](docs/WORKSHEET.md) | Per-challenge **attack paths, no spoilers** — the "chess sheet" |
 | [docs/SOLUTIONS.md](docs/SOLUTIONS.md) | Full **answers** (flags + exact steps) |
-| [docs/training/RedSec-Range-Learning-Guide.pdf](docs/training/RedSec-Range-Learning-Guide.pdf) | Defensive workbook for all 110 concepts / 162 variants: boundaries, review questions, controls, and provenance |
-| [docs/training/RedSec-Range-Learning-Deck.pptx](docs/training/RedSec-Range-Learning-Deck.pptx) | 220-slide workshop deck: challenge overview followed by defensive resolution and gotchas |
+| [docs/training/RedSec-Range-Learning-Guide.pdf](docs/training/RedSec-Range-Learning-Guide.pdf) | 110 defensive concept cards representing 162 declared variants: boundaries, review questions, controls, and provenance |
+| [docs/training/RedSec-Range-Learning-Deck.pptx](docs/training/RedSec-Range-Learning-Deck.pptx) | 220 paired concept slides plus two source-and-license attribution slides |
 | [docs/training/README.md](docs/training/README.md) | Editable learning sources and reproducible build instructions |
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | **Visual** map — learning path, attack surface, MCP matrix, kill chain |
 | [docs/curriculum.md](docs/curriculum.md) | Module ↔ OWASP/ATLAS mapping table |

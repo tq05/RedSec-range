@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import re
+import subprocess
+import sys
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree
@@ -34,6 +36,30 @@ def expected_keys() -> list[str]:
     return keys
 
 
+def expected_provenance_urls() -> set[str]:
+    catalog = load_catalog()
+    urls = set()
+    for definition in catalog.ranges.values():
+        urls.add(
+            definition.source.repository.removesuffix(".git")
+            if definition.source
+            else definition.homepage
+        )
+        if definition.curriculum.solution_url:
+            urls.add(definition.curriculum.solution_url)
+    return urls
+
+
+def input_fingerprint(*paths: Path) -> str:
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(str(path.relative_to(ROOT)).encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def source_slides() -> list[str]:
     source = (TRAINING / "LEARNING-DECK.md").read_text().strip()
     return re.split(r"\n\s*---\s*\n", source)
@@ -58,6 +84,14 @@ def expected_slide_text(block: str) -> list[str]:
 
 
 def test_learning_sources_cover_every_catalog_concept_without_runbook_content():
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "assemble_learning_materials.py"), "--check"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
     guide = (TRAINING / "LEARNING-GUIDE.md").read_text()
     deck = (TRAINING / "LEARNING-DECK.md").read_text()
     keys = expected_keys()
@@ -71,25 +105,39 @@ def test_learning_sources_cover_every_catalog_concept_without_runbook_content():
     assert guide.count(OUTSIDE_SCOPE) >= 110
     assert deck.count(OUTSIDE_SCOPE) == 110
 
+    catalog = load_catalog()
+    for range_id, definition in catalog.ranges.items():
+        assert f"| `{range_id}` | {definition.maintainer} | {definition.license} |" in guide
+
     expected_patterns = {
         "builtin/04/session-smuggling": "session-context",
         "builtin/05/knowledge-poisoning": "rag",
         "builtin/06/embedding-inversion": "embeddings",
-        "builtin/07/resource-traversal": "sink",
-        "builtin/07/command-injection": "sink",
+        "builtin/07/resource-traversal": "path",
+        "builtin/07/command-injection": "command",
         "builtin/09/metadata-ssrf": "infra",
-        "dvaa/L2-03": "sink",
+        "dvaa/L2-03": "path",
+        "dvaa/L2-08": "tool-registration",
         "dvaa/L3-02": "infra",
-        "mcpgoat/D1": "sink",
-        "mcpgoat/D2": "sink",
+        "dvaa/L3-06": "tool-dataflow",
+        "dvaa/L3-07": "tool-shadowing",
+        "mcpgoat/D1": "command",
+        "mcpgoat/D2": "path",
         "mcpgoat/D3": "infra",
+        "mcpgoat/D4": "sql",
+        "mcpgoat/D5": "nosql",
+        "mcpgoat/D6": "template",
+        "mcpgoat/D7": "xml",
+        "mcpgoat/D8": "deserialization",
     }
     patterns = {
         comment(block, "key"): comment(block, "pattern")
-        for block in source_slides()[::2]
+        for block in source_slides()
+        if comment(block, "kind") == "challenge"
     }
     for key, pattern_id in expected_patterns.items():
         assert patterns[key] == pattern_id
+    assert set(patterns) == set(keys)
 
     prohibited = (
         "REDSEC{",
@@ -108,8 +156,8 @@ def test_learning_sources_cover_every_catalog_concept_without_runbook_content():
 def test_deck_is_exactly_two_ordered_slides_per_challenge():
     slides = source_slides()
 
-    assert len(slides) == 220
-    for pair_index in range(0, len(slides), 2):
+    assert len(slides) == 222
+    for pair_index in range(0, 220, 2):
         challenge, resolution = slides[pair_index:pair_index + 2]
         challenge_key = comment(challenge, "key")
         resolution_key = comment(resolution, "key")
@@ -119,9 +167,13 @@ def test_deck_is_exactly_two_ordered_slides_per_challenge():
         assert comment(challenge, "pattern") == comment(resolution, "pattern")
         assert len(re.findall(r"^-\s+.+$", challenge, re.MULTILINE)) == 4
         assert len(re.findall(r"^-\s+.+$", resolution, re.MULTILINE)) == 4
+    for appendix_index, appendix in enumerate(slides[220:], 1):
+        assert "<!-- kind: attribution -->" in appendix
+        assert comment(appendix, "key") == f"attribution/{appendix_index}"
+        assert len(re.findall(r"^-\s+.+$", appendix, re.MULTILINE)) == 3
 
 
-def test_published_artifacts_match_sources_and_have_no_active_content():
+def test_published_artifacts_match_sources_and_allow_only_expected_links():
     manifest_entries = {}
     for line in (TRAINING / "ARTIFACTS.sha256").read_text().splitlines():
         if not line or line.startswith("#"):
@@ -130,6 +182,8 @@ def test_published_artifacts_match_sources_and_have_no_active_content():
         manifest_entries[relative] = digest
 
     expected_paths = {
+        "scripts/assemble_learning_materials.py",
+        "scripts/build_learning_materials.py",
         "docs/training/LEARNING-GUIDE.md",
         "docs/training/LEARNING-DECK.md",
         "docs/training/learning-theme.css",
@@ -149,8 +203,12 @@ def test_published_artifacts_match_sources_and_have_no_active_content():
 
     reader = PdfReader(pdf)
     assert not reader.is_encrypted
-    guide_digest = hashlib.sha256((TRAINING / "LEARNING-GUIDE.md").read_bytes()).hexdigest()
-    assert f"source-sha256:{guide_digest}" in (reader.metadata.get("/Keywords") or "")
+    guide_digest = input_fingerprint(
+        TRAINING / "LEARNING-GUIDE.md",
+        TRAINING / "learning-theme.css",
+        ROOT / "scripts" / "build_learning_materials.py",
+    )
+    assert f"input-sha256:{guide_digest}" in (reader.metadata.get("/Keywords") or "")
     catalog = reader.trailer["/Root"]
     assert "/OpenAction" not in catalog
     assert "/AA" not in catalog
@@ -159,8 +217,23 @@ def test_published_artifacts_match_sources_and_have_no_active_content():
         names = names.get_object()
         assert "/JavaScript" not in names
         assert "/EmbeddedFiles" not in names
+    allowed_uris = expected_provenance_urls()
+    observed_uris: set[str] = set()
     for page in reader.pages:
         assert "/AA" not in page
+        for annotation_ref in page.get("/Annots") or []:
+            annotation = annotation_ref.get_object()
+            assert "/AA" not in annotation
+            action = annotation.get("/A")
+            if not action:
+                continue
+            action = action.get_object()
+            assert action.get("/S") == "/URI"
+            uri = str(action.get("/URI", ""))
+            assert uri.startswith("https://")
+            assert uri in allowed_uris
+            observed_uris.add(uri)
+    assert observed_uris == allowed_uris
 
     pdf_text = "\n".join(page.extract_text() or "" for page in reader.pages)
     compact_pdf_text = re.sub(r"\s+", "", pdf_text)
@@ -179,7 +252,8 @@ def test_published_artifacts_match_sources_and_have_no_active_content():
             name for name in names
             if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)
         ], key=lambda name: int(re.search(r"\d+", Path(name).stem).group()))
-        assert len(slide_parts) == 220
+        assert len(slide_parts) == 222
+        assert all(info.date_time == (1980, 1, 1, 0, 0, 0) for info in archive.infolist())
         assert not any(
             marker in name.lower()
             for name in names
@@ -189,9 +263,15 @@ def test_published_artifacts_match_sources_and_have_no_active_content():
             root = ElementTree.fromstring(archive.read(name))
             assert all(rel.attrib.get("TargetMode") != "External" for rel in root)
 
-        deck_digest = hashlib.sha256((TRAINING / "LEARNING-DECK.md").read_bytes()).hexdigest()
+        deck_digest = input_fingerprint(
+            TRAINING / "LEARNING-DECK.md",
+            ROOT / "scripts" / "build_learning_materials.py",
+        )
         core_properties = archive.read("docProps/core.xml").decode()
-        assert f"source-sha256:{deck_digest}" in core_properties
+        assert f"input-sha256:{deck_digest}" in core_properties
+        presentation_xml = b"".join(archive.read(name) for name in names if name.endswith(".xml"))
+        assert b"Avenir Next" not in presentation_xml
+        assert b"Arial" in presentation_xml
 
         blocks = source_slides()
         for part, block in zip(slide_parts, blocks, strict=True):
