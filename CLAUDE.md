@@ -1,8 +1,10 @@
 # CLAUDE.md — project context for RedSec Range
 
 This file is the fast-reload operational context for any Claude session working on
-this repo. Read `intent.md` first for the durable product and architecture decisions,
-then use this file for what currently exists, how it runs, and where everything lives.
+this repo. Read `DEFENSIVE-SCOPE.md` first for the authorized blue-team purpose and
+controlled CTF boundaries, then `intent.md` for the durable product and architecture
+decisions. Use this file for what currently exists, how it runs, and where everything
+lives.
 
 ## What this is
 

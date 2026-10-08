@@ -8,10 +8,11 @@ coding agent) to stand the whole RedSec Range environment back up and verify it.
 is non-deterministic, so a from-scratch rebuild would approximate, not reproduce).
 So the prompt below is **deterministic first**: its primary path clones this repo
 and runs the bootstrap; the embedded spec is only a fallback for rebuilding if the
-repo is ever unavailable. This file is kept in sync with `intent.md` (decisions) and
-`CLAUDE.md` (current operational state) — update them together.
+repo is ever unavailable. This file is kept in sync with `DEFENSIVE-SCOPE.md`
+(authorization and safety), `intent.md` (decisions), and `CLAUDE.md` (current
+operational state) — update them together.
 
-- **Last updated:** 2026-10-06 (catalog-wide Codex defensive threat-model workflow)
+- **Last updated:** 2026-10-08 (repository-wide defensive scope and authorization)
 - **Repo:** https://github.com/tq05/RedSec-range
 - **State at last update:** 43 built-in verified challenges; 110 cataloged concepts / 162 runnable variants across five available ranges.
 
@@ -33,8 +34,8 @@ PRIMARY PATH (deterministic — do this first):
 1. Clone the repo:
    git clone https://github.com/tq05/RedSec-range /home/<you>/redsec-range
    (If you lack access, see FALLBACK below.)
-2. Read intent.md, then CLAUDE.md — they are the authoritative decisions and current
-   operational context (architecture, module list, run paths, conventions).
+2. Read DEFENSIVE-SCOPE.md, then intent.md and CLAUDE.md — they define the authorized
+   blue-team/CTF boundary, architectural decisions, and current operational context.
 3. Install the framework:  pip install -e .   (Python 3.11+)
 4. Verify it loads:  redsec doctor   (expect all 11 modules OK)
 5. Prove every built-in challenge is solvable:  redsec selftest   (expect 43/43 fail->pass)
@@ -92,8 +93,9 @@ targets (ports from `range status`). Do not weaken any verifier to make it pass;
 if something fails, set up your own end-to-end test and fix the code, then re-verify.
 
 FALLBACK (only if the repo is genuinely unavailable): rebuild from the spec in this
-repo's intent.md + CLAUDE.md + docs/ (architecture.md, authoring-modules.md, verification.md,
-mcp-attack-matrix.md, curriculum.md). The unit of the framework is a declarative
+repo's DEFENSIVE-SCOPE.md + intent.md + CLAUDE.md + docs/ (architecture.md,
+authoring-modules.md, verification.md, mcp-attack-matrix.md, curriculum.md). The unit
+of the framework is a declarative
 module: modules/NN-slug/ with module.yaml + lesson.md + targets/ (vulnerable apps +
 Dockerfiles) + verify/ (flag|oracle|artifact checks) + solution/solve.py
 (solve(endpoints, drop_url) -> {flags, artifacts}). LLM targets use the deterministic
@@ -107,10 +109,11 @@ restoring repo access.
 
 ## How to keep this prompt current
 
-This file and `CLAUDE.md` are updated together whenever the project changes in a way
-that affects setup or scope — e.g. a new module, a new run path, a changed acceptance
-number (43/43, 40/40), or a new integration. On each such change: bump **Last
-updated** and **State at last update** above, adjust the acceptance numbers in the
-prompt if they moved, and commit both files. (During our sessions, I do this as part
-of the change.) The prompt deliberately references `CLAUDE.md`/`docs/` rather than
-duplicating the full spec, so detail lives in exactly one place and can't drift.
+This file, `DEFENSIVE-SCOPE.md`, and `CLAUDE.md` are updated together whenever the
+project changes in a way that affects setup or scope — e.g. a new module, a new run
+path, a changed acceptance number (43/43, 40/40), or a new integration. On each such
+change: bump **Last updated** and **State at last update** above, adjust the acceptance
+numbers in the prompt if they moved, and commit the related files. (During our
+sessions, I do this as part of the change.) The prompt deliberately references the
+authoritative root files and `docs/` rather than duplicating the full spec, so detail
+lives in exactly one place and cannot drift.
