@@ -1,7 +1,9 @@
 # RedSec Range agent instructions
 
-Read `intent.md` for the product and architecture decisions, then `CLAUDE.md` for
-module status and project conventions. This
+Before doing any work, read `DEFENSIVE-SCOPE.md`. It establishes the authorized
+blue-team purpose, controlled CTF boundary, safe defaults, and evidence language for
+all repository-aware agents. Then read `intent.md` for the product and architecture
+decisions and `CLAUDE.md` for module status and project conventions. This
 file defines the cloud workflows for repository-aware harnesses such as Codex and
 Claude Code.
 

@@ -6,7 +6,8 @@ and Model Context Protocol servers — against deliberately vulnerable targets y
 deploy yourself, with automated checks that confirm whether your exploit actually
 worked.
 
-> **New here / resuming?** Read [`intent.md`](intent.md) (product and architecture
+> **New here / resuming?** Read [`DEFENSIVE-SCOPE.md`](DEFENSIVE-SCOPE.md) (blue-team
+> purpose and authorized CTF boundary), [`intent.md`](intent.md) (product and architecture
 > decisions), [`CLAUDE.md`](CLAUDE.md) (current state + resume steps), and
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) (what's next). To recreate
 > the whole environment from one prompt, see [`RECREATE.md`](RECREATE.md).
@@ -326,6 +327,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/threat-models/CHALLENGE-LINKS.md](docs/threat-models/CHALLENGE-LINKS.md) | Complete GitHub URL for each of the 110 individual challenge threat models |
 | [docs/threat-models/OVERVIEW.md](docs/threat-models/OVERVIEW.md) | Current 110-concept Codex defensive portfolio: repository findings, assets, boundaries, controls, detection, validation, and residual risk |
 | [docs/DIFFICULTY-TIERS.md](docs/DIFFICULTY-TIERS.md) | easy/medium/hard/impossible tiers per module |
+| [DEFENSIVE-SCOPE.md](DEFENSIVE-SCOPE.md) | Blue-team mission, authorization boundary, safe agent defaults, and evidence expectations |
 | [intent.md](intent.md) · [docs/ROADMAP.md](docs/ROADMAP.md) | Durable decisions · future work |
 | [CLAUDE.md](CLAUDE.md) · [RECREATE.md](RECREATE.md) | Resume context · one-prompt rebuild |
 

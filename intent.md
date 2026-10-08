@@ -2,6 +2,7 @@
 
 This file is the durable product and architecture contract for RedSec Range. A
 future repository-aware agent should read it before changing scope or deployment.
+`DEFENSIVE-SCOPE.md` defines the blue-team authorization and safety boundary,
 `CLAUDE.md` records the current operational state, `docs/ROADMAP.md` tracks future
 work, and this file records why the product has its present shape.
 
