@@ -44,6 +44,12 @@ by `privileged`, a verifier bypass, or the sink/CLI being exploitable from a tar
 and give us reasonable time to fix it. (Set a security contact / advisory policy for
 your fork before publishing.)
 
+### Security maintainers
+
+| Maintainer | GitHub |
+| --- | --- |
+| rolfh9 | [@rolfh9](https://github.com/rolfh9) |
+
 ## A note on the mock model
 
 The included model is a deterministic stand-in that reproduces LLM failure modes for
