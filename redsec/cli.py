@@ -660,6 +660,7 @@ def selftest(module: Optional[str] = typer.Argument(None),
     """Prove a module is solvable: start it, verify FAIL, run the reference
     solution, verify PASS. This is the correctness guarantee run in CI."""
     import importlib.util
+    import sys
 
     mods = [find(module)] if module else [
         (d, m) for d, m in load_all() if m.status == "complete"
@@ -677,10 +678,11 @@ def selftest(module: Optional[str] = typer.Argument(None),
         spec = importlib.util.spec_from_file_location(f"solve_{m.id}", solve_py)
         assert spec and spec.loader
         solmod = importlib.util.module_from_spec(spec)
+        # The solution may import helpers from its module dir; scope that to this
+        # module so a same-named helper never resolves to an earlier module's.
+        sys.path.insert(0, str(mdir))
         try:
             with local_range(m, mdir) as rng:
-                import sys as _sys
-                _sys.path.insert(0, str(mdir))
                 spec.loader.exec_module(solmod)
                 # reset sink if present
                 if rng.drop_url:
@@ -722,6 +724,8 @@ def selftest(module: Optional[str] = typer.Argument(None),
         except Exception as e:
             err.print(f"[red]{m.id}: selftest error: {e}[/]")
             failures += 1
+        finally:
+            sys.path.remove(str(mdir))
 
     if failures:
         err.print(f"\n[bold red]{failures} selftest failure(s).[/]")

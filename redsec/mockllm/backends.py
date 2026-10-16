@@ -52,9 +52,7 @@ class OpenAICompatBackend:
 
         payload: dict[str, Any] = {
             "model": self.model,
-            "messages": [
-                {"role": _map_role(m.role), "content": m.content} for m in messages
-            ],
+            "messages": [_to_openai(m) for m in messages],
             "temperature": 0,
         }
         if tools:
@@ -86,6 +84,17 @@ class OpenAICompatBackend:
                 args = {}
             calls.append(ToolCall(name=fn["name"], arguments=args))
         return Completion(content=choice.get("content") or "", tool_calls=calls)
+
+
+def _to_openai(m: Message) -> dict[str, str]:
+    # The lab appends tool output without the assistant `tool_calls` turn and
+    # `tool_call_id` that the OpenAI API requires for role="tool", so the request
+    # would be rejected. Send it as labelled untrusted content instead; the
+    # application still decides what to trust, which is what the lesson teaches.
+    if m.role == "tool":
+        return {"role": "user",
+                "content": f"[tool result: {m.name or 'tool'}]\n{m.content}"}
+    return {"role": _map_role(m.role), "content": m.content}
 
 
 def _map_role(role: str) -> str:

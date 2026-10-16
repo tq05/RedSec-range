@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class Difficulty(str, Enum):
@@ -85,16 +85,24 @@ class Target(BaseModel):
     privileged: bool = Field(
         False,
         description="Target intentionally runs with weak isolation (e.g. for an "
-        "RCE challenge). Must be explicit; forces strict NetworkPolicy lockdown.",
+        "RCE challenge). Must be explicit, and cannot be combined with egress.",
     )
     network: NetworkPolicy = Field(default_factory=NetworkPolicy)
 
     @field_validator("name")
     @classmethod
     def _dns_safe(cls, v: str) -> str:
-        if not v.replace("-", "").isalnum() or not v[0].isalpha():
+        if not v or not v.replace("-", "").isalnum() or not v[0].isalpha() or len(v) > 63:
             raise ValueError(f"target name {v!r} must be DNS-label safe")
         return v.lower()
+
+    @model_validator(mode="after")
+    def _contained(self) -> "Target":
+        # A deliberately weak (RCE/deserialization) target must never also be
+        # allowed to reach the internet.
+        if self.privileged and self.network.egress:
+            raise ValueError(f"target {self.name!r} is privileged and cannot set egress")
+        return self
 
 
 class VerifyStep(BaseModel):
@@ -105,7 +113,8 @@ class VerifyStep(BaseModel):
         "or a builtin name. Required for oracle/artifact; optional for flag.",
     )
     flag: str | None = Field(
-        None, description="Expected flag for a simple 'flag' check (hash-compared)."
+        None, description="Expected plaintext flag for a simple 'flag' check. "
+        "Use params.flag_sha256 to compare against a hash instead."
     )
     params: dict[str, Any] = Field(default_factory=dict)
 

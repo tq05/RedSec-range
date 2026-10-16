@@ -91,7 +91,8 @@ def _exec_tool(name: str, args: dict, session: str) -> str:
         return "saved to memory"
     if name == "get_time":
         import datetime
-        return datetime.datetime.utcnow().isoformat() + "Z"
+        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        return now.isoformat() + "Z"
     return f"unknown tool {name}"
 
 

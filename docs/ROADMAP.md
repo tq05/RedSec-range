@@ -122,15 +122,18 @@ and tighten the accuracy/integrity claims.
       SECURITY.md updated to say so.
 - [ ] **Container hardening.** `vuln-mcp` and `08 registry` images run as root; plant
       files under a writable dir and add `USER 10001`. Keep seccomp + cap-drop even on
-      `privileged` targets; set `automountServiceAccountToken: false` in the chart.
-- [ ] **Agent-harness safety.** `grok_cli --agent` has unrestricted shell + network
-      with the API key in env, while reading injection-laden lab content; add a
-      confirm-before-exec / container-only mode, scrub env, URL allow-list. Remove the
-      drop URL from `agent_solver`'s allow-list; add `--no-hints` for benchmarking.
-- [ ] **Real-LLM backend.** `mockllm/backends.py` appends tool messages without a
-      `tool_call_id`/preceding assistant `tool_calls`, so `REDSEC_LLM_BACKEND=openai`
-      400s on first tool call. Fix the message shape; qualify the "transfers to a real
-      model" claim (the `{{SECRETS}}` substitution is mock-only).
+      `privileged` targets in the chart. *Done 2026-10-16 (PR #16):*
+      `automountServiceAccountToken: false`, DNS-only egress to the cluster resolver,
+      and `--cap-drop ALL` / `no-new-privileges` / PID limits on the Docker paths.
+- [ ] **Agent-harness safety.** `grok_cli --agent` reads injection-laden lab content.
+      *Done 2026-10-16:* its shell runs with credential-like variables removed, and
+      `--confirm` asks before each command. Remaining: container-only mode, a URL
+      allow-list for `http_request`, removing the drop URL from `agent_solver`'s
+      allow-list, and `--no-hints` for benchmarking.
+- [ ] **Real-LLM backend.** *Done 2026-10-16:* tool output is now sent as labelled
+      user content, so `REDSEC_LLM_BACKEND=openai` no longer sends orphan
+      `role: tool` messages. Remaining: qualify the "transfers to a real model" claim
+      (the `{{SECRETS}}` substitution is mock-only) and run one live model end to end.
 - [x] **OWASP version consistency.** Removed mis-versioned/unsupported LLM mappings
       (stray LLM08 on 04/07/11; LLM10 on 02/09) and the capstone's MCP mapping
       (no MCP target). Done 2026-10-04.
@@ -153,9 +156,13 @@ and tighten the accuracy/integrity claims.
       entries, same-entry trust relationships, and numbered multi-step chains; a
       keyword dump is covered by a regression test. Done 2026-10-04.
 
-**P3 — minor:** `cli.verify` exit semantics; leftover temp values files in
-`k8s.render`; `datetime.utcnow()` deprecation; CI has no linter/type-check;
-unpinned deps; base image copies `.git`.
+**P3 — minor:** `cli.verify` exit semantics (a full sweep exits 0 if *any*
+challenge passes); CI has no linter/type-check; unpinned deps and tag-pinned (not
+SHA-pinned) GitHub Actions; base image copies `.git`; `ci.yml` should default the
+workflow token to `contents: read`. *Done 2026-10-16:* temp values files in
+`k8s.render`/`deploy` are removed, `datetime.utcnow()` is replaced, and local
+`redsec dev/up/selftest` targets get an allowlisted environment instead of the whole
+shell.
 
 ## Difficulty tiers — progress (2026-10-04)
 
