@@ -19,14 +19,19 @@ enabled unless OffSec publishes and licenses an automatable lab interface.
 
 ## Included integrations
 
-| ID | Upstream | Concepts / variants | Runtime | Solutions |
-|----|----------|--------------------:|---------|-----------|
-| `builtin` | RedSec Range | 43 / 43 | Per-module Docker networks | RedSec `SOLUTIONS.md` + runnable exploits |
-| `dvaa` | [Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent) | 22 / 22 | One upstream container; dashboard `:9000` | Embedded in pinned challenge definitions |
-| `mcpgoat` | [MCPGoat](https://github.com/SabyasachiDhal/MCPGoat) | 26 / 78 | One upstream container; control/MCP `:7332` | Trainer guide + attacker client |
-| `dvmcp` | [Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server) | 10 / 10 | One upstream container, ten services on `19001–19010` | Ten detailed upstream guides |
-| `appsecco-mcp` | [Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab) | 9 labs / 9 | Adapter container; SSE `:13000`, HTTP `:18000`, seven stdio entries | Per-lab README guidance |
-| `offsec` | Future OffSec lab | 0 / 0 | Placeholder | unavailable |
+Each external range is the work of its original authors. RedSec uses it under that
+project's license and fetches it at a pinned revision. Its source is not vendored
+here. See [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) for copyright notices
+and the pinned revisions.
+
+| ID | Upstream | Author(s) | License | Concepts / variants | Runtime | Solutions |
+|----|----------|-----------|---------|--------------------:|---------|-----------|
+| `builtin` | RedSec Range | RedSec Range | Apache-2.0 | 43 / 43 | Per-module Docker networks | RedSec `SOLUTIONS.md` + runnable exploits |
+| `dvaa` | [Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent) | OpenA2A | Apache-2.0 | 22 / 22 | One upstream container; dashboard `:9000` | Embedded in pinned challenge definitions |
+| `mcpgoat` | [MCPGoat](https://github.com/SabyasachiDhal/MCPGoat) | Sabyasachi Dhal | MIT | 26 / 78 | One upstream container; control/MCP `:7332` | Trainer guide + attacker client |
+| `dvmcp` | [Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server) | Harish Santhanalakshmi Ganesan | MIT (declared in README) | 10 / 10 | One upstream container, ten services on `19001–19010` | Ten detailed upstream guides |
+| `appsecco-mcp` | [Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab) | Appsecco | MIT | 9 labs / 9 | Adapter container; SSE `:13000`, HTTP `:18000`, seven stdio entries | Per-lab README guidance |
+| `offsec` | Future OffSec lab | OffSec | proprietary; not included | 0 / 0 | Placeholder | unavailable |
 
 The [complete generated catalog](CHALLENGE-CATALOG.md) lists every challenge. The
 CLI provides the same data as a table or JSON:

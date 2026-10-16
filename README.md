@@ -65,9 +65,11 @@ redsec ranges up              # built-in and all enabled external ranges togethe
 redsec ranges update mcpgoat  # update one upstream without changing the others
 ```
 
-Integrations include Damn Vulnerable AI Agent, MCPGoat, Damn Vulnerable MCP
-Server, and Appsecco's Vulnerable MCP Servers Lab. Each uses a pinned upstream
-revision, its own target container, and an isolated internal network. An unavailable
+Integrations include Damn Vulnerable AI Agent (OpenA2A), MCPGoat (Sabyasachi Dhal),
+Damn Vulnerable MCP Server (Harish Santhanalakshmi Ganesan), and Appsecco's
+Vulnerable MCP Servers Lab. These labs belong to their original authors and are used
+under their own licenses (see [Credits](#credits-prior-art--references)). Each uses a
+pinned upstream revision, its own target container, and an isolated internal network. An unavailable
 `offsec` placeholder is reserved for a future officially deployable OffSec lab.
 See [the external ranges guide](docs/external-ranges.md).
 
@@ -317,6 +319,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 | [docs/TESTING.md](docs/TESTING.md) | Reproduce the end-to-end tests: envs, payloads, flags |
 | [docs/codespaces.md](docs/codespaces.md) | One-click GitHub range, private ports, harness and SSH access |
 | [docs/external-ranges.md](docs/external-ranges.md) | Enable, isolate, and independently update external maintained labs |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) | Original authors, licenses, and pinned revisions of every integrated range |
 | [docs/interactive-sandbox.md](docs/interactive-sandbox.md) | Run it live in a Docker sandbox (the command centre) |
 | [docs/kubernetes.md](docs/kubernetes.md) | The kind / Helm path |
 | [docs/llm-assessor.md](docs/llm-assessor.md) | Point Grok / another LLM at the range |
@@ -347,14 +350,28 @@ Verification patterns: [docs/verification.md](docs/verification.md).
   the upstream schemas offline; CI additionally runs `helm lint`/`template` +
   `kubeconform`.
 
-## Prior art & references
+## Credits, prior art & references
 
-RedSec Range integrates pinned releases of
-[Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent),
-[MCPGoat](https://github.com/SabyasachiDhal/MCPGoat),
-[Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server),
-and [Appsecco's Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab).
-It is also informed by
+RedSec Range collects independently maintained AI/MCP security labs in one place,
+so you can run them side by side. Their challenges, targets, and solution guides are
+the work of the original authors listed below. RedSec fetches each project at a pinned
+revision and builds it locally. Their source is not copied into this repository, and
+each project's own license applies. RedSec integrates only projects whose license
+permits this.
+
+| Project | Original author(s) | License |
+|---|---|---|
+| [Damn Vulnerable AI Agent](https://github.com/opena2a-org/damn-vulnerable-ai-agent) | OpenA2A | Apache-2.0 |
+| [MCPGoat](https://github.com/SabyasachiDhal/MCPGoat) | Sabyasachi Dhal | MIT |
+| [Damn Vulnerable MCP Server](https://github.com/harishsg993010/damn-vulnerable-MCP-server) | Harish Santhanalakshmi Ganesan | MIT (declared in README) |
+| [Vulnerable MCP Servers Lab](https://github.com/appsecco/vulnerable-mcp-servers-lab) | Appsecco | MIT |
+
+Thank you to these authors for publishing their work openly. Pinned revisions,
+copyright notices, and how each project is used are in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). These projects are not affiliated
+with RedSec Range. Please report issues in their challenges upstream.
+
+The built-in curriculum is also informed by
 the [OWASP LLM Top 10](https://genai.owasp.org/) and emerging OWASP MCP Top 10,
 the [Cloud Security Alliance MCP attack-surface analysis](https://cloudsecurityalliance.org/),
 and [MITRE ATLAS](https://atlas.mitre.org/). ATLAS mappings in the scaffolds are
@@ -363,4 +380,6 @@ OffSec; the AI-300 syllabus is used only as a structural reference.
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+RedSec Range's own code and docs are Apache-2.0. See [LICENSE](LICENSE).
+Integrated third-party ranges keep their own licenses. See
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
