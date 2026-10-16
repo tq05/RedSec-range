@@ -42,13 +42,11 @@ def render(values: dict) -> list[dict]:
               "redsec.io/range": values["range"]["module"]}
 
     def deployment(name, image, port, env, privileged):
-        sc_pod = ({} if privileged else
-                  {"runAsNonRoot": True, "runAsUser": 10001, "fsGroup": 10001,
-                   "seccompProfile": {"type": "RuntimeDefault"}})
-        sc_ctr = ({"allowPrivilegeEscalation": True, "runAsNonRoot": False}
-                  if privileged else
-                  {"allowPrivilegeEscalation": False, "readOnlyRootFilesystem": False,
-                   "capabilities": {"drop": ["ALL"]}})
+        # `privileged` targets get the same container hardening as all others.
+        sc_pod = {"runAsNonRoot": True, "runAsUser": 10001, "fsGroup": 10001,
+                  "seccompProfile": {"type": "RuntimeDefault"}}
+        sc_ctr = {"allowPrivilegeEscalation": False, "readOnlyRootFilesystem": False,
+                  "capabilities": {"drop": ["ALL"]}}
         return {
             "apiVersion": "apps/v1", "kind": "Deployment",
             "metadata": {"name": name, "namespace": ns,
@@ -152,6 +150,10 @@ def structural_checks(objs: list[dict]) -> list[str]:
                     errs.append(f"Deployment/{md['name']}: malformed env entry {e}")
             if o["spec"]["template"]["spec"].get("automountServiceAccountToken") is not False:
                 errs.append(f"Deployment/{md['name']}: service-account token is mounted")
+            if (o["spec"]["template"]["spec"].get("securityContext", {}).get("runAsNonRoot")
+                    is not True or c["securityContext"].get("capabilities")
+                    != {"drop": ["ALL"]}):
+                errs.append(f"Deployment/{md['name']}: not non-root with all caps dropped")
         if kind == "NetworkPolicy" and md.get("name") == "allow-intra-and-dns":
             # An egress rule with an empty/missing `to` matches every destination.
             for rule in o["spec"]["egress"]:

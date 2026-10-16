@@ -93,8 +93,10 @@ self-test, and the kind failure captured verbatim). To refresh it for the curren
 
 ## Honest caveats (don't let a fresh agent overclaim)
 
-- **Containers currently run as root** (visible by injecting `id` into module 07/08 —
-  returns `uid=0`). P1 hardening item in `docs/ROADMAP.md`, not yet fixed.
+- **Target containers run as uid 10001.** Injecting `id` into module 07/08 returns
+  `uid=10001` on the per-module images and in Kubernetes. The shared `redsec/base`
+  runner image used by `docker_run_all.py` still runs as root, but with all
+  capabilities dropped and `no-new-privileges`.
 - **Oracle integrity:** oracle checks count only sink posts that carry the per-range
   token, so posting the marker directly fails. Someone with host, Docker, or
   `kubectl` access can still read the token. For graded use, trust

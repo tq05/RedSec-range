@@ -87,7 +87,7 @@ The chart applies, in every range namespace:
   internet or other namespaces.
 - `allow-egress-<target>` — added only for targets that set `network.egress: true`.
 
-Combined with non-root pods (except explicitly `privileged` targets), resource
+Combined with non-root pods (including `privileged` targets), resource
 limits, and canary-only secrets, this keeps deliberately vulnerable apps contained.
 
 > If you expose a target via an Ingress/LoadBalancer, you take on the risk — allow

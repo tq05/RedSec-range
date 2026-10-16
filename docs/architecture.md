@@ -60,8 +60,9 @@ Deliberately vulnerable targets are contained by:
   ranges. A target may opt into egress with `network.egress: true`.
 - **Namespace per range** — `redsec-<module>[-<instance>]`.
 - **No real secrets** — only planted canaries.
-- **`privileged` is explicit** — a target only gets weak isolation (e.g. for the
-  RCE challenge) when its manifest says so.
+- **`privileged` is explicit** — it marks a deliberately weak *application* (e.g.
+  the RCE challenge) and forbids `egress`. The container is still non-root with all
+  capabilities dropped, like every other target.
 
 Containment is both a safety control and a lesson (Module 09 is about blast
 radius). See [kubernetes.md](kubernetes.md).
