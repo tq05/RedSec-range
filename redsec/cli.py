@@ -575,7 +575,10 @@ def submit(module: str, challenge: str, flag: str) -> None:
 def verify(module: str, challenge: Optional[str] = typer.Argument(None),
            flag: Optional[str] = typer.Option(None),
            artifact_file: Optional[Path] = typer.Option(None)) -> None:
-    """Run verifiers for a challenge (or all challenges) of a running module."""
+    """Run verifiers for a challenge (or all challenges) of a running module.
+
+    Exits 0 only when every verified challenge passes, so a sweep can gate scripts.
+    """
     mdir, m = find(module)
     art = artifact_file.read_text() if artifact_file else None
     # Artifact-only modules have no running targets; flag/artifact checks don't
@@ -585,7 +588,7 @@ def verify(module: str, challenge: Optional[str] = typer.Argument(None),
     else:
         ctx = CheckContext(endpoints={}, submitted_flag=flag, artifact=art)
     challenges = [_challenge(m, challenge)] if challenge else m.challenges
-    any_pass = False
+    solved = 0
     for c in challenges:
         console.print(f"[bold]{c.id}[/] -- {c.title}")
         # Flag challenges are recorded when you `submit`; a later `verify` sweep has
@@ -593,11 +596,13 @@ def verify(module: str, challenge: Optional[str] = typer.Argument(None),
         # FAIL. Oracle/artifact challenges still run live the first time.
         if state.is_solved(m.id, c.id) and not flag and not art:
             console.print("  [green]PASS[/] already solved")
-            any_pass = True
+            solved += 1
             continue
         if _run_and_report(m, mdir, ctx, c):
-            any_pass = True
-    raise typer.Exit(0 if any_pass or not challenges else 1)
+            solved += 1
+    if len(challenges) > 1:
+        console.print(f"\n[bold]{solved}/{len(challenges)} solved[/]")
+    raise typer.Exit(0 if solved == len(challenges) else 1)
 
 
 @app.command()
