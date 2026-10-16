@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator
 
-from ..config import DROP_PORT, repo_root
+from ..config import DROP_PORT, DROP_TOKEN_ENV, new_drop_token, repo_root
 from ..models import Module, Target
 
 
@@ -158,6 +158,7 @@ def start_range(module: Module, module_dir: Path,
     drop_port = next(
         (p for (td, p, _) in resolved.values() if td.uses_builtin == "drop"), None
     )
+    drop_token = new_drop_token()
     started_ok = False
     try:
         for name, (tdef, port, build_dir) in resolved.items():
@@ -165,6 +166,7 @@ def start_range(module: Module, module_dir: Path,
             env = dict(base_env)
             env["PYTHONPATH"] = os.pathsep.join(pythonpath)
             env.setdefault("REDSEC_PORT", str(port))
+            env[DROP_TOKEN_ENV] = drop_token
             if drop_port:
                 env["REDSEC_DROP_URL"] = f"http://127.0.0.1:{drop_port}"
             # Peer URLs, e.g. REDSEC_URL_VULN_MCP for the host to find the server.

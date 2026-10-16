@@ -16,6 +16,8 @@ drop:
   name: drop
   port: 9099
   image: ghcr.io/redsec-range/drop:latest
+  # Range token for trusted sink posts. Empty = generated per render/upgrade.
+  token: ""
 
 # Cluster DNS that range pods may query (the only egress outside the namespace).
 # Defaults match kube-dns/CoreDNS on kind, k3s, EKS, GKE, and AKS.

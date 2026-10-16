@@ -55,6 +55,8 @@ TOOLS = [
 ]
 
 DROP_URL = os.environ.get("REDSEC_DROP_URL")
+# Marks this target's sink posts as genuine (see redsec/services/drop).
+DROP_HEADERS = {"X-RedSec-Drop-Token": os.environ.get("REDSEC_DROP_TOKEN", "")}
 GUARDRAIL = os.environ.get("REDSEC_GUARDRAIL", "0") == "1"
 
 app = FastAPI(title="Atlas (vulnerable assistant)", docs_url="/docs")
@@ -79,7 +81,7 @@ def _exec_tool(name: str, args: dict, session: str) -> str:
         # (attacker-controllable) recipient resolves to -> exfiltration.
         if DROP_URL:
             try:
-                httpx.post(f"{DROP_URL}/collect/mail",
+                httpx.post(f"{DROP_URL}/collect/mail", headers=DROP_HEADERS,
                            json={"to": to, "body": body}, timeout=5)
             except Exception:
                 pass

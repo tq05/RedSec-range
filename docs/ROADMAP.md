@@ -108,13 +108,13 @@ block *using* the range as a teaching tool in an isolated environment; they hard
 and tighten the accuracy/integrity claims.
 
 **P1 — should fix**
-- [ ] **Oracle integrity.** The `drop` sink accepts any POST and most needles are
-      learner-chosen markers, so an oracle challenge can be "passed" by posting the
-      marker directly. Fix: each target tags its sink posts with a per-target secret
-      (from env) on its own path; checks filter on tag+path; prefer needles that are
-      secrets only obtainable via the exploit. (`services/drop`, `verify/builtins.py`,
-      `07/verify/checks.py`.) Until then, SECURITY.md documents the sink as a teaching
-      oracle, not a tamper-proof judge.
+- [ ] **Oracle integrity.** *Done 2026-10-16:* a per-range token (generated at
+      start, given only to the sink and targets) marks target posts as trusted, and
+      `DropContains`/`HostExfil` ignore everything else. Direct marker posts now fail
+      with an explanatory message. Remaining: per-target tokens bound to each
+      target's sink path, and needles that are secrets only obtainable via the
+      exploit. The sink is still not tamper-proof against someone who controls the
+      host (see SECURITY.md).
 - [ ] **Local isolation.** Modules 07 (shell RCE), 08 (pickle), 09 (SSRF to
       169.254.169.254) run unisolated under bare `redsec dev/up`. Add Host-header
       allow-list + Content-Type enforcement to the FastAPI targets; default these
