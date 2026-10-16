@@ -21,6 +21,9 @@ spec:
         app: {{ .name }}
         redsec.io/target: {{ .name }}
     spec:
+      # Targets are attacker-controlled by design: never hand them API credentials.
+      automountServiceAccountToken: false
+      enableServiceLinks: false
       {{- if not .privileged }}
       securityContext:
         runAsNonRoot: true

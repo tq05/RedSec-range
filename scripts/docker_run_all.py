@@ -29,6 +29,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
+from redsec.config import CONTAINER_HARDENING  # noqa: E402
 from redsec.loader import load_all, find  # noqa: E402
 from redsec.verify.base import CheckContext  # noqa: E402
 from redsec.verify.runner import run_challenge  # noqa: E402
@@ -125,7 +126,7 @@ def run_module(module_dir: Path, module, image: str, real: bool = False,
             # Real per-module images bake WORKDIR + CMD; base image needs them set.
             extra = [] if real else ["-w", workdir_for(module_dir, t)]
             cmd = [] if real else target_cmd(t)
-            sh("docker", "run", "-d", "--name", cname, "--network", net,
+            sh("docker", "run", "-d", *CONTAINER_HARDENING, "--name", cname, "--network", net,
                "--network-alias", t.name,  # also reachable by bare service name
                "-p", f"127.0.0.1:{hport}:{cport}",
                *extra, *env, img, *cmd)

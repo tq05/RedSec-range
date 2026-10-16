@@ -11,7 +11,9 @@ import time
 from pathlib import Path
 from typing import Iterable
 
-from .config import repo_root, state_dir
+from .config import (
+    CONTAINER_HARDENING, EXTERNAL_CONTAINER_HARDENING, repo_root, state_dir,
+)
 from .range_catalog import RangeCatalog, RangeDefinition, load_catalog
 
 
@@ -241,7 +243,7 @@ def up_one(
 
     args = [
         "docker", "run", "-d", "--restart", "unless-stopped", "--name", container,
-        "--network", network,
+        "--network", network, *EXTERNAL_CONTAINER_HARDENING,
     ]
     if allow_egress:
         for port in definition.runtime.ports:
@@ -258,7 +260,8 @@ def up_one(
             _run(["docker", "network", "create", access_network])
             gateway_args = [
                 "docker", "run", "-d", "--restart", "unless-stopped",
-                "--read-only", "--name", proxy, "--network", access_network,
+                "--read-only", *CONTAINER_HARDENING,
+                "--name", proxy, "--network", access_network,
                 "-e", f"TARGET_HOST={container}",
                 "-e", "TARGET_PORTS=" + ",".join(
                     str(port.container) for port in definition.runtime.ports

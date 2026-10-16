@@ -19,12 +19,24 @@ from fastapi.responses import JSONResponse
 app = FastAPI(title="redsec-drop", docs_url=None, redoc_url=None)
 _EVENTS: list[dict[str, Any]] = []
 _MAX = 1000
+# Per-event body cap. Exfiltrated needles are small; without a cap, 1000 stored
+# events of arbitrary size let one target exhaust the sink's memory.
+_MAX_BODY = 64 * 1024
 
 
 @app.api_route("/collect", methods=["GET", "POST", "PUT"])
 @app.api_route("/collect/{rest:path}", methods=["GET", "POST", "PUT"])
 async def collect(request: Request, rest: str = "") -> JSONResponse:
-    body = (await request.body()).decode("utf-8", "replace")
+    raw = bytearray()
+    truncated = False
+    async for chunk in request.stream():
+        room = _MAX_BODY - len(raw)
+        if len(chunk) > room:
+            raw += chunk[:room]
+            truncated = True
+            break
+        raw += chunk
+    body = raw.decode("utf-8", "replace")
     ev = {
         "ts": time.time(),
         "method": request.method,
@@ -33,6 +45,7 @@ async def collect(request: Request, rest: str = "") -> JSONResponse:
         "headers": {k: v for k, v in request.headers.items()
                     if k.lower() not in {"host", "user-agent", "accept"}},
         "body": body,
+        "truncated": truncated,
     }
     _EVENTS.append(ev)
     del _EVENTS[:-_MAX]

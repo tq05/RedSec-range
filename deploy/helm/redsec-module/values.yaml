@@ -17,6 +17,12 @@ drop:
   port: 9099
   image: ghcr.io/redsec-range/drop:latest
 
+# Cluster DNS that range pods may query (the only egress outside the namespace).
+# Defaults match kube-dns/CoreDNS on kind, k3s, EKS, GKE, and AKS.
+dns:
+  namespace: kube-system
+  podLabels: { k8s-app: kube-dns }
+
 # Per-target definitions (one Deployment + Service each). Populated from module.yaml.
 # Example shape:
 # targets:

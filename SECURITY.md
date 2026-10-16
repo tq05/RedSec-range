@@ -66,8 +66,11 @@ vulnerabilities taught live in the *applications*, which is the point.
   runs the *reference exploit* end-to-end) as the source of truth, and see the
   hardening item in `docs/ROADMAP.md`.
 - **Isolation depends on the run path.** The Kubernetes path puts each module in a
-  default-deny namespace (egress enforced with a policy CNI). The Docker paths run
-  containers. **Bare local-process mode (`redsec dev/up`) has no isolation** — and
+  default-deny namespace (egress enforced with a policy CNI; DNS is allowed only to
+  the cluster resolver) with no service-account token mounted. The Docker paths run
+  RedSec containers with all capabilities dropped, `no-new-privileges`, and a PID
+  limit; third-party range containers get `no-new-privileges` and a PID limit.
+  **Bare local-process mode (`redsec dev/up`) has no isolation** — and
   modules 07 (shell RCE), 08 (unsafe deserialization) and 09 (SSRF, which can reach a
   real cloud metadata endpoint on a cloud VM) are genuinely dangerous there. Run those
   modules via the Docker or Kubernetes paths, on a throwaway host, never on a machine
