@@ -99,7 +99,13 @@ Shell commands run with a scrubbed environment: any variable whose name looks li
 credential (`*KEY*`, `*TOKEN*`, `*SECRET*`, `*PASSWORD*`, …), including
 `XAI_API_KEY`, is removed. That way, injected instructions in lab content can't make
 the agent print or send the key. Add `--confirm` to approve each shell command before
-it runs. `http_request` is not restricted to lab hosts yet (see `docs/ROADMAP.md`).
+it runs. `http_request` reaches only loopback hosts (the local range) unless you add
+`--allow-host HOST`. The shell tool can still make network calls, so use `--confirm`
+when you need every outbound action approved.
+
+`scripts/agent_solver.py` cannot reach the exfiltration sink, so it can't satisfy an
+oracle by posting the evidence itself. Add `--no-hints` to benchmark models on the
+objective alone.
 
 ### An external named CLI (optional)
 

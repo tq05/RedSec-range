@@ -16,6 +16,8 @@ Config (env or flags):
   --model NAME         default grok-4
   --max-steps N        agent tool-call budget (default 20)
   --confirm            agent mode: ask before running each shell command
+  --allow-host HOST    agent mode: let http_request reach HOST (repeatable);
+                       by default it reaches only loopback (the local range)
 
 AGENT MODE SAFETY: exec_shell runs real commands in THIS sandbox (an isolated,
 ephemeral cloud VM), in the given --cwd. That is intentional — it is your sandbox —
@@ -28,10 +30,12 @@ injects instructions into the agent cannot read them back out.
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import os
 import subprocess
 import sys
+import urllib.parse
 
 import httpx
 
@@ -50,7 +54,7 @@ AGENT_TOOLS = [
                        "required": ["command"]}}},
     {"type": "function", "function": {
         "name": "http_request",
-        "description": "Make an HTTP request (e.g. to a lab target on localhost).",
+        "description": "Make an HTTP request to a lab target on localhost.",
         "parameters": {"type": "object", "properties": {
             "method": {"type": "string"}, "url": {"type": "string"},
             "headers": {"type": "object"}, "json_body": {"type": "object"}},
@@ -82,7 +86,19 @@ def _shell_env():
             if not any(marker in k.upper() for marker in _SECRET_MARKERS)}
 
 
-def run_tool(name, args, cwd, confirm=False):
+def _host_allowed(url, allow_hosts=()):
+    host = (urllib.parse.urlparse(url).hostname or "").lower()
+    if not host:
+        return False
+    if host == "localhost" or host in {h.lower() for h in allow_hosts}:
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
+def run_tool(name, args, cwd, confirm=False, allow_hosts=()):
     if name == "exec_shell":
         cmd = args.get("command", "")
         if confirm:
@@ -100,6 +116,9 @@ def run_tool(name, args, cwd, confirm=False):
         except subprocess.TimeoutExpired:
             return "timeout after 120s"
     if name == "http_request":
+        if not _host_allowed(args.get("url", ""), allow_hosts):
+            return ("BLOCKED: http_request reaches only loopback lab targets; "
+                    "rerun with --allow-host to permit another host")
         try:
             r = httpx.request(args.get("method", "GET"), args["url"],
                               headers=args.get("headers") or {},
@@ -133,7 +152,7 @@ def repl(base, key, model):
         print(msg.get("content", "").strip())
 
 
-def agent(base, key, model, task, cwd, max_steps, confirm=False):
+def agent(base, key, model, task, cwd, max_steps, confirm=False, allow_hosts=()):
     print(f"[agent mode] tools live in sandbox (cwd={cwd}). task: {task}\n")
     messages = [
         {"role": "system", "content":
@@ -159,7 +178,7 @@ def agent(base, key, model, task, cwd, max_steps, confirm=False):
                 a = {}
             preview = (a.get("command") or a.get("url") or "")[:80]
             print(f"    -> {fn['name']}: {preview}")
-            out = run_tool(fn["name"], a, cwd, confirm)
+            out = run_tool(fn["name"], a, cwd, confirm, allow_hosts)
             messages.append({"role": "tool", "tool_call_id": tc["id"], "content": out})
     print("\n[agent done]")
 
@@ -176,6 +195,8 @@ def main():
     ap.add_argument("--max-steps", type=int, default=20)
     ap.add_argument("--confirm", action="store_true",
                     help="agent mode: ask before running each shell command")
+    ap.add_argument("--allow-host", action="append", default=[],
+                    help="agent mode: extra host http_request may reach (repeatable)")
     a = ap.parse_args()
     default_base, key_env = PROVIDERS[a.provider]
     base = (a.base_url or default_base)
@@ -186,7 +207,7 @@ def main():
         sys.exit(f"set {key_env} (or pass --api-key). e.g. export XAI_API_KEY=...")
     base = base.rstrip("/")
     if a.agent:
-        agent(base, key, a.model, a.agent, a.cwd, a.max_steps, a.confirm)
+        agent(base, key, a.model, a.agent, a.cwd, a.max_steps, a.confirm, a.allow_host)
     elif a.prompt:
         chat_once(base, key, a.model, a.prompt)
     else:
