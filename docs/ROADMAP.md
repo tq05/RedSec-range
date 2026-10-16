@@ -156,11 +156,14 @@ and tighten the accuracy/integrity claims.
       entries, same-entry trust relationships, and numbered multi-step chains; a
       keyword dump is covered by a regression test. Done 2026-10-04.
 
-**P3 — minor:** CI has no linter/type-check; unpinned deps and tag-pinned (not
-SHA-pinned) GitHub Actions; base image copies `.git`; `ci.yml` should default the
-workflow token to `contents: read`. *Done 2026-10-16:* temp values files in
+**P3 — minor:** no type-check in CI; unpinned Python deps; base image copies
+`.git`; `ci.yml` should default the workflow token to `contents: read`. *Done
+2026-10-17:* GitHub Actions are SHA-pinned, CI downloads are checksum-verified,
+Dependabot covers Actions and pip, a `ruff` job (E9 + pyflakes) and a gitleaks
+secret scan run in CI. *Done 2026-10-16:* temp values files in
 `k8s.render`/`deploy` are removed, `redsec verify` exits 0 only when every
-verified challenge passes (with an `N/M solved` summary), `datetime.utcnow()` is replaced, and local
+verified challenge passes (with an `N/M solved` summary), `datetime.utcnow()` is
+replaced, and local
 `redsec dev/up/selftest` targets get an allowlisted environment instead of the whole
 shell.
 

@@ -41,3 +41,11 @@ include = ["redsec*"]
 addopts = "-ra -q"
 timeout = 120
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+extend-exclude = [".venv", ".redsec"]
+
+[tool.ruff.lint]
+# Start with errors only (syntax + pyflakes); widen once style is agreed.
+select = ["E9", "F"]
