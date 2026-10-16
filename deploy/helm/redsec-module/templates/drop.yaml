@@ -18,6 +18,8 @@ spec:
         {{- include "redsec.labels" . | nindent 8 }}
         app: {{ .Values.drop.name }}
     spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001

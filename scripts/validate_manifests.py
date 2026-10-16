@@ -24,6 +24,8 @@ from redsec.deploy.k8s import module_to_values
 from redsec.loader import load_all
 
 K8S_VERSION = "1.29"
+# Mirrors `dns` in deploy/helm/redsec-module/values.yaml.
+DNS_DEFAULTS = {"namespace": "kube-system", "podLabels": {"k8s-app": "kube-dns"}}
 
 
 def _drop_host(v: dict) -> str:
@@ -55,7 +57,9 @@ def render(values: dict) -> list[dict]:
                      "selector": {"matchLabels": {"app": name}},
                      "template": {
                          "metadata": {"labels": {**labels, "app": name}},
-                         "spec": {"securityContext": sc_pod, "containers": [{
+                         "spec": {"automountServiceAccountToken": False,
+                                  "enableServiceLinks": False,
+                                  "securityContext": sc_pod, "containers": [{
                              "name": name, "image": image, "imagePullPolicy": "IfNotPresent",
                              "ports": [{"containerPort": port}],
                              "env": env, "securityContext": sc_ctr,
@@ -92,6 +96,10 @@ def render(values: dict) -> list[dict]:
         objs.append(service(t["name"], t["port"]))
 
     # NetworkPolicies
+    dns = values.get("dns", DNS_DEFAULTS)
+    dns_peer = {"namespaceSelector": {"matchLabels": {
+                    "kubernetes.io/metadata.name": dns["namespace"]}},
+                "podSelector": {"matchLabels": dict(dns["podLabels"])}}
     objs.append({"apiVersion": "networking.k8s.io/v1", "kind": "NetworkPolicy",
                  "metadata": {"name": "default-deny", "namespace": ns, "labels": labels},
                  "spec": {"podSelector": {}, "policyTypes": ["Ingress", "Egress"]}})
@@ -100,7 +108,7 @@ def render(values: dict) -> list[dict]:
                  "spec": {"podSelector": {}, "policyTypes": ["Ingress", "Egress"],
                           "ingress": [{"from": [{"podSelector": {}}]}],
                           "egress": [{"to": [{"podSelector": {}}]},
-                                     {"to": [], "ports": [{"protocol": "UDP", "port": 53},
+                                     {"to": [dns_peer], "ports": [{"protocol": "UDP", "port": 53},
                                                           {"protocol": "TCP", "port": 53}]}]}})
     for t in values["targets"]:
         if t.get("egress"):
@@ -134,6 +142,13 @@ def structural_checks(objs: list[dict]) -> list[str]:
             for e in c["env"]:
                 if "name" not in e or "value" not in e:
                     errs.append(f"Deployment/{md['name']}: malformed env entry {e}")
+            if o["spec"]["template"]["spec"].get("automountServiceAccountToken") is not False:
+                errs.append(f"Deployment/{md['name']}: service-account token is mounted")
+        if kind == "NetworkPolicy" and md.get("name") == "allow-intra-and-dns":
+            # An egress rule with an empty/missing `to` matches every destination.
+            for rule in o["spec"]["egress"]:
+                if not rule.get("to"):
+                    errs.append(f"NetworkPolicy/{md['name']}: egress rule open to all peers")
     return errs
 
 

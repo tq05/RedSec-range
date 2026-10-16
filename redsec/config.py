@@ -37,3 +37,19 @@ NS_PREFIX = os.environ.get("REDSEC_NS_PREFIX", "redsec")
 # Shared sink (exfiltration oracle) service name inside a range namespace.
 DROP_NAME = "drop"
 DROP_PORT = 9099
+
+# `docker run` flags for containers RedSec authors (built-in targets, the gateway).
+# Mirrors the chart's securityContext: no Linux capabilities, no privilege gain via
+# setuid binaries, and a process cap so an RCE target cannot fork-bomb the host.
+CONTAINER_HARDENING = [
+    "--cap-drop", "ALL",
+    "--security-opt", "no-new-privileges",
+    "--pids-limit", "256",
+]
+
+# Third-party images may need default capabilities at startup, so they keep them
+# but still cannot gain privileges or exhaust host PIDs.
+EXTERNAL_CONTAINER_HARDENING = [
+    "--security-opt", "no-new-privileges",
+    "--pids-limit", "512",
+]

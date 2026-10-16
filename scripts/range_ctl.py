@@ -37,7 +37,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from redsec.config import DROP_PORT, state_dir  # noqa: E402
+from redsec.config import CONTAINER_HARDENING, DROP_PORT, state_dir  # noqa: E402
 from redsec.loader import find, load_all  # noqa: E402
 from redsec.verify.base import CheckContext  # noqa: E402
 from redsec.verify.runner import run_challenge  # noqa: E402
@@ -142,7 +142,7 @@ def up(module_dir, module, real=False) -> dict:
         real_img = image_for(module, t, real)
         extra = [] if real else ["-w", workdir(module_dir, t)]
         cmd = [] if real else target_cmd(t)
-        sh("docker", "run", "-d", "--restart", "unless-stopped",
+        sh("docker", "run", "-d", "--restart", "unless-stopped", *CONTAINER_HARDENING,
            "--name", cname, "--network", net, "--network-alias", t.name,
            "-p", publish_arg(hport, cport), *extra, *env, real_img, *cmd)
         url = f"http://127.0.0.1:{hport}"

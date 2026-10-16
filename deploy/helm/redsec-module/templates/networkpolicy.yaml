@@ -34,8 +34,15 @@ spec:
   egress:
     - to:
         - podSelector: {}
-    # DNS resolution (service discovery) only.
-    - to: []
+    # DNS resolution (service discovery) only, and only to the cluster resolver.
+    # An empty `to` would allow port 53 to any address (a DNS-tunnel egress path).
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.dns.namespace }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.dns.podLabels | nindent 14 }}
       ports:
         - { protocol: UDP, port: 53 }
         - { protocol: TCP, port: 53 }
