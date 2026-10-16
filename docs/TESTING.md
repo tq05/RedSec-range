@@ -95,9 +95,10 @@ self-test, and the kind failure captured verbatim). To refresh it for the curren
 
 - **Containers currently run as root** (visible by injecting `id` into module 07/08 —
   returns `uid=0`). P1 hardening item in `docs/ROADMAP.md`, not yet fixed.
-- **Oracle integrity:** the sink accepts any POST, so oracle challenges can be faked
-  by posting the marker; for graded use trust `redsec selftest` (runs the real
-  exploit), not a hand-posted marker.
+- **Oracle integrity:** oracle checks count only sink posts that carry the per-range
+  token, so posting the marker directly fails. Someone with host, Docker, or
+  `kubectl` access can still read the token. For graded use, trust
+  `redsec selftest` (runs the real exploit).
 - **`redsec verify` vs `range`** read different state files (`running-NN.json` vs
   `range.json`); and `verify` on a *flag* challenge with no flag FAILs confusingly —
   flag challenges are proven with `redsec submit`. Rough edges logged in ROADMAP.

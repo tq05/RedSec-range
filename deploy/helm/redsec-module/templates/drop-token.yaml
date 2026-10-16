@@ -1,0 +1,14 @@
+{{- if .Values.drop.enabled }}
+# Per-release range token shared by the sink and targets (see services/drop). Pass
+# drop.token explicitly to keep it stable across upgrades; otherwise one is generated.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.drop.name }}-token
+  namespace: {{ .Values.range.namespace }}
+  labels:
+    {{- include "redsec.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  token: {{ .Values.drop.token | default (randAlphaNum 32) | quote }}
+{{- end }}

@@ -38,6 +38,19 @@ NS_PREFIX = os.environ.get("REDSEC_NS_PREFIX", "redsec")
 DROP_NAME = "drop"
 DROP_PORT = 9099
 
+# Range token: generated per range start and given only to the sink and targets.
+# Targets send it with every sink post; the sink marks those events trusted, and
+# oracle checks ignore everything else. A learner posting a marker straight to the
+# sink therefore cannot pass an oracle challenge.
+DROP_TOKEN_ENV = "REDSEC_DROP_TOKEN"
+DROP_TOKEN_HEADER = "X-RedSec-Drop-Token"
+
+
+def new_drop_token() -> str:
+    import secrets
+
+    return secrets.token_hex(16)
+
 # `docker run` flags for containers RedSec authors (built-in targets, the gateway).
 # Mirrors the chart's securityContext: no Linux capabilities, no privilege gain via
 # setuid binaries, and a process cap so an RCE target cannot fork-bomb the host.

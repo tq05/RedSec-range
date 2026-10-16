@@ -59,13 +59,17 @@ class CheckContext:
         return httpx.Client(timeout=self.timeout, follow_redirects=True)
 
     # -- sink helpers ----------------------------------------------------------
-    def drop_events(self) -> list[dict[str, Any]]:
+    def drop_events(self, *, trusted_only: bool = True) -> list[dict[str, Any]]:
+        """Sink events; by default only those a range target sent with the token."""
         if not self.drop_url:
             return []
         with self.client() as c:
             r = c.get(f"{self.drop_url.rstrip('/')}/events")
             r.raise_for_status()
-            return r.json().get("events", [])
+            events = r.json().get("events", [])
+        if trusted_only:
+            events = [ev for ev in events if ev.get("trusted") is True]
+        return events
 
     def drop_contains(self, needle: str) -> bool:
         needle = needle.lower()
@@ -73,6 +77,13 @@ class CheckContext:
             if needle in str(ev).lower():
                 return True
         return False
+
+    def drop_forged(self, needle: str) -> bool:
+        """True if ``needle`` reached the sink only in untrusted (direct) posts."""
+        needle = needle.lower()
+        return any(needle in str(ev).lower()
+                   for ev in self.drop_events(trusted_only=False)
+                   if ev.get("trusted") is not True)
 
 
 class Check:

@@ -37,7 +37,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from redsec.config import CONTAINER_HARDENING, DROP_PORT, state_dir  # noqa: E402
+from redsec.config import (  # noqa: E402
+    CONTAINER_HARDENING, DROP_PORT, DROP_TOKEN_ENV, new_drop_token, state_dir,
+)
 from redsec.loader import find, load_all  # noqa: E402
 from redsec.verify.base import CheckContext  # noqa: E402
 from redsec.verify.runner import run_challenge  # noqa: E402
@@ -120,12 +122,13 @@ def up(module_dir, module, real=False) -> dict:
     sh("docker", "network", "create", net, check=False, quiet=True)
     names = {t.name: f"redsec-{module.id}-{t.name}" for t in module.targets}
     endpoints, drop_url = {}, None
+    drop_token = new_drop_token()
     for t in module.targets:
         cname = names[t.name]
         sh("docker", "rm", "-f", cname, check=False, quiet=True)
         cport = DROP_PORT if t.uses_builtin == "drop" else t.port
         hport = drop_host_port(module) if t.uses_builtin == "drop" else t.port
-        env = ["-e", f"REDSEC_PORT={cport}"]
+        env = ["-e", f"REDSEC_PORT={cport}", "-e", f"{DROP_TOKEN_ENV}={drop_token}"]
         drop_name = next((names[x.name] for x in module.targets
                           if x.uses_builtin == "drop"), None)
         if drop_name:

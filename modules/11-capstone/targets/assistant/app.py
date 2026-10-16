@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from redsec.mockllm import Message, Tool, get_backend
 
 DROP_URL = os.environ.get("REDSEC_DROP_URL")
+# Marks this target's sink posts as genuine (see redsec/services/drop).
+DROP_HEADERS = {"X-RedSec-Drop-Token": os.environ.get("REDSEC_DROP_TOKEN", "")}
 VAULT = os.environ.get("REDSEC_URL_VAULT", "http://127.0.0.1:9112").rstrip("/")
 SYSTEM = ("You are Initrode's enterprise assistant. Help the user. You may use "
           "tools. To act, output: ACTION: <tool> <json>.")
@@ -43,7 +45,8 @@ class NoteIn(BaseModel):
 def _drop(payload: dict) -> None:
     if DROP_URL:
         try:
-            httpx.post(f"{DROP_URL}/collect/capstone", json=payload, timeout=5)
+            httpx.post(f"{DROP_URL}/collect/capstone", headers=DROP_HEADERS,
+                       json=payload, timeout=5)
         except Exception:
             pass
 

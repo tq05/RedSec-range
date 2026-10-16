@@ -79,16 +79,24 @@ def render(values: dict) -> list[dict]:
               "value": f"http://{t['name']}.{ns}.svc.cluster.local:{t['port']}"}
              for t in values["targets"]]
 
+    token_env = {"name": "REDSEC_DROP_TOKEN", "valueFrom": {"secretKeyRef": {
+        "name": f"{values['drop']['name']}-token", "key": "token"}}}
     if values["drop"]["enabled"]:
         d = values["drop"]
+        objs.append({"apiVersion": "v1", "kind": "Secret", "type": "Opaque",
+                     "metadata": {"name": f"{d['name']}-token", "namespace": ns,
+                                  "labels": labels},
+                     "stringData": {"token": d.get("token") or "generated"}})
         objs.append(deployment(d["name"], d["image"], d["port"],
-                               [{"name": "REDSEC_PORT", "value": str(d["port"])}], False))
+                               [{"name": "REDSEC_PORT", "value": str(d["port"])},
+                                token_env], False))
         objs.append(service(d["name"], d["port"]))
 
     for t in values["targets"]:
         env = [{"name": "REDSEC_PORT", "value": str(t["port"])}]
         if values["drop"]["enabled"]:
             env.append({"name": "REDSEC_DROP_URL", "value": _drop_host(values)})
+            env.append(token_env)
         for k, val in (t.get("env") or {}).items():
             env.append({"name": k, "value": str(val)})
         env.extend(peers)
@@ -140,7 +148,7 @@ def structural_checks(objs: list[dict]) -> list[str]:
             if probe_port != cport:
                 errs.append(f"Deployment/{md['name']}: probe port {probe_port} != {cport}")
             for e in c["env"]:
-                if "name" not in e or "value" not in e:
+                if "name" not in e or ("value" in e) == ("valueFrom" in e):
                     errs.append(f"Deployment/{md['name']}: malformed env entry {e}")
             if o["spec"]["template"]["spec"].get("automountServiceAccountToken") is not False:
                 errs.append(f"Deployment/{md['name']}: service-account token is mounted")
