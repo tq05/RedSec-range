@@ -78,11 +78,14 @@ def render(module: Module, registry: str, tag: str,
         yaml.safe_dump(values, f)
         values_path = f.name
     release = f"{NS_PREFIX}-{module.id}" + (f"-{instance}" if instance else "")
-    out = subprocess.run(
-        [helm, "template", release, str(chart_dir()),
-         "-f", values_path, "--namespace", values["range"]["namespace"]],
-        capture_output=True, text=True,
-    )
+    try:
+        out = subprocess.run(
+            [helm, "template", release, str(chart_dir()),
+             "-f", values_path, "--namespace", values["range"]["namespace"]],
+            capture_output=True, text=True,
+        )
+    finally:
+        Path(values_path).unlink(missing_ok=True)
     if out.returncode != 0:
         raise RuntimeError(f"helm template failed:\n{out.stderr}")
     return out.stdout
@@ -100,11 +103,14 @@ def deploy(module: Module, registry: str, tag: str,
         yaml.safe_dump(values, f)
         values_path = f.name
     release = f"{NS_PREFIX}-{module.id}" + (f"-{instance}" if instance else "")
-    out = subprocess.run(
-        [helm, "upgrade", "--install", release, str(chart_dir()),
-         "-f", values_path, "--namespace", ns, "--create-namespace", "--wait"],
-        capture_output=True, text=True,
-    )
+    try:
+        out = subprocess.run(
+            [helm, "upgrade", "--install", release, str(chart_dir()),
+             "-f", values_path, "--namespace", ns, "--create-namespace", "--wait"],
+            capture_output=True, text=True,
+        )
+    finally:
+        Path(values_path).unlink(missing_ok=True)
     if out.returncode != 0:
         raise RuntimeError(f"helm install failed:\n{out.stderr}")
     return f"deployed release {release} to namespace {ns}\n{out.stdout}"

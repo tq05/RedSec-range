@@ -95,6 +95,12 @@ grok --agent "enumerate the running range and report what each target exposes"
 tools and loops until done — so Grok can drive an assessment its own way. It runs in
 the ephemeral sandbox only. Chat mode has no tools.
 
+Shell commands run with a scrubbed environment: any variable whose name looks like a
+credential (`*KEY*`, `*TOKEN*`, `*SECRET*`, `*PASSWORD*`, …), including
+`XAI_API_KEY`, is removed. That way, injected instructions in lab content can't make
+the agent print or send the key. Add `--confirm` to approve each shell command before
+it runs. `http_request` is not restricted to lab hosts yet (see `docs/ROADMAP.md`).
+
 ### An external named CLI (optional)
 
 If you prefer a mature third-party coding agent, `aider` works against Grok via its

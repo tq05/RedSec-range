@@ -64,6 +64,25 @@ class LocalRange:
                 t.proc.kill()
 
 
+# Host variables a Python target needs to start. Everything else in the learner's
+# shell (cloud credentials, GitHub/Fly tokens, model API keys) stays out of the
+# deliberately vulnerable processes, matching the Docker path's explicit `-e` list.
+_HOST_ENV = (
+    "PATH", "HOME", "USER", "LOGNAME", "SHELL", "LANG", "TERM", "TMPDIR", "TZ",
+    "VIRTUAL_ENV", "SYSTEMROOT", "COMSPEC", "PATHEXT", "WINDIR",
+)
+
+
+def _target_env() -> dict[str, str]:
+    """The parent environment reduced to host basics plus ``REDSEC_*`` settings."""
+    import os
+
+    return {
+        k: v for k, v in os.environ.items()
+        if k in _HOST_ENV or k.startswith(("LC_", "REDSEC_"))
+    }
+
+
 def _free_port(preferred: int) -> int:
     with socket.socket() as s:
         try:
@@ -122,7 +141,7 @@ def start_range(module: Module, module_dir: Path,
     import os
 
     rng = LocalRange(module=module, module_dir=module_dir)
-    base_env = dict(os.environ)
+    base_env = _target_env()
     # Make both the repo (for `redsec`) and each target's dir importable.
     pythonpath = [str(repo_root())]
 

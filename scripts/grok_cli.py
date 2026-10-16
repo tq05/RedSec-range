@@ -15,12 +15,15 @@ Config (env or flags):
   --base-url URL       override the API base
   --model NAME         default grok-4
   --max-steps N        agent tool-call budget (default 20)
+  --confirm            agent mode: ask before running each shell command
 
 AGENT MODE SAFETY: exec_shell runs real commands in THIS sandbox (an isolated,
 ephemeral cloud VM), in the given --cwd. That is intentional — it is your sandbox —
 but it means Grok can run arbitrary commands here. It cannot reach anything the
 sandbox can't. Nothing is written outside the sandbox. Use chat mode if you only
-want answers.
+want answers. Shell commands run with a scrubbed environment: API keys, tokens and
+other credentials (including the model key) are removed, so lab content that
+injects instructions into the agent cannot read them back out.
 """
 from __future__ import annotations
 
@@ -68,12 +71,30 @@ def api(base, key, model, messages, tools=None):
     return r.json()["choices"][0]["message"]
 
 
-def run_tool(name, args, cwd):
+# Variable names that suggest a credential. The agent reads untrusted, injection-
+# laden lab content, so its shell must not inherit anything it could exfiltrate.
+_SECRET_MARKERS = ("KEY", "TOKEN", "SECRET", "PASSWORD", "PASSWD", "CREDENTIAL",
+                   "AUTH", "SESSION", "COOKIE")
+
+
+def _shell_env():
+    return {k: v for k, v in os.environ.items()
+            if not any(marker in k.upper() for marker in _SECRET_MARKERS)}
+
+
+def run_tool(name, args, cwd, confirm=False):
     if name == "exec_shell":
         cmd = args.get("command", "")
+        if confirm:
+            try:
+                answer = input(f"    run `{cmd}`? [y/N] ").strip().lower()
+            except EOFError:
+                answer = ""
+            if answer not in {"y", "yes"}:
+                return "operator declined to run this command"
         try:
             p = subprocess.run(["bash", "-lc", cmd], cwd=cwd, capture_output=True,
-                               text=True, timeout=120)
+                               text=True, timeout=120, env=_shell_env())
             out = (p.stdout or "") + (p.stderr or "")
             return out[:6000] or "(no output)"
         except subprocess.TimeoutExpired:
@@ -112,7 +133,7 @@ def repl(base, key, model):
         print(msg.get("content", "").strip())
 
 
-def agent(base, key, model, task, cwd, max_steps):
+def agent(base, key, model, task, cwd, max_steps, confirm=False):
     print(f"[agent mode] tools live in sandbox (cwd={cwd}). task: {task}\n")
     messages = [
         {"role": "system", "content":
@@ -138,7 +159,7 @@ def agent(base, key, model, task, cwd, max_steps):
                 a = {}
             preview = (a.get("command") or a.get("url") or "")[:80]
             print(f"    -> {fn['name']}: {preview}")
-            out = run_tool(fn["name"], a, cwd)
+            out = run_tool(fn["name"], a, cwd, confirm)
             messages.append({"role": "tool", "tool_call_id": tc["id"], "content": out})
     print("\n[agent done]")
 
@@ -153,6 +174,8 @@ def main():
     ap.add_argument("--api-key")
     ap.add_argument("--cwd", default=os.getcwd())
     ap.add_argument("--max-steps", type=int, default=20)
+    ap.add_argument("--confirm", action="store_true",
+                    help="agent mode: ask before running each shell command")
     a = ap.parse_args()
     default_base, key_env = PROVIDERS[a.provider]
     base = (a.base_url or default_base)
@@ -163,7 +186,7 @@ def main():
         sys.exit(f"set {key_env} (or pass --api-key). e.g. export XAI_API_KEY=...")
     base = base.rstrip("/")
     if a.agent:
-        agent(base, key, a.model, a.agent, a.cwd, a.max_steps)
+        agent(base, key, a.model, a.agent, a.cwd, a.max_steps, a.confirm)
     elif a.prompt:
         chat_once(base, key, a.model, a.prompt)
     else:
