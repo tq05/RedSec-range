@@ -120,9 +120,9 @@ and tighten the accuracy/integrity claims.
       allow-list + Content-Type enforcement to the FastAPI targets; default these
       modules to the Docker/K8s path or gate bare-local behind an explicit flag.
       SECURITY.md updated to say so.
-- [ ] **Container hardening.** `vuln-mcp` and `08 registry` images run as root; plant
-      files under a writable dir and add `USER 10001`. Keep seccomp + cap-drop even on
-      `privileged` targets in the chart. *Done 2026-10-16 (PR #16):*
+- [x] **Container hardening.** *Done 2026-10-16:* `vuln-mcp` and the 08 registry
+      run as `USER 10001`, and the chart applies the same non-root, seccomp, and
+      cap-drop context to `privileged` targets as to all others. Earlier (PR #16):
       `automountServiceAccountToken: false`, DNS-only egress to the cluster resolver,
       and `--cap-drop ALL` / `no-new-privileges` / PID limits on the Docker paths.
 - [ ] **Agent-harness safety.** `grok_cli --agent` reads injection-laden lab content.

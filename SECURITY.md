@@ -18,9 +18,10 @@ exfiltration, and more. They exist so defenders can learn to find and fix them.
   ClusterIP-only by default. Do not put one behind a public LoadBalancer/Ingress.
 - **Never point a target at production** data, credentials, models, or services.
 - **Use the canaries, not real secrets.** All planted flags/tokens are fake.
-- The RCE target (`07/vuln-mcp`) executes a shell. It is marked `privileged` and is
-  contained by NetworkPolicy; keep it in an isolated namespace and never on a node
-  you care about.
+- The RCE target (`07/vuln-mcp`) executes a shell. It is marked `privileged`
+  (a deliberately weak application), which forbids egress. Its container still runs
+  as uid 10001 with all capabilities dropped and is contained by NetworkPolicy. Keep
+  it in an isolated namespace and never on a node you care about.
 - External catalog ranges are third-party deliberately vulnerable code. RedSec pins
   their default Git revisions, builds them locally, binds ports to loopback, and
   gives each an internal Docker network. Review upstream changes before running

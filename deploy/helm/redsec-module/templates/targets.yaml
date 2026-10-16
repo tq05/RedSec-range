@@ -24,14 +24,14 @@ spec:
       # Targets are attacker-controlled by design: never hand them API credentials.
       automountServiceAccountToken: false
       enableServiceLinks: false
-      {{- if not .privileged }}
+      # `privileged` marks a deliberately weak *application* (RCE/deserialization).
+      # Its container is contained exactly like every other target.
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
         fsGroup: 10001
         seccompProfile:
           type: RuntimeDefault
-      {{- end }}
       containers:
         - name: {{ .name }}
           image: {{ .image }}
@@ -55,15 +55,10 @@ spec:
               value: "http://{{ .name }}.{{ $root.Values.range.namespace }}.svc.cluster.local:{{ .port }}"
             {{- end }}
           securityContext:
-            {{- if .privileged }}
-            allowPrivilegeEscalation: true
-            runAsNonRoot: false
-            {{- else }}
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             capabilities:
               drop: ["ALL"]
-            {{- end }}
           readinessProbe:
             httpGet: { path: /healthz, port: {{ .port }} }
             initialDelaySeconds: 2
