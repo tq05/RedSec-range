@@ -127,9 +127,9 @@ and tighten the accuracy/integrity claims.
       and `--cap-drop ALL` / `no-new-privileges` / PID limits on the Docker paths.
 - [ ] **Agent-harness safety.** `grok_cli --agent` reads injection-laden lab content.
       *Done 2026-10-16:* its shell runs with credential-like variables removed, and
-      `--confirm` asks before each command. Remaining: container-only mode, a URL
-      allow-list for `http_request`, removing the drop URL from `agent_solver`'s
-      allow-list, and `--no-hints` for benchmarking.
+      `--confirm` asks before each command; `http_request` is loopback-only unless
+      `--allow-host` is given; `agent_solver` can no longer reach the sink and has
+      `--no-hints`. Remaining: a container-only mode for `exec_shell`.
 - [ ] **Real-LLM backend.** *Done 2026-10-16:* tool output is now sent as labelled
       user content, so `REDSEC_LLM_BACKEND=openai` no longer sends orphan
       `role: tool` messages. Remaining: qualify the "transfers to a real model" claim
