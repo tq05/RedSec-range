@@ -60,12 +60,15 @@ vulnerabilities taught live in the *applications*, which is the point.
 ## Integrity & isolation model (read before relying on results)
 
 - **The verifier is a teaching oracle, not a tamper-proof judge.** Side-effect
-  (oracle) challenges confirm an exploit by watching the shared `drop` sink. The sink
-  accepts any POST, and some needles are markers the learner chooses, so a motivated
-  learner can "pass" an oracle challenge by posting the marker directly. That is fine
-  for self-paced learning; for graded/benchmark use, treat `redsec selftest` (which
-  runs the *reference exploit* end-to-end) as the source of truth, and see the
-  hardening item in `docs/ROADMAP.md`.
+  (oracle) challenges confirm an exploit by watching the shared `drop` sink. Each
+  range start generates a random range token that only the sink and the targets
+  receive. Targets send it with their sink posts, and oracle checks count only those
+  trusted events, so posting a marker to the sink directly no longer passes. Anyone
+  who controls the host can still read the token: from target process environments in
+  local mode, `docker inspect` on the Docker paths, or the `drop-token` Secret on
+  Kubernetes. RCE challenges (module 08) read it legitimately from inside the target.
+  For graded/benchmark use, treat `redsec selftest` (which runs the *reference
+  exploit* end-to-end) as the source of truth.
 - **Isolation depends on the run path.** The Kubernetes path puts each module in a
   default-deny namespace (egress enforced with a policy CNI; DNS is allowed only to
   the cluster resolver) with no service-account token mounted. The Docker paths run

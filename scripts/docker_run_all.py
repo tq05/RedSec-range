@@ -29,7 +29,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from redsec.config import CONTAINER_HARDENING  # noqa: E402
+from redsec.config import CONTAINER_HARDENING, DROP_TOKEN_ENV, new_drop_token  # noqa: E402
 from redsec.loader import load_all, find  # noqa: E402
 from redsec.verify.base import CheckContext  # noqa: E402
 from redsec.verify.runner import run_challenge  # noqa: E402
@@ -99,6 +99,7 @@ def run_module(module_dir: Path, module, image: str, real: bool = False,
     published: dict[str, int] = {}   # target -> host port (for the verifier)
     drop_host_port = None
     started: list[str] = []
+    drop_token = new_drop_token()
     try:
         for t in module.targets:
             cname = names[t.name]
@@ -108,7 +109,7 @@ def run_module(module_dir: Path, module, image: str, real: bool = False,
             if t.uses_builtin == "drop":
                 drop_host_port = hport
 
-            env = ["-e", f"REDSEC_PORT={cport}"]
+            env = ["-e", f"REDSEC_PORT={cport}", "-e", f"{DROP_TOKEN_ENV}={drop_token}"]
             # drop URL + peer URLs use CONTAINER names on the shared network
             # (this is exactly k8s service-DNS, just Docker's embedded DNS).
             drop_name = next((names[x.name] for x in module.targets

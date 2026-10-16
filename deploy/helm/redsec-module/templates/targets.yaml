@@ -44,6 +44,11 @@ spec:
             {{- if $root.Values.drop.enabled }}
             - name: REDSEC_DROP_URL
               value: {{ include "redsec.dropHost" $root | quote }}
+            - name: REDSEC_DROP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $root.Values.drop.name }}-token
+                  key: token
             {{- end }}
             {{- range $k, $v := .env }}
             - name: {{ $k }}

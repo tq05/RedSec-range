@@ -29,5 +29,8 @@ class HostExfil(Check):
             return CheckResult.ok(
                 f"sink captured {needle!r} ({len(matches)} event(s))",
                 sample=matches[-1].get("body", "")[:200])
+        if ctx.drop_forged(needle):
+            return CheckResult.fail(
+                f"{needle!r} reached the sink, but not from a range target")
         return CheckResult.fail(
             f"sink has not captured {needle!r}", events=len(ctx.drop_events()))

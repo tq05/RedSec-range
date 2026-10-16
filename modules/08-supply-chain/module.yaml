@@ -44,6 +44,7 @@ challenges:
     hints:
       - "POST /load base64-decodes your artifact and pickle.loads() it."
       - "A pickle's __reduce__ runs on unpickle. Make it phone the sink."
+      - "The sink only trusts posts from inside the range: your code runs in the registry, so send its REDSEC_DROP_TOKEN as the X-RedSec-Drop-Token header."
       - "The target has REDSEC_DROP_URL in its env; read it from your payload."
 
   - id: poisoned-dataset

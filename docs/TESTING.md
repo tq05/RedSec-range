@@ -97,9 +97,10 @@ self-test, and the kind failure captured verbatim). To refresh it for the curren
   `uid=10001` on the per-module images and in Kubernetes. The shared `redsec/base`
   runner image used by `docker_run_all.py` still runs as root, but with all
   capabilities dropped and `no-new-privileges`.
-- **Oracle integrity:** the sink accepts any POST, so oracle challenges can be faked
-  by posting the marker; for graded use trust `redsec selftest` (runs the real
-  exploit), not a hand-posted marker.
+- **Oracle integrity:** oracle checks count only sink posts that carry the per-range
+  token, so posting the marker directly fails. Someone with host, Docker, or
+  `kubectl` access can still read the token. For graded use, trust
+  `redsec selftest` (runs the real exploit).
 - **`redsec verify` vs `range`** read different state files (`running-NN.json` vs
   `range.json`); and `verify` on a *flag* challenge with no flag FAILs confusingly —
   flag challenges are proven with `redsec submit`. Rough edges logged in ROADMAP.

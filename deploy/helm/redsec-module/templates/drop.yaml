@@ -32,6 +32,12 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{ .Values.drop.port }}
+          env:
+            - name: REDSEC_DROP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.drop.name }}-token
+                  key: token
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

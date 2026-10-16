@@ -42,6 +42,11 @@ class DropContains(Check):
             return CheckResult.ok(
                 "sink received the exfiltrated value", needle=needle
             )
+        if ctx.drop_forged(needle):
+            return CheckResult.fail(
+                "the value reached the sink, but not from a range target; make the "
+                "target send it", needle=needle,
+            )
         return CheckResult.fail(
             "sink has not received the value yet", needle=needle,
             events=len(ctx.drop_events()),
