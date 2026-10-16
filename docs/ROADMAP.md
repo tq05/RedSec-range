@@ -156,11 +156,11 @@ and tighten the accuracy/integrity claims.
       entries, same-entry trust relationships, and numbered multi-step chains; a
       keyword dump is covered by a regression test. Done 2026-10-04.
 
-**P3 — minor:** `cli.verify` exit semantics (a full sweep exits 0 if *any*
-challenge passes); CI has no linter/type-check; unpinned deps and tag-pinned (not
+**P3 — minor:** CI has no linter/type-check; unpinned deps and tag-pinned (not
 SHA-pinned) GitHub Actions; base image copies `.git`; `ci.yml` should default the
 workflow token to `contents: read`. *Done 2026-10-16:* temp values files in
-`k8s.render`/`deploy` are removed, `datetime.utcnow()` is replaced, and local
+`k8s.render`/`deploy` are removed, `redsec verify` exits 0 only when every
+verified challenge passes (with an `N/M solved` summary), `datetime.utcnow()` is replaced, and local
 `redsec dev/up/selftest` targets get an allowlisted environment instead of the whole
 shell.
 
