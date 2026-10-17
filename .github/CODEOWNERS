@@ -1,0 +1,31 @@
+# Code owners are requested for review automatically. With branch protection's
+# "Require review from Code Owners", these paths cannot merge without them.
+#
+# Everything defaults to the maintainers; the sections below list the paths whose
+# changes can weaken containment, verification integrity, or the supply chain.
+
+*                               @tq05 @rolfh9
+
+# CI, automation, and repository security configuration
+/.github/                       @tq05 @rolfh9
+/.gitleaks.toml                 @tq05 @rolfh9
+/SECURITY.md                    @tq05 @rolfh9
+/DEFENSIVE-SCOPE.md             @tq05 @rolfh9
+
+# Containment: deployment, isolation, container hardening, port publication
+/deploy/                        @tq05 @rolfh9
+/redsec/config.py               @tq05 @rolfh9
+/redsec/deploy/                 @tq05 @rolfh9
+/redsec/ranges.py               @tq05 @rolfh9
+/ranges/                        @tq05 @rolfh9
+/scripts/range_ctl.py           @tq05 @rolfh9
+/scripts/docker_run_all.py      @tq05 @rolfh9
+/scripts/build_base_image.sh    @tq05 @rolfh9
+/.devcontainer/                 @tq05 @rolfh9
+
+# Verification integrity: the sink, verifiers, and LLM assessor harnesses
+/redsec/services/               @tq05 @rolfh9
+/redsec/verify/                 @tq05 @rolfh9
+/modules/*/verify/              @tq05 @rolfh9
+/scripts/agent_solver.py        @tq05 @rolfh9
+/scripts/grok_cli.py            @tq05 @rolfh9
