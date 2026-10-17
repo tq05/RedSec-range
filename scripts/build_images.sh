@@ -29,8 +29,8 @@ build() {  # <dockerfile> <image-name>
   [ "$PUSH" = "1" ] && docker push "${REGISTRY}/$2:${TAG}" || true
 }
 
-# shared sink (own context)
-docker build "${EXTRA[@]}" -f redsec/services/drop/Dockerfile -t "${REGISTRY}/drop:${TAG}" redsec/services/drop
+# shared sink (repo-root context, for the shared constraints file)
+docker build "${EXTRA[@]}" -f redsec/services/drop/Dockerfile -t "${REGISTRY}/drop:${TAG}" .
 [ "$PUSH" = "1" ] && docker push "${REGISTRY}/drop:${TAG}" || true
 
 build modules/01-intro/targets/guide/Dockerfile                    m01-guide

@@ -22,7 +22,8 @@ awk 'NF && $1 !~ /^#/ { print "redsec-range/" $0 }' .dockerignore > "$CTX/.docke
 cat > "$CTX/Dockerfile" <<'EOF'
 FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 ARG PXY=
-RUN pip install --no-cache-dir ${PXY:+--proxy $PXY} \
+COPY redsec-range/deploy/constraints.txt /tmp/constraints.txt
+RUN pip install --no-cache-dir ${PXY:+--proxy $PXY} -c /tmp/constraints.txt \
     --trusted-host pypi.org --trusted-host files.pythonhosted.org \
     fastapi "uvicorn[standard]" httpx pydantic pyyaml
 COPY redsec-range /app
