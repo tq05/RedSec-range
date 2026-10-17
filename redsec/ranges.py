@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Iterable
 
 from .config import (
-    CONTAINER_HARDENING, EXTERNAL_CONTAINER_HARDENING, repo_root, state_dir,
+    CONTAINER_HARDENING, EXTERNAL_CONTAINER_HARDENING, PublicBindError, publish_spec,
+    repo_root, state_dir,
 )
 from .range_catalog import RangeCatalog, RangeDefinition, load_catalog
 
@@ -161,10 +162,10 @@ def build_external(definition: RangeDefinition, *, rebuild: bool = False) -> tup
 
 
 def _publish(host: int, container: int) -> str:
-    bind = os.environ.get("REDSEC_BIND_HOST", "127.0.0.1").strip()
-    if bind in {"all", "0.0.0.0", "*"}:
-        return f"{host}:{container}"
-    return f"{bind}:{host}:{container}"
+    try:
+        return publish_spec(host, container)
+    except PublicBindError as exc:
+        raise RangeLifecycleError(str(exc)) from exc
 
 
 def _container_name(definition: RangeDefinition) -> str:

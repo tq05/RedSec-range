@@ -11,7 +11,10 @@ primary_region = "lhr"
 
 [env]
   MAX_RUNTIME_MIN = "0"
+  # The Machine has no public service; `fly proxy` reaches its private address,
+  # so ports bind on all interfaces with the explicit unsafe acknowledgement.
   REDSEC_BIND_HOST = "all"
+  REDSEC_ALLOW_PUBLIC_BIND = "1"
   REDSEC_RANGES = "builtin"
 
 [[vm]]
