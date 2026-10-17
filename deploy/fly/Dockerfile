@@ -9,7 +9,7 @@
 # Build context is the REPO ROOT (so the whole range is copied in). deploy/fly/up.sh
 # runs the deploy from the repo root with the right --config/--dockerfile flags.
 
-FROM docker:27-dind
+FROM docker:27-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
 
 # Tooling the bootstrap + controller need. docker:dind is Alpine-based and already
 # provides a correctly-plumbed inner dockerd; we add python for the `redsec`
