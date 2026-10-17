@@ -162,7 +162,8 @@ pinned in `deploy/constraints.txt`; the base runner build verifies PyPI's TLS
 certificate (no `--trusted-host`) and, via `.dockerignore`, excludes `.git`;
 GitHub Actions are SHA-pinned, CI downloads are checksum-verified,
 Dependabot covers Actions and pip, a `ruff` job (E9 + pyflakes) and a gitleaks
-secret scan run in CI. *Done 2026-10-16:* temp values files in
+secret scan run in CI, and `dependency-audit` runs `pip-audit` on every change and
+weekly. *Done 2026-10-16:* temp values files in
 `k8s.render`/`deploy` are removed, `redsec verify` exits 0 only when every
 verified challenge passes (with an `N/M solved` summary), `datetime.utcnow()` is
 replaced, and local

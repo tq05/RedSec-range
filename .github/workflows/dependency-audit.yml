@@ -1,0 +1,40 @@
+name: dependency-audit
+
+# Known-vulnerability scan of every Python dependency the project and its images
+# install. Runs on changes and weekly, so advisories published after a merge are
+# still caught.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with: { python-version: "3.12" }
+      - name: Install the project and pip-audit
+        run: |
+          python -m venv /tmp/audit
+          /tmp/audit/bin/pip install pip-audit==2.10.1
+          python -m pip install -e ".[dev,real-llm]"
+      - name: Audit the project's resolved dependencies
+        run: |
+          python -m pip freeze --exclude-editable > /tmp/project-deps.txt
+          /tmp/audit/bin/pip-audit --progress-spinner off -r /tmp/project-deps.txt
+      - name: Audit the pinned image packages
+        if: hashFiles('deploy/constraints.txt') != ''
+        run: |
+          grep -v '^#' deploy/constraints.txt > /tmp/image-deps.txt
+          /tmp/audit/bin/pip-audit --progress-spinner off --no-deps -r /tmp/image-deps.txt
