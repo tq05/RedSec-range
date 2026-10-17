@@ -16,6 +16,9 @@ exfiltration, and more. They exist so defenders can learn to find and fix them.
   do not weaken that on a shared network.
 - **Never expose a target to the internet or an untrusted network.** Targets are
   ClusterIP-only by default. Do not put one behind a public LoadBalancer/Ingress.
+  Docker paths publish ports on `127.0.0.1`. Binding elsewhere
+  (`REDSEC_BIND_HOST=all` or another address) is refused unless you also set
+  `REDSEC_ALLOW_PUBLIC_BIND=1`, and is always refused inside a Codespace.
 - **Never point a target at production** data, credentials, models, or services.
 - **Use the canaries, not real secrets.** All planted flags/tokens are fake.
 - The RCE target (`07/vuln-mcp`) executes a shell. It is marked `privileged`

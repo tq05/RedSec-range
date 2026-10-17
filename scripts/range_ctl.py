@@ -38,7 +38,8 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from redsec.config import (  # noqa: E402
-    CONTAINER_HARDENING, DROP_PORT, DROP_TOKEN_ENV, new_drop_token, state_dir,
+    CONTAINER_HARDENING, DROP_PORT, DROP_TOKEN_ENV, PublicBindError, new_drop_token,
+    publish_spec, state_dir,
 )
 from redsec.loader import find, load_all  # noqa: E402
 from redsec.verify.base import CheckContext  # noqa: E402
@@ -89,10 +90,10 @@ def wait_http(url, timeout=40):
 
 def publish_arg(host_port: int, container_port: int) -> str:
     """Return a private-by-default Docker port publication specification."""
-    bind = os.environ.get("REDSEC_BIND_HOST", "127.0.0.1").strip()
-    if bind in {"all", "0.0.0.0", "*"}:
-        return f"{host_port}:{container_port}"
-    return f"{bind}:{host_port}:{container_port}"
+    try:
+        return publish_spec(host_port, container_port)
+    except PublicBindError as exc:
+        sys.exit(f"refusing to start: {exc}")
 
 
 def target_cmd(tdef):

@@ -25,6 +25,8 @@ def test_port_publication_is_private_by_default(monkeypatch, tmp_path):
     assert range_ctl.publish_arg(9070, 9070) == "127.0.0.1:9070:9070"
 
     monkeypatch.setenv("REDSEC_BIND_HOST", "all")
+    monkeypatch.setenv("REDSEC_ALLOW_PUBLIC_BIND", "1")
+    monkeypatch.delenv("CODESPACES", raising=False)
     assert range_ctl.publish_arg(9070, 9070) == "9070:9070"
 
 
@@ -33,6 +35,7 @@ def test_fly_config_has_no_public_service_and_stops_on_ttl():
     assert "services" not in config
     assert "http_service" not in config
     assert config["env"]["REDSEC_BIND_HOST"] == "all"
+    assert config["env"]["REDSEC_ALLOW_PUBLIC_BIND"] == "1"
     assert config["env"]["REDSEC_RANGES"] == "builtin"
     assert config["vm"][0]["persist_rootfs"] == "restart"
     assert config["vm"][0]["size"] == "shared-cpu-2x"
