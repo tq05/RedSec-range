@@ -10,6 +10,9 @@ summary: >
   unauthenticated admin inference route, and recover a secret committed into a model
   card in the registry. The NetworkPolicies model the blast radius.
 authors: [RedSec Range]
+# The appserver's fetch feature is an SSRF; as a bare local process on a cloud VM it
+# can reach the real instance-metadata endpoint. Use the Docker/Kubernetes paths.
+unsafe_local: true
 prerequisites: ["02"]
 tags: [infrastructure, ssrf, metadata, model-server, secrets, registry]
 mappings:

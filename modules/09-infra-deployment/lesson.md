@@ -15,9 +15,15 @@ the *internet* fails but SSRF to the *internal* metadata succeeds.
 ## 2. Start
 
 ```bash
-redsec up 09
+range up 09              # Docker range: the metadata service stays internal
 APP=http://127.0.0.1:9090
 ```
+
+With the Docker range, check oracle challenges with `range verify 09 <challenge>`
+wherever this lesson says `redsec verify`. Without Docker, `redsec up 09
+--unsafe-local` runs the SSRF-able appserver as a plain process. On a cloud VM it
+could then reach the *real* instance-metadata endpoint, so only do that on a
+throwaway local machine.
 
 ## 3. Walkthrough
 

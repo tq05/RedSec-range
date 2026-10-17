@@ -172,6 +172,17 @@ class Module(BaseModel):
     targets: list[Target] = Field(default_factory=list)
     challenges: list[Challenge] = Field(default_factory=list)
     lesson: str = "lesson.md"
+    unsafe_local: bool = Field(
+        False,
+        description="Running this module as bare local processes is dangerous even "
+        "without a privileged target (e.g. SSRF that can reach a real cloud "
+        "metadata endpoint). `redsec dev/up` then require --unsafe-local.",
+    )
+
+    @property
+    def local_isolation_required(self) -> bool:
+        """True if `redsec dev/up` must not run this module without consent."""
+        return self.unsafe_local or any(t.privileged for t in self.targets)
 
     @property
     def dirname(self) -> str:

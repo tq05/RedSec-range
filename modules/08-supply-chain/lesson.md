@@ -10,15 +10,21 @@ datasets, dependencies and adapters are all trusted artifacts that are rarely
 verified end-to-end. The `registry` target reproduces four classic failures. Read
 `targets/registry/app.py`.
 
-> All exploits here are lab-contained: the RCE payload runs only inside the
-> isolated, egress-blocked target and just writes a marker to the sink.
+> All exploits here are lab-contained when you use the Docker range: the RCE
+> payload runs only inside the isolated, egress-blocked target container and just
+> writes a marker to the sink.
 
 ## 2. Start
 
 ```bash
-redsec up 08
+range up 08              # Docker range: isolated, egress-blocked (recommended)
 URL=http://127.0.0.1:9080
 ```
+
+With the Docker range, check oracle challenges with `range verify 08 <challenge>`
+wherever this lesson says `redsec verify`. Without Docker, `redsec up 08
+--unsafe-local` runs the registry as a plain process on your machine, so the
+pickle payload would execute as you. Only do that on a throwaway machine.
 
 ## 3. Walkthrough
 

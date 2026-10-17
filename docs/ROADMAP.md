@@ -115,11 +115,11 @@ and tighten the accuracy/integrity claims.
       target's sink path, and needles that are secrets only obtainable via the
       exploit. The sink is still not tamper-proof against someone who controls the
       host (see SECURITY.md).
-- [ ] **Local isolation.** Modules 07 (shell RCE), 08 (pickle), 09 (SSRF to
-      169.254.169.254) run unisolated under bare `redsec dev/up`. Add Host-header
-      allow-list + Content-Type enforcement to the FastAPI targets; default these
-      modules to the Docker/K8s path or gate bare-local behind an explicit flag.
-      SECURITY.md updated to say so.
+- [ ] **Local isolation.** *Done 2026-10-17:* `redsec dev/up` refuse modules with
+      a `privileged` target or `unsafe_local: true` (07, 08, 09) unless
+      `--unsafe-local` is passed, and point to `range up`. The 08/09 lessons now
+      start on the Docker range. Remaining: Host-header allow-list and Content-Type
+      enforcement on the FastAPI targets (DNS-rebinding defence for loopback ports).
 - [x] **Container hardening.** *Done 2026-10-16:* `vuln-mcp` and the 08 registry
       run as `USER 10001`, and the chart applies the same non-root, seccomp, and
       cap-drop context to `privileged` targets as to all others. Earlier (PR #16):
