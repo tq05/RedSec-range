@@ -1,8 +1,6 @@
 """Reusable checks available to every module via `builtins:Name`."""
 from __future__ import annotations
 
-from typing import Any
-
 from .base import Check, CheckContext, CheckResult, flag_matches
 
 

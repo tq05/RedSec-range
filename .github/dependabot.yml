@@ -1,0 +1,12 @@
+# Weekly update PRs for pinned GitHub Actions (SHA pins keep their `# vN` comment)
+# and the Python dependencies in pyproject.toml.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      actions: { patterns: ["*"] }
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly }
