@@ -156,9 +156,11 @@ and tighten the accuracy/integrity claims.
       entries, same-entry trust relationships, and numbered multi-step chains; a
       keyword dump is covered by a regression test. Done 2026-10-04.
 
-**P3 — minor:** no type-check in CI; unpinned Python deps; base image copies
-`.git`; `ci.yml` should default the workflow token to `contents: read`. *Done
-2026-10-17:* GitHub Actions are SHA-pinned, CI downloads are checksum-verified,
+**P3 — minor:** no type-check in CI. *Done 2026-10-17:* the CI token defaults
+to `contents: read`; base images are digest-pinned and image Python packages are
+pinned in `deploy/constraints.txt`; the base runner build verifies PyPI's TLS
+certificate (no `--trusted-host`) and, via `.dockerignore`, excludes `.git`;
+GitHub Actions are SHA-pinned, CI downloads are checksum-verified,
 Dependabot covers Actions and pip, a `ruff` job (E9 + pyflakes) and a gitleaks
 secret scan run in CI. *Done 2026-10-16:* temp values files in
 `k8s.render`/`deploy` are removed, `redsec verify` exits 0 only when every

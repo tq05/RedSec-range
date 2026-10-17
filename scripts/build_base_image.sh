@@ -4,7 +4,8 @@
 # (the registry-free, Kubernetes-free way to run every challenge in containers).
 #
 # Run from the repo root. Requires Docker + a reachable PyPI (directly or via a
-# proxy). Honors HTTPS_PROXY if set.
+# proxy). Honors HTTPS_PROXY if set. PyPI's TLS certificate is always verified; a
+# TLS-intercepting proxy must be trusted by the build, not bypassed.
 set -euo pipefail
 
 IMAGE="${IMAGE:-redsec/base:local}"
@@ -24,7 +25,6 @@ FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0
 ARG PXY=
 COPY redsec-range/deploy/constraints.txt /tmp/constraints.txt
 RUN pip install --no-cache-dir ${PXY:+--proxy $PXY} -c /tmp/constraints.txt \
-    --trusted-host pypi.org --trusted-host files.pythonhosted.org \
     fastapi "uvicorn[standard]" httpx pydantic pyyaml
 COPY redsec-range /app
 ENV PYTHONPATH=/app
