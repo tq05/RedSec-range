@@ -1,0 +1,18 @@
+# Secret scanning for RedSec Range (run in CI by the `secrets` job).
+#
+# The range plants FAKE credentials on purpose: challenge flags and canary keys
+# that learners extract. Only those exact canary formats are allow-listed here.
+# Never allow-list a path, so a real secret committed next to a canary is still
+# caught.
+title = "RedSec Range gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Planted training canaries (synthetic, see SECURITY.md)"
+regexTarget = "match"
+regexes = [
+  '''sk-redsec-[A-Z0-9]+''',
+  '''REDSEC\{[^}\s]*\}''',
+]
