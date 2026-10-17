@@ -5,7 +5,7 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:4": {
-      "version": "latest",
+      "version": "27.5",
       "moby": true,
       "dockerDashComposeVersion": "v2"
     },

@@ -20,7 +20,7 @@ cp -a "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" "$CTX/redsec-range"
 awk 'NF && $1 !~ /^#/ { print "redsec-range/" $0 }' .dockerignore > "$CTX/.dockerignore"
 
 cat > "$CTX/Dockerfile" <<'EOF'
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 ARG PXY=
 RUN pip install --no-cache-dir ${PXY:+--proxy $PXY} \
     --trusted-host pypi.org --trusted-host files.pythonhosted.org \

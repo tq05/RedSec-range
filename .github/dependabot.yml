@@ -1,5 +1,6 @@
-# Weekly update PRs for pinned GitHub Actions (SHA pins keep their `# vN` comment)
-# and the Python dependencies in pyproject.toml.
+# Weekly update PRs for pinned GitHub Actions (SHA pins keep their `# vN` comment),
+# the Python dependencies in pyproject.toml, digest-pinned base images, and
+# devcontainer features.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -8,5 +9,19 @@ updates:
     groups:
       actions: { patterns: ["*"] }
   - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly }
+  # Base images are pinned by digest; Dependabot bumps the digest (and tag).
+  - package-ecosystem: docker
+    directories:
+      - /modules/*/targets/*
+      - /redsec/services/drop
+      - /ranges/adapters
+      - /deploy/fly
+      - /.devcontainer
+    schedule: { interval: weekly }
+    groups:
+      base-images: { patterns: ["*"] }
+  - package-ecosystem: devcontainers
     directory: /
     schedule: { interval: weekly }

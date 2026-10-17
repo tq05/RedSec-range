@@ -1,5 +1,5 @@
 # Build context = repo root:  docker build -f modules/11-capstone/targets/assistant/Dockerfile -t ghcr.io/redsec-range/m11-assistant:latest .
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 WORKDIR /app
 RUN pip install --no-cache-dir "fastapi>=0.110" "uvicorn[standard]>=0.29" "httpx>=0.27" "pydantic>=2.5"
 COPY redsec/__init__.py /app/redsec/__init__.py
