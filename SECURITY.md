@@ -79,9 +79,10 @@ vulnerabilities taught live in the *applications*, which is the point.
   limit; third-party range containers get `no-new-privileges` and a PID limit.
   **Bare local-process mode (`redsec dev/up`) has no isolation** — and
   modules 07 (shell RCE), 08 (unsafe deserialization) and 09 (SSRF, which can reach a
-  real cloud metadata endpoint on a cloud VM) are genuinely dangerous there. Run those
-  modules via the Docker or Kubernetes paths, on a throwaway host, never on a machine
-  or network you care about. Local targets receive only basic host variables
+  real cloud metadata endpoint on a cloud VM) are genuinely dangerous there, so
+  `redsec dev/up` refuses them unless you pass `--unsafe-local`. Run those modules
+  via the Docker range (`range up`) or Kubernetes, on a throwaway host, never on a
+  machine or network you care about. Local targets receive only basic host variables
   (`PATH`, `HOME`, locale, …) and `REDSEC_*` settings, not the rest of your shell
   environment. Cloud, GitHub, Fly, and other credentials there are not handed to
   them. The one exception is `REDSEC_LLM_API_KEY`, which you set deliberately for a

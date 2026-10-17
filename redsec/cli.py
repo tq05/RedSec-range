@@ -400,10 +400,34 @@ def lesson(module: str) -> None:
 # --------------------------------------------------------------------------- #
 # local development
 # --------------------------------------------------------------------------- #
+UNSAFE_LOCAL_HELP = (
+    "run an RCE/SSRF module as bare local processes anyway (no isolation; only on "
+    "a throwaway machine)"
+)
+
+
+def _require_isolation_consent(m: Module, unsafe_local: bool) -> None:
+    if not m.local_isolation_required or unsafe_local:
+        return
+    err.print(
+        f"[red]module {m.id} runs code-execution or SSRF targets that need isolation."
+        "[/]\n  Use the Docker range instead: [cyan]range up "
+        f"{m.id}[/] (or `python scripts/range_ctl.py up {m.id}`), then "
+        f"[cyan]range verify {m.id}[/].\n  Bare local mode gives those targets "
+        "your user account, files, and network. Only on a throwaway machine:\n"
+        f"  [cyan]redsec up {m.id} --unsafe-local[/]"
+    )
+    raise typer.Exit(2)
+
+
 @app.command()
-def dev(module: str) -> None:
+def dev(
+    module: str,
+    unsafe_local: bool = typer.Option(False, "--unsafe-local", help=UNSAFE_LOCAL_HELP),
+) -> None:
     """Run a module's targets locally (no Docker/K8s). Ctrl-C to stop."""
     mdir, m = find(module)
+    _require_isolation_consent(m, unsafe_local)
     if not m.targets:
         err.print(f"[yellow]module {m.id} defines no targets (scaffold).[/]")
         raise typer.Exit(1)
@@ -433,13 +457,17 @@ def dev(module: str) -> None:
 
 
 @app.command()
-def up(module: str) -> None:
+def up(
+    module: str,
+    unsafe_local: bool = typer.Option(False, "--unsafe-local", help=UNSAFE_LOCAL_HELP),
+) -> None:
     """Start a module's targets in the BACKGROUND (for walkthroughs/automation).
 
     Unlike `dev` (which blocks), this returns immediately so you can run
     `redsec verify`/`submit` in the same shell. Stop it with `redsec down`.
     """
     mdir, m = find(module)
+    _require_isolation_consent(m, unsafe_local)
     if not m.targets:
         err.print(f"[yellow]module {m.id} defines no targets.[/]")
         raise typer.Exit(1)
