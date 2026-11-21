@@ -1,4 +1,4 @@
-FROM python:3.12-alpine@sha256:1b668429b3511ab407d8e00648891631b0b1a4d7e15e3ca70f38ab5b91ad4ab4
+FROM python:3.15-alpine@sha256:0f9552bb28711333da16915ec146f5e6bb44a7fdac9ced15dc17c2e0206346dd
 
 RUN addgroup -S redsec && adduser -S redsec -G redsec
 COPY ranges/adapters/tcp_proxy.py /opt/redsec/tcp_proxy.py
