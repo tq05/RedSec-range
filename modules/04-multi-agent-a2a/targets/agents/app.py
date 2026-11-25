@@ -167,7 +167,9 @@ async def a2a_rpc(request: Request) -> JSONResponse:
     if skill == "guarded_review":
         # VULN: the guard checks each Message separately, then the agent consumes
         # concatenated context history. Split directives reassemble after review.
-        if "ACTION:" in text:
+        # Case-insensitive, like the model's own directive parsing: otherwise a
+        # single lowercase "action:" Message walks past the guard un-split.
+        if "action:" in text.lower():
             result = {"accepted": False, "reason": "guard: directive token blocked",
                       "executed": []}
         elif recipient == "reviewer":
