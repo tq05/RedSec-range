@@ -21,7 +21,7 @@ import os
 import string
 
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 F_INVERT = os.environ.get("REDSEC_F_INVERT", "REDSEC{embedding_inversion_via_decode}")
 F_MEMBER = os.environ.get("REDSEC_F_MEMBER", "REDSEC{embedding_membership_inference}")
@@ -62,7 +62,10 @@ class TextIn(BaseModel):
 
 
 class VecIn(BaseModel):
-    vector: list[int]
+    # Exactly one histogram. zip() in _dist stops at the shorter vector, so an
+    # empty or truncated one would be at distance 0 from every record and hand
+    # out the inversion and membership flags without any embedding work.
+    vector: list[int] = Field(min_length=27, max_length=27)
 
 
 @app.post("/embed")
