@@ -6,8 +6,7 @@ verifiers, additional attack vectors, docs, and fixes.
 ## Dev setup
 
 ```bash
-pip install -e ".[dev]"
-pip install kubernetes-validate      # for offline manifest validation
+pip install -e ".[dev]"              # includes the offline manifest validator
 redsec doctor                        # sanity-check all modules load
 pytest -q                            # unit + integration
 ```
