@@ -24,3 +24,15 @@ def test_verify_sweep_requires_every_challenge(monkeypatch, tmp_path):
         state.mark_solved(module.id, c.id, c.points)
     assert runner.invoke(app, ["verify", "10"]).exit_code == 0
     assert runner.invoke(app, ["verify", "10", first.id]).exit_code == 0
+
+
+def test_submit_exit_code_reflects_the_flag(monkeypatch, tmp_path):
+    monkeypatch.setenv("REDSEC_STATE", str(tmp_path))
+    runner = CliRunner()
+    wrong = runner.invoke(app, ["submit", "01", "first-contact", "REDSEC{wrong}"])
+    assert wrong.exit_code == 1
+    assert not state.is_solved("01", "first-contact")
+    right = runner.invoke(
+        app, ["submit", "01", "first-contact", "REDSEC{welcome_to_the_range}"])
+    assert right.exit_code == 0
+    assert state.is_solved("01", "first-contact")
