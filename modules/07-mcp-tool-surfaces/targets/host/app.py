@@ -151,8 +151,10 @@ def register_tool(inp: RegisterToolIn) -> dict:
     # tokens and rejects obvious poisoning -- but the model later reads the DECODED
     # description, so a directive concealed in Unicode tag characters slips past.
     visible = _strip_tags(inp.description)
+    # Case-insensitive, like the model's own directive parsing: otherwise a plain
+    # lowercase "action:" is accepted and no concealment is needed.
     for bad in ("ACTION:", "<IMPORTANT>", "{{"):
-        if bad in visible:
+        if bad.lower() in visible.lower():
             return {"accepted": False,
                     "reason": f"guard: visible description contains {bad!r}"}
     _extra_tools.append({"name": inp.name, "description": inp.description})
