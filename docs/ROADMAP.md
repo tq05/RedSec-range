@@ -185,3 +185,66 @@ shell.
 - **Next:** build the remaining impossible/new tiers specced in DIFFICULTY-TIERS.md
   (03 dual-guard exfil, 08 time-delayed rug pull, 09 SSRF→cred→second-service chain,
   11 chain-vs-detection), each fail→pass + sealed.
+
+## Code review — 2026-11-25 (staged queue, one topic per change)
+
+A full read of the framework, all eleven modules, the run scripts, the chart and CI.
+Each stage below is meant to land as its own small change. Stages 1–2 are done; the
+rest are proposals in suggested order — confirm with R before starting one.
+
+- [x] **Stage 1 — dev papercuts.** `kubernetes-validate` moved into the `dev` extra
+      (a clean `pip install -e ".[dev]" && pytest` used to fail two tests);
+      `redsec submit` exits 1 on a rejected flag.
+- [x] **Stage 2 — guard bypasses.** 06 `/decode` and `/search` required no vector
+      length (an empty vector returned two flags); the 04 and 07 impossible-tier
+      guards were case-sensitive while the model is not. Regression tests in
+      `tests/test_unintended_solves.py`.
+- [ ] **Stage 3 — oracle provenance (verifier fidelity).** Oracles prove *that* a
+      marker reached the sink, not *how*. Because the mock honours `ACTION:` lines in
+      the user turn, one direct chat message passes challenges that teach an indirect
+      route: 03 `indirect-injection` and `memory-poisoning`, 05 `knowledge-poisoning`
+      and `retrieval-manipulation`, 07 `sampling-abuse` and `elicitation-phishing`,
+      and all three capstone challenges (no note planted); 04 `message-manipulation`
+      and `agent-impersonation` pass through `/submit`. Proposal: the engine records
+      which message role each tool call came from, targets attach that (and their
+      entry point) to sink posts, and checks take a `via:` requirement. Needs a
+      decision on behaviour under `REDSEC_LLM_BACKEND=openai`, where the source role
+      is not observable.
+- [ ] **Stage 4 — internal targets stay internal.** Docker, Codespaces and local
+      paths publish every target, so 09 `metadata` (9091) and 11 `vault` (9112) are
+      directly reachable and `metadata-ssrf` is solvable with one `curl`, no SSRF.
+      Add a per-target `expose: false`, skip publishing/forwarding those, and have
+      verifiers reach them only through the range.
+- [ ] **Stage 5 — Docker egress.** `range_ctl.py` and `docker_run_all.py` create
+      ordinary bridge networks, so every built-in target, including the 07/08 RCE
+      targets, can reach the internet despite `egress: false`. Reuse the
+      `--internal` network + gateway pattern the external ranges already have, and
+      assert it in CI. (Promotes the P2 item above.)
+- [ ] **Stage 6 — strict manifests.** The pydantic models ignore unknown keys, so a
+      typo in `module.yaml` (`hint:` for `hints:`) is silently dropped. Forbid extras
+      and validate unique challenge/target ids, `allow_targets` references, and that
+      a `sealed` challenge has a `solution/SEALED.md`; extend `redsec doctor` to
+      check lessons and build directories.
+- [ ] **Stage 7 — one learner workflow.** On the Docker range flags go through
+      `redsec submit` and oracles through `range verify`; `redsec verify` refuses
+      because it only knows `running-NN.json`, and `range verify` never records
+      progress, so `redsec score` undercounts. Let `redsec verify/submit` read the
+      Docker range state and have `range verify` record solves.
+- [ ] **Stage 8 — shared harness.** The fail→pass loop, env/peer-URL wiring and
+      solver loading are copied in five places (cli selftest, test_integration,
+      docker_run_all, range_ctl, kind_run_all); the hand-written renderer in
+      `validate_manifests.py` shadows the chart. Extract `redsec/harness.py` and
+      derive the module lists in `build_images.sh`, `kind-up.sh` and CI from
+      `load_all()`. (The existing P2 items.)
+- [ ] **Stage 9 — robustness.** `redsec up` leaves a stale `running-NN.json` when a
+      target dies (then refuses to start); state files are written non-atomically;
+      `build_images.sh` hides a failed push behind `|| true`; the 07 `/mcp` route
+      returns a 500 where `/rpc` returns a JSON-RPC error; `range_ctl` passes
+      `REDSEC_LLM_API_KEY` to every container, including the RCE targets that never
+      call a model.
+- [ ] **Stage 10 — CI hygiene.** Add `concurrency` cancellation and job timeouts,
+      cache pip, add a type-check job (the open P3), and widen ruff beyond E9/F.
+
+Smaller content notes: 06 `membership-inference` also passes by replaying any vector
+leaked from `/records`; oracle needles match anywhere in the stored event (path and
+headers included), and `ACCESS`/`PIVOT` are generic enough to match by accident.
