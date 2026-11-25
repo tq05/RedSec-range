@@ -589,14 +589,15 @@ def _run_and_report(m: Module, mdir: Path, ctx: CheckContext, challenge) -> bool
 
 @app.command()
 def submit(module: str, challenge: str, flag: str) -> None:
-    """Submit a flag for a flag-based challenge."""
+    """Submit a flag for a flag-based challenge. Exits 1 if it is not accepted."""
     mdir, m = find(module)
     c = _challenge(m, challenge)
     # Flag checks work offline; oracle checks need a running range.
     needs_range = any(s.type != "flag" for s in c.verify)
     ctx = (_ctx(m, submitted_flag=flag) if needs_range
            else CheckContext(endpoints={}, submitted_flag=flag))
-    _run_and_report(m, mdir, ctx, c)
+    if not _run_and_report(m, mdir, ctx, c):
+        raise typer.Exit(1)
 
 
 @app.command()
